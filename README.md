@@ -108,6 +108,30 @@ python ravens/plot.py --disp=True --task=block-insertion --agent=transporter --n
 python -m tensorboard.main --logdir=logs  # Open the browser to where it tells you to.
 ```
 
+## Parallel-Jaw Block Stacking
+
+The `stack-block-pyramid-parallel-jaw` task uses a directly mounted,
+two-prismatic-finger kinematic gripper instead of the suction end effector.
+Generate demonstrations with:
+
+```shell
+python -m ravens.demos --assets_root=./ravens/environments/assets/ --task=stack-block-pyramid-parallel-jaw --mode=train --n=100
+python -m ravens.demos --assets_root=./ravens/environments/assets/ --task=stack-block-pyramid-parallel-jaw --mode=test --n=100
+```
+
+Train and evaluate a task-specific Transporter checkpoint with:
+
+```shell
+python -m ravens.train --task=stack-block-pyramid-parallel-jaw --agent=transporter --n_demos=100
+python -m ravens.test --assets_root=./ravens/environments/assets/ --task=stack-block-pyramid-parallel-jaw --agent=transporter --n_demos=100 --n_steps=40000
+```
+
+The gripper is mounted directly on the UR5 wrist and its fingers visibly close
+to the selected object's width. Because Ravens moves the arm kinematically,
+grasp eligibility is checked inside the jaw volume and a temporary PyBullet
+constraint carries the object until the fingers open. This avoids unstable
+collision impulses while still rejecting picks that are not between the jaws.
+
 ## Datasets and Pre-Trained Models
 
 Download our generated train and test datasets and pre-trained models.

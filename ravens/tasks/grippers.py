@@ -25,6 +25,7 @@ import pybullet as p
 SPATULA_BASE_URDF = 'ur5/spatula/spatula-base.urdf'
 SUCTION_BASE_URDF = 'ur5/suction/suction-base.urdf'
 SUCTION_HEAD_URDF = 'ur5/suction/suction-head.urdf'
+PARALLEL_JAW_URDF = 'ur5/gripper/simple_parallel_jaw.urdf'
 
 
 class Gripper:
@@ -66,6 +67,120 @@ class Spatula(Gripper):
         jointAxis=(0, 0, 0),
         parentFramePosition=(0, 0, 0),
         childFramePosition=(0, 0, 0.01))
+
+
+class ParallelJaw(Gripper):
+  """Kinematic two-finger gripper with geometry-gated rigid grasps."""
+
+  TOOL_CENTER_Z = 0.12
+  OPEN_INNER_WIDTH = 0.078
+
+  def __init__(self, assets_root, robot, ee, obj_ids):
+    super().__init__(assets_root)
+    self.robot = robot
+    self.mount_link = ee
+    self.obj_ids = obj_ids
+    self.contact_constraint = None
+
+    parent_state = p.getLinkState(robot, ee)
+    pose = (parent_state[4], parent_state[5])
+    self.body = pybullet_utils.load_urdf(
+        p, os.path.join(self.assets_root, PARALLEL_JAW_URDF), pose[0], pose[1],
+        useFixedBase=True)
+
+    joints = [p.getJointInfo(self.body, i)
+              for i in range(p.getNumJoints(self.body))]
+    joint_ids = {joint[1].decode('utf-8'): joint[0] for joint in joints}
+    self.left_finger = joint_ids['left_finger_joint']
+    self.right_finger = joint_ids['right_finger_joint']
+    self.finger_joints = (self.left_finger, self.right_finger)
+    self.finger_positions = {joint: 0.0 for joint in self.finger_joints}
+
+    # Ravens drives the arm kinematically. Collision response against a second
+    # kinematic body creates large artificial impulses, so grasp eligibility is
+    # checked geometrically and transport uses a temporary rigid constraint.
+    for gripper_link in range(-1, p.getNumJoints(self.body)):
+      p.setCollisionFilterGroupMask(self.body, gripper_link, 0, 0)
+
+    for finger in self.finger_joints:
+      p.setJointMotorControl2(
+          self.body, finger, p.VELOCITY_CONTROL, force=0)
+    self._command(0.0, steps=1)
+
+  def _command(self, position, steps=120):
+    """Move both prismatic fingers to the requested closure distance."""
+    target = float(np.clip(position, 0.0, 0.03))
+    starts = dict(self.finger_positions)
+    for fraction in np.linspace(0, 1, max(1, steps)):
+      for joint in self.finger_joints:
+        start = starts[joint]
+        self.finger_positions[joint] = float(
+            start + fraction * (target - start))
+      self.step()
+      p.stepSimulation()
+
+  def activate(self):
+    """Close around the centered object and preserve the resulting grasp."""
+    base_pose = p.getBasePositionAndOrientation(self.body)
+    inverse = p.invertTransform(base_pose[0], base_pose[1])
+    candidates = []
+    for object_id in self.obj_ids['rigid']:
+      object_pose = p.getBasePositionAndOrientation(object_id)
+      local_pose = p.multiplyTransforms(
+          inverse[0], inverse[1], object_pose[0], object_pose[1])
+      x, y, z = local_pose[0]
+      if (abs(x) < 0.035 and abs(y) < 0.045 and
+          abs(z - self.TOOL_CENTER_Z) < 0.05):
+        distance = x * x + y * y + (z - self.TOOL_CENTER_Z)**2
+        candidates.append((distance, object_id, local_pose))
+
+    if not candidates:
+      self.activated = False
+      return
+
+    _, object_id, local_pose = min(candidates)
+    dimensions = p.getVisualShapeData(object_id)[0][3]
+    object_width = max(float(dimensions[0]), float(dimensions[1]))
+    closure = np.clip(
+        (self.OPEN_INNER_WIDTH - object_width) / 2 - 0.001, 0, 0.03)
+    self._command(closure, steps=120)
+
+    self.contact_constraint = p.createConstraint(
+        parentBodyUniqueId=self.body,
+        parentLinkIndex=-1,
+        childBodyUniqueId=object_id,
+        childLinkIndex=-1,
+        jointType=p.JOINT_FIXED,
+        jointAxis=(0, 0, 0),
+        parentFramePosition=local_pose[0],
+        childFramePosition=(0, 0, 0),
+        parentFrameOrientation=local_pose[1],
+        childFrameOrientation=(0, 0, 0, 1))
+    self.activated = True
+
+  def release(self):
+    """Remove the temporary grasp constraint and open both fingers."""
+    if self.contact_constraint is not None:
+      p.removeConstraint(self.contact_constraint)
+      self.contact_constraint = None
+    self.activated = False
+    self._command(0.0, steps=180)
+
+  def step(self):
+    """Keep the kinematic tool and its fingers aligned with the UR5 wrist."""
+    state = p.getLinkState(self.robot, self.mount_link)
+    p.resetBasePositionAndOrientation(self.body, state[4], state[5])
+    for joint in self.finger_joints:
+      p.resetJointState(
+          self.body, joint, self.finger_positions[joint], targetVelocity=0)
+
+  def detect_contact(self):
+    """Parallel-jaw motion primitives do not use contact-driven descent."""
+    return False
+
+  def check_grasp(self):
+    """Return whether an object is currently secured between the jaws."""
+    return self.contact_constraint is not None
 
 
 class Suction(Gripper):
