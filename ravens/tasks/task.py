@@ -181,6 +181,7 @@ class Task():
       pick_pos = utils.pix_to_xyz(pick_pix, hmap,
                                   self.bounds, self.pix_size)
       pick_pose = (np.asarray(pick_pos), np.asarray((0, 0, 0, 1)))
+      pick_pose = self.get_pick_pose(objs[pick_i][0], pick_pose)
 
       # Get placing pose.
       targ_pose = targs[nn_targets[pick_i]]  # pylint: disable=undefined-loop-variable
@@ -203,6 +204,11 @@ class Task():
       return {'pose0': pick_pose, 'pose1': place_pose}
 
     return OracleAgent(act)
+
+  def get_pick_pose(self, object_id, pick_pose):
+    """Allow an end effector to refine the oracle's sampled pick pose."""
+    del object_id
+    return pick_pose
 
   #-------------------------------------------------------------------------
   # Reward Function and Task Completion Metrics

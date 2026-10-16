@@ -16,6 +16,8 @@
 """Stacking task."""
 
 import numpy as np
+from ravens.tasks.grippers import ParallelJaw
+from ravens.tasks import primitives
 from ravens.tasks.task import Task
 from ravens.utils import utils
 
@@ -72,3 +74,19 @@ class StackBlockPyramid(Task):
     # Goal: blocks are stacked in a pyramid (top row: red).
     self.goals.append((objs[5:], np.ones((1, 1)), targs[5:],
                        False, True, 'pose', None, 1 / 6))
+
+
+class StackBlockPyramidParallelJaw(StackBlockPyramid):
+  """Stacking task executed with the compact parallel-jaw gripper."""
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.ee = ParallelJaw
+    self.primitive = primitives.PickPlaceParallelJaw()
+
+  def get_pick_pose(self, object_id, pick_pose):
+    """Use the object centre in XY so both fingers straddle the cube."""
+    object_pose = p.getBasePositionAndOrientation(object_id)
+    position = np.array((object_pose[0][0], object_pose[0][1],
+                         pick_pose[0][2]))
+    return position, pick_pose[1]

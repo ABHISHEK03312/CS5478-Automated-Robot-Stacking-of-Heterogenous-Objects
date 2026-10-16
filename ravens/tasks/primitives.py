@@ -86,6 +86,50 @@ class PickPlace():
     return timeout
 
 
+class PickPlaceParallelJaw:
+  """Top-down pick and place using a parallel-jaw gripper."""
+
+  def __init__(self, height=0.20, speed=0.01, grasp_offset=0.02):
+    self.height = height
+    self.speed = speed
+    self.grasp_offset = grasp_offset
+
+  def __call__(self, movej, movep, ee, pose0, pose1):
+    del movej
+    identity = (0, 0, 0, 1)
+    above = ((0, 0, self.height), identity)
+    to_center = ((0, 0, -self.grasp_offset), identity)
+
+    # Oracle and Transporter actions refer to the visible top surface. Move
+    # the gripper TCP down to the calibrated finger-pad grasp height.
+    pick_pose = utils.multiply(pose0, to_center)
+    place_pose = utils.multiply(pose1, to_center)
+    prepick_pose = utils.multiply(pick_pose, above)
+    preplace_pose = utils.multiply(place_pose, above)
+
+    ee.release()
+    timeout = movep(prepick_pose)
+    timeout |= movep(pick_pose, self.speed)
+    if timeout:
+      return True
+
+    ee.activate()
+    timeout |= movep(prepick_pose, self.speed)
+    pick_success = ee.check_grasp()
+
+    if pick_success:
+      timeout |= movep(preplace_pose)
+      timeout |= movep(place_pose, self.speed)
+      ee.step()
+      ee.release()
+      timeout |= movep(preplace_pose, self.speed)
+    else:
+      ee.release()
+      timeout |= movep(prepick_pose)
+
+    return timeout
+
+
 def push(movej, movep, ee, pose0, pose1):  # pylint: disable=unused-argument
   """Execute pushing primitive.
 

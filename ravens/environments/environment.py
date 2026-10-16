@@ -193,12 +193,10 @@ class Environment(gym.Env):
     pybullet_utils.load_urdf(
         p, os.path.join(self.assets_root, UR5_WORKSPACE_URDF_PATH), [0.5, 0, 0])
 
-    # Load UR5 robot arm equipped with suction end effector.
-    # TODO(andyzeng): add back parallel-jaw grippers.
+    # Load the UR5 and attach the end effector selected by the task.
     self.ur5 = pybullet_utils.load_urdf(
         p, os.path.join(self.assets_root, UR5_URDF_PATH))
-    self.ee = self.task.ee(self.assets_root, self.ur5, 9, self.obj_ids)
-    self.ee_tip = 10  # Link ID of suction cup.
+    self.ee_tip = 10  # UR5 tool-tip link used as the action TCP.
 
     # Get revolute joint indices of robot (skip fixed joints).
     n_joints = p.getNumJoints(self.ur5)
@@ -208,6 +206,10 @@ class Environment(gym.Env):
     # Move robot to home joint configuration.
     for i in range(len(self.joints)):
       p.resetJointState(self.ur5, self.joints[i], self.homej[i])
+
+    # Attach the end effector only after the arm is at home. External gripper
+    # bodies otherwise lag behind when the robot joints are teleported.
+    self.ee = self.task.ee(self.assets_root, self.ur5, 9, self.obj_ids)
 
     # Reset end effector.
     self.ee.release()
@@ -369,6 +371,7 @@ class Environment(gym.Env):
           controlMode=p.POSITION_CONTROL,
           targetPositions=stepj,
           positionGains=gains)
+      self.ee.step()
       p.stepSimulation()
     print(f'Warning: movej exceeded {timeout} second timeout. Skipping.')
     return True

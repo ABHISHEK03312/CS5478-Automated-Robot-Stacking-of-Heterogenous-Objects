@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<robot name="simple_parallel_jaw">
+  <material name="housing">
+    <color rgba="0.16 0.18 0.22 1"/>
+  </material>
+  <material name="finger">
+    <color rgba="0.72 0.74 0.78 1"/>
+  </material>
+  <material name="pad">
+    <color rgba="0.08 0.08 0.08 1"/>
+  </material>
+
+  <!-- The mount frame coincides with the UR5 tool0 frame. -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0"
+               iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.032" length="0.070"/></geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.032" length="0.070"/></geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <geometry><box size="0.075 0.110 0.020"/></geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <geometry><box size="0.075 0.110 0.020"/></geometry>
+    </collision>
+  </link>
+
+  <!-- Positive joint motion closes both fingers toward the centre. -->
+  <joint name="left_finger_joint" type="prismatic">
+    <parent link="base_link"/>
+    <child link="left_finger"/>
+    <origin xyz="0 0.045 0.120" rpy="0 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="0" upper="0.030" effort="120" velocity="0.20"/>
+    <dynamics damping="0.02" friction="0.01"/>
+  </joint>
+  <link name="left_finger">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.005"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0"
+               iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.018 0.012 0.080"/></geometry>
+      <material name="finger"/>
+    </visual>
+    <collision>
+      <geometry><box size="0.018 0.012 0.080"/></geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 -0.007 0" rpy="0 0 0"/>
+      <geometry><box size="0.020 0.003 0.045"/></geometry>
+      <material name="pad"/>
+    </visual>
+  </link>
+
+  <joint name="right_finger_joint" type="prismatic">
+    <parent link="base_link"/>
+    <child link="right_finger"/>
+    <origin xyz="0 -0.045 0.120" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.030" effort="120" velocity="0.20"/>
+    <dynamics damping="0.02" friction="0.01"/>
+  </joint>
+  <link name="right_finger">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.005"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0"
+               iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.018 0.012 0.080"/></geometry>
+      <material name="finger"/>
+    </visual>
+    <collision>
+      <geometry><box size="0.018 0.012 0.080"/></geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0.007 0" rpy="0 0 0"/>
+      <geometry><box size="0.020 0.003 0.045"/></geometry>
+      <material name="pad"/>
+    </visual>
+  </link>
+</robot>
