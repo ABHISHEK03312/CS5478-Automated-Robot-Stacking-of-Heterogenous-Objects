@@ -172,37 +172,40 @@ class OllamaStackPlanner:
 
         Raises:
             ValueError: If image_bytes is empty.
-            StackPlanError: If no objects are provided, the model returns
-                unparseable JSON, or all validation attempts fail.
+            StackPlanError: If no objects are provided or the model response
+                remains unparseable after the configured formatting retries.
+            ValueError: If a parsed plan fails deterministic validation.
         """
         if not image_bytes:
             raise ValueError("A non-empty scene image is required.")
         if not objects:
             raise StackPlanError("No pickable objects were found in the scene.")
 
-        previous_plan = None
-        validation_error = None
+        previous_output = None
+        parsing_error = None
         for attempt in range(self.max_retries + 1):
-            print("validation error: ", validation_error)
             prompt = self._build_prompt(
-                instruction, objects, previous_plan, validation_error)
-            plan = self._generate_plan(prompt, image_bytes)
+                instruction, objects, previous_output, parsing_error)
             try:
-                validate_plan(plan, objects)
-                return plan
-            except ValueError as error:
+                plan = self._generate_plan(prompt, image_bytes)
+            except StackPlanError as error:
                 if attempt >= self.max_retries:
                     raise StackPlanError(
-                        "Plan remained invalid after %d retries. Last "
-                        "validation error: %s" % (self.max_retries, error))
-                # The next model call receives both the exact rejected output
-                # and validator feedback so it can repair the plan.
-                previous_plan = plan
-                validation_error = str(error)
+                        "Could not parse a plan after %d retries. Last "
+                        "parsing error: %s" % (self.max_retries, error))
+                # Parsing retries stay within zero-shot inference: send the
+                # malformed response and formatting error back to the model.
+                previous_output = str(error)
+                parsing_error = str(error)
+                continue
+            # Invalid IDs or unsafe footprint ordering are deterministic plan
+            # errors. Retries are reserved for malformed model output only.
+            validate_plan(plan, objects)
+            return plan
 
     @staticmethod
-    def _build_prompt(instruction, objects, previous_plan=None,
-                      validation_error=None):
+    def _build_prompt(instruction, objects, previous_output=None,
+                      parsing_error=None):
         # prompt = (
         #     "Plan a single stable stack that follows the user's instruction. "
         #     "Use only the supplied object IDs. Return every pickable object "
@@ -217,7 +220,7 @@ class OllamaStackPlanner:
         #     "Respond with ONLY a JSON object in this exact format, no "
         #     "explanation, no markdown fences:\n"
         #     '{"stack_order": ["<bottom_object_id>", ..., "<top_object_id>"], '
-        #     '"reasoning": "<brief explanation>"}'
+        #     '"summary": "<brief explanation>"}'
         #     % (instruction, json.dumps(objects, sort_keys=True)))
         prompt = (
               "Plan a single stable stack that follows the user's instruction. "
@@ -229,21 +232,21 @@ class OllamaStackPlanner:
               "conflicts with the catalog, still return the closest physically "
               "plausible order.\n\n"
               "User instruction: %s\n\n"
+              "Measured object catalog (dimensions are meters):\n%s\n\n"
               "Respond with ONLY a JSON object in this exact format, no "
               "explanation, no markdown fences:\n"
               '{"stack_order": ["<bottom_object_id>", ..., "<top_object_id>"], '
-              '"reasoning": "<brief explanation>"}'
-              % (instruction))
-        if previous_plan is not None or validation_error is not None:
+              '"summary": "<brief explanation>"}'
+              % (instruction, json.dumps(objects, sort_keys=True)))
+        if previous_output is not None or parsing_error is not None:
             prompt += (
-                "\n\nYour previous plan was rejected by the robot-side "
-                "validator. Correct it using the exact error below. Keep the "
-                "same object ID restrictions and return a complete revised "
-                "plan, not a patch.\n"
-                "Previous plan:\n%s\n"
-                "Validation error:\n%s\n" % (
-                    json.dumps(previous_plan, sort_keys=True),
-                    validation_error or "No validation error was provided."))
+                "\n\nYour previous response could not be parsed as the "
+                "required JSON object. Fix its formatting using the error "
+                "below. Keep the same object ID restrictions and return the "
+                "complete JSON object only.\nPrevious response/error:\n%s\n"
+                "Parsing error:\n%s\n" % (
+                    previous_output or "(empty response)",
+                    parsing_error or "Invalid JSON response."))
         return prompt
 
     def _generate_plan(self, prompt, image_bytes):
@@ -255,14 +258,16 @@ class OllamaStackPlanner:
             tmp.write(image_bytes)
             tmp_path = tmp.name
         response = self._call_llm(prompt, tmp_path)
-        text = response["message"]["content"]
-        text = self._extract_json(text)
         try:
+            text = response["message"]["content"]
+            text = self._extract_json(text)
             return json.loads(text)
-        except (TypeError, ValueError) as error:
+        except (AttributeError, KeyError, TypeError, ValueError) as error:
+            raw_output = (response.get("message", {}).get("content", "")
+                          if isinstance(response, dict) else repr(response))
             raise StackPlanError(
-                "VLM response was not valid plan JSON: %s\nRaw output: %s"
-                % (error, text))
+                "VLM response was not a parseable plan JSON object: %s\n"
+                "Raw output: %s" % (error, raw_output))
 
     # ------------------------------------------------------------------
     # Helpers

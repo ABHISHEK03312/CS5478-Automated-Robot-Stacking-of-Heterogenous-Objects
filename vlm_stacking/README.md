@@ -26,6 +26,7 @@ localization. A VLM label or bounding box alone is not a metric grasp pose.
 ## Files
 
 - `planner.py`: Ollama vision request, JSON parsing, and plan validation.
+- `search_planner.py`: VLM-guided beam search over supported object orders.
 - `pipeline.py`: re-observe / plan / execute loop with explicit adapters.
 - `ravens_policy.py`: applies object masks to Transporter pick scores and
   constrains placement to the geometry chosen by the high-level plan.
@@ -36,9 +37,10 @@ Start Ollama locally and pull a vision-language model, for example
 `ollama pull qwen2.5vl:7b`. The planner defaults to `qwen2.5vl:7b`; set
 `OLLAMA_VLM_MODEL` or pass `--model` to select a different local model. The
 scene image and measured object catalog are sent to the local Ollama service.
-If the planner's plan validator rejects the ordering, it retries generation
-three times, sending the rejected plan and validator error with each repair
-request. The initial plan request is additional to those three retries.
+If the model output cannot be parsed as JSON, it retries generation up to
+three times and includes the malformed response and parse error in the repair
+prompt. The initial plan request is additional to those retries. Deterministic
+plan validation errors are returned without an LLM retry.
 
 ## Run the included simulator example
 
@@ -100,3 +102,32 @@ result = pipeline.run("Stack the largest object at the bottom and the smallest o
 - The supplied data and checkpoints do not include an arbitrary-object stack
   task or a hardware camera/gripper driver. This folder provides the planner
   and policy bridge; implement the scene and robot adapters for your hardware.
+
+
+## Compare the zero-shot baseline and hybrid planner
+
+The default `--planner zero-shot` keeps the VLM-only order as the baseline.
+Its three retries apply only when the model response cannot be parsed as JSON;
+invalid object IDs or footprint validation failures are returned directly.
+These formatting retries are still zero-shot inference and do not train or
+update the model.
+
+Select the optional hybrid search with:
+
+```bash
+python -m vlm_stacking.run_ravens_sim \
+  --models-root "../ravens_models" \
+  --planner hybrid --beam-width 12 \
+  --instruction "Build a stable tower with the largest block at the bottom."
+```
+
+The hybrid planner treats the VLM order as its language-grounded proposal,
+uses beam search to explore supported bottom-to-top orders, then evaluates
+candidate towers by saving the current PyBullet state, placing objects at the
+stack target, allowing them to settle, and restoring the original scene. It
+executes the winning order through the same policy as the baseline. This
+simulator evaluator measures stability and source-object workspace bounds; it
+does not simulate the arm's full pick/place trajectory or prove hardware
+reachability. The standalone hybrid planner falls back to a centered-footprint
+heuristic if no evaluator is supplied. Beam search is discrete; CEM would be a
+follow-on for optimizing continuous placement offsets and yaw.

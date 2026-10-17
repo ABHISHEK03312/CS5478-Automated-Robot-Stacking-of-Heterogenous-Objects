@@ -10,6 +10,8 @@ from ravens.environments.environment import Environment
 
 from vlm_stacking.pipeline import LanguageStackPipeline
 from vlm_stacking.planner import OllamaStackPlanner
+from vlm_stacking.search_planner import HybridStackPlanner
+from vlm_stacking.ravens_sim import RavensSimulationStackEvaluator
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
 from vlm_stacking.ravens_sim import RavensSimulationExecutor
 from vlm_stacking.ravens_sim import RavensSimulationMaskProvider
@@ -33,6 +35,11 @@ def main():
                       help="Ollama model; defaults to OLLAMA_VLM_MODEL")
   parser.add_argument("--dry-run", action="store_true",
                       help="Ask for and validate a plan without moving the arm")
+  parser.add_argument("--planner", choices=("zero-shot", "hybrid"),
+                      default="zero-shot",
+                      help="Keep the VLM-only baseline or use beam search")
+  parser.add_argument("--beam-width", type=int, default=12,
+                      help="Number of partial orders retained at each beam depth")
   args = parser.parse_args()
 
   task = tasks.names["stack-block-pyramid"]()
@@ -42,7 +49,13 @@ def main():
     env.reset()
 
     scene_provider = RavensSimulationSceneProvider(env, task)
-    planner = OllamaStackPlanner(model=args.model)
+    vlm_planner = OllamaStackPlanner(model=args.model)
+    planner = vlm_planner
+    if args.planner == "hybrid":
+      planner = HybridStackPlanner(
+          vlm_planner,
+          evaluator=RavensSimulationStackEvaluator(env),
+          beam_width=args.beam_width)
     if args.dry_run:
       image_bytes, objects, _ = scene_provider()
       plan = planner.plan(args.instruction, image_bytes, objects)

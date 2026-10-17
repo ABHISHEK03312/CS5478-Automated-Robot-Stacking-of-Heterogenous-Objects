@@ -159,3 +159,17 @@ The MDP formulation for each task uses transitions with the following structure:
 **Rewards:** total sum of rewards for a successful episode should be =1.
 
 **Info:** 6D poses, sizes, and colors of objects.
+
+## VLM Stacking
+
+
+Zero-shot vlm
+
+```
+python -m vlm_stacking.run_ravens_sim --models-root "../ravens_models" --planner zero-shot --instruction "Build a stable tower with the largest block at the bottom." --dry-run
+```
+
+Beam search planning
+```
+python -m vlm_stacking.run_ravens_sim --models-root "../ravens_models" --planner hybrid --beam-width 12 --instruction "Build a stable tower with the largest block at the bottom." --dry-run
+```

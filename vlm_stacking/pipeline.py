@@ -1,14 +1,15 @@
 """Execution loop joining a symbolic VLM plan to a pick/place policy."""
 
-from vlm_stacking.planner import OllamaStackPlanner
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
 from vlm_stacking.ravens_sim import RavensSimulationExecutor
 from vlm_stacking.ravens_sim import RavensSimulationSceneProvider
 
 
 class LanguageStackPipeline:
-  """Plan object order with a VLM, then execute through injected robot skills.
+  """Plan object order, then execute through injected robot skills.
 
+  `planner` can be the zero-shot VLM baseline or a search-based planner that
+  implements the same `plan(instruction, image_bytes, objects)` interface.
   `scene_provider` returns `(image_bytes, object_catalog, perception_state)`.
   Each catalog item has `object_id`, measured `dimensions`, and optional
   semantic metadata. `policy.make_action` must restrict its pick search to the
@@ -16,7 +17,7 @@ class LanguageStackPipeline:
   caller's executor should perform one action and return the next observation.
   """
 
-  def __init__(self, planner: OllamaStackPlanner,
+  def __init__(self, planner,
                scene_provider: RavensSimulationSceneProvider,
                policy: RavensTransporterPolicy,
                executor: RavensSimulationExecutor):
