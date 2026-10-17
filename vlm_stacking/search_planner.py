@@ -2,6 +2,7 @@
 
 from vlm_stacking.planner import StackPlanError, validate_plan
 from vlm_stacking.ravens_sim import RavensSimulationStackEvaluator
+from vlm_stacking.planner import OllamaStackPlanner
 
 
 class HybridStackPlanner:
@@ -13,7 +14,7 @@ class HybridStackPlanner:
     Without one, the planner uses centered-footprint support geometry only.
     """
 
-    def __init__(self, vlm_planner, evaluator: RavensSimulationStackEvaluator=None, beam_width=12):
+    def __init__(self, vlm_planner: OllamaStackPlanner, evaluator: RavensSimulationStackEvaluator=None, beam_width=12):
         self.vlm_planner = vlm_planner
         self.evaluator = evaluator
         self.beam_width = max(1, int(beam_width))

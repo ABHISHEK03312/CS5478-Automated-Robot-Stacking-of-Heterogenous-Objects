@@ -27,6 +27,7 @@ localization. A VLM label or bounding box alone is not a metric grasp pose.
 
 - `planner.py`: Ollama vision request, JSON parsing, and plan validation.
 - `search_planner.py`: VLM-guided beam search over supported object orders.
+- `cem_planner.py`: VLM-guided categorical CEM over object-order permutations.
 - `pipeline.py`: re-observe / plan / execute loop with explicit adapters.
 - `ravens_policy.py`: applies object masks to Transporter pick scores and
   constrains placement to the geometry chosen by the high-level plan.
@@ -129,5 +130,23 @@ executes the winning order through the same policy as the baseline. This
 simulator evaluator measures stability and source-object workspace bounds; it
 does not simulate the arm's full pick/place trajectory or prove hardware
 reachability. The standalone hybrid planner falls back to a centered-footprint
-heuristic if no evaluator is supplied. Beam search is discrete; CEM would be a
-follow-on for optimizing continuous placement offsets and yaw.
+heuristic if no evaluator is supplied. Beam search and the added categorical
+CEM planner search discrete orders; continuous placement offsets and yaw are
+not part of either planner yet.
+
+
+To use CEM with the same VLM proposal and PyBullet evaluator, select
+`--planner cem`. The default categorical search uses 12 samples per iteration,
+3 iterations, and retains the best quarter of feasible samples to update its
+position-by-object distribution:
+
+```bash
+python -m vlm_stacking.run_ravens_sim \
+  --models-root "../ravens_models" \
+  --planner cem --cem-population 12 --cem-iterations 3 \
+  --instruction "Build a stable tower with the largest block at the bottom."
+```
+
+CEM searches discrete object orders here. It does not optimize placement
+coordinates or yaw; those are continuous variables and can be a separate CEM
+extension once the plan representation exposes them.

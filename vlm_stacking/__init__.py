@@ -5,6 +5,7 @@ from vlm_stacking.planner import OllamaStackPlanner
 from vlm_stacking.planner import OpenAIResponsesStackPlanner
 from vlm_stacking.planner import StackPlanError
 from vlm_stacking.search_planner import HybridStackPlanner
+from vlm_stacking.cem_planner import CEMStackPlanner
 
 __all__ = [
     "LanguageStackPipeline",
@@ -12,4 +13,5 @@ __all__ = [
     "OpenAIResponsesStackPlanner",
     "StackPlanError",
     "HybridStackPlanner",
+    "CEMStackPlanner",
 ]

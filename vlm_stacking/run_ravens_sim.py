@@ -11,6 +11,7 @@ from ravens.environments.environment import Environment
 from vlm_stacking.pipeline import LanguageStackPipeline
 from vlm_stacking.planner import OllamaStackPlanner
 from vlm_stacking.search_planner import HybridStackPlanner
+from vlm_stacking.cem_planner import CEMStackPlanner
 from vlm_stacking.ravens_sim import RavensSimulationStackEvaluator
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
 from vlm_stacking.ravens_sim import RavensSimulationExecutor
@@ -35,11 +36,16 @@ def main():
                       help="Ollama model; defaults to OLLAMA_VLM_MODEL")
   parser.add_argument("--dry-run", action="store_true",
                       help="Ask for and validate a plan without moving the arm")
-  parser.add_argument("--planner", choices=("zero-shot", "hybrid"),
+  parser.add_argument("--planner", choices=("zero-shot", "hybrid", "cem"),
                       default="zero-shot",
-                      help="Keep the VLM-only baseline or use beam search")
+                      help="Choose the VLM-only baseline, beam search, or CEM")
   parser.add_argument("--beam-width", type=int, default=12,
                       help="Number of partial orders retained at each beam depth")
+  parser.add_argument("--cem-population", type=int, default=12)
+  parser.add_argument("--cem-iterations", type=int, default=3)
+  parser.add_argument("--cem-elite-fraction", type=float, default=0.25)
+  parser.add_argument("--cem-smoothing", type=float, default=0.7)
+  parser.add_argument("--cem-seed", type=int, default=0)
   args = parser.parse_args()
 
   task = tasks.names["stack-block-pyramid"]()
@@ -56,6 +62,15 @@ def main():
           vlm_planner,
           evaluator=RavensSimulationStackEvaluator(env),
           beam_width=args.beam_width)
+    elif args.planner == "cem":
+      planner = CEMStackPlanner(
+          vlm_planner,
+          evaluator=RavensSimulationStackEvaluator(env),
+          population_size=args.cem_population,
+          iterations=args.cem_iterations,
+          elite_fraction=args.cem_elite_fraction,
+          smoothing=args.cem_smoothing,
+          seed=args.cem_seed)
     if args.dry_run:
       image_bytes, objects, _ = scene_provider()
       plan = planner.plan(args.instruction, image_bytes, objects)

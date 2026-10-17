@@ -173,3 +173,8 @@ Beam search planning
 ```
 python -m vlm_stacking.run_ravens_sim --models-root "../ravens_models" --planner hybrid --beam-width 12 --instruction "Build a stable tower with the largest block at the bottom." --dry-run
 ```
+
+CEM search planning
+```
+python -m vlm_stacking.run_ravens_sim --models-root "../ravens_models" --planner cem --cem-population 12 --cem-iterations 3 --instruction "Build a stable tower with the largest block at the bottom." --dry-run
+```
