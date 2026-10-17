@@ -24,6 +24,7 @@ dist/
 *.egg
 
 # Ravens datasets, training output, and evaluation results
+runs/
 checkpoints/
 logs/
 *-train/
