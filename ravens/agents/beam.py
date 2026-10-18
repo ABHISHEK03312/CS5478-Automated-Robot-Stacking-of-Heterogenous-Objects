@@ -70,7 +70,7 @@ class BeamSearchAgent:
                place_std=(0.004, 0.004, np.pi / 16),  # spread around spots
                rollout='teleport',  # 'teleport' (fast) or 'full' (arm)
                w_target=10.0,       # weight on distance to goal spots
-               seed=0, verbose=True):
+               seed=0, verbose=True, preferred_order=None):
     self.env = env
     self.task = task
     self.objective = objective
@@ -85,14 +85,24 @@ class BeamSearchAgent:
     self.n_blocks = n_blocks
     self.n_place = n_place
     self.place_std = np.float64(place_std)
+    self.preferred_order = ([str(oid) for oid in preferred_order]
+                            if preferred_order is not None else None)
+    self.last_object_id = None
 
   # -------------------------------------------------------------------------
   # Main loop
   # -------------------------------------------------------------------------
 
+  def set_preferred_order(self, object_ids):
+    """Restrict free-stack search to the VLM's next unplaced object."""
+    self.preferred_order = [str(oid) for oid in object_ids]
+
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
-    if not self._candidate_blocks():
+    candidates = self._candidate_blocks()
+    if not candidates:
+      self.last_object_id = None
       return None
+    self.last_object_id = candidates[0]
 
     root = self._snapshot()
     # Each beam entry: (value, [(block, placement), ...], snapshot)
@@ -189,6 +199,14 @@ class BeamSearchAgent:
           for t in targs)]
     else:
       todo = [o for o in self.env.obj_ids['rigid'] if not self._on_stand(o)]
+      if self.preferred_order is not None:
+        by_id = {str(oid): oid for oid in todo}
+        for object_id in self.preferred_order:
+          if object_id in by_id:
+            # VLM specifies which object to move next; beam search still
+            # explores placement options and lookahead for that object.
+            return [by_id[object_id]]
+        return []
     todo.sort(key=self._dist_to_stand)
     return todo[:self.n_blocks]
 
@@ -213,13 +231,23 @@ class BeamSearchAgent:
     else:
       s_pos, s_rot = self._stand()
       s_yaw = utils.quatXYZW_to_eulerXYZ(s_rot)[2]
-      for dy in (-0.05, 0.0, 0.05):
-        pt = utils.apply((s_pos, s_rot), (0, dy, 0))
-        spots.append((pt[0], pt[1], s_yaw))
-      for o in self.env.obj_ids['rigid']:
-        if o != oid and self._on_stand(o):
-          pos = p.getBasePositionAndOrientation(o)[0]
-          spots.append((pos[0], pos[1], s_yaw))
+      if self.preferred_order is not None:
+        order = self.preferred_order
+        position = order.index(str(oid))
+        if position == 0:
+          spots.append((s_pos[0], s_pos[1], s_yaw))
+        else:
+          support_id = int(order[position - 1])
+          support_pos = p.getBasePositionAndOrientation(support_id)[0]
+          spots.append((support_pos[0], support_pos[1], s_yaw))
+      else:
+        for dy in (-0.05, 0.0, 0.05):
+          pt = utils.apply((s_pos, s_rot), (0, dy, 0))
+          spots.append((pt[0], pt[1], s_yaw))
+        for o in self.env.obj_ids['rigid']:
+          if o != oid and self._on_stand(o):
+            pos = p.getBasePositionAndOrientation(o)[0]
+            spots.append((pos[0], pos[1], s_yaw))
 
     if not spots:
       return []

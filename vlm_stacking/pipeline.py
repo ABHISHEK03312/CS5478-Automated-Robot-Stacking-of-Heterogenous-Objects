@@ -8,13 +8,12 @@ from vlm_stacking.ravens_sim import RavensSimulationSceneProvider
 class LanguageStackPipeline:
   """Plan object order, then execute through injected robot skills.
 
-  `planner` can be the zero-shot VLM baseline or a search-based planner that
-  implements the same `plan(instruction, image_bytes, objects)` interface.
-  `scene_provider` returns `(image_bytes, object_catalog, perception_state)`.
-  Each catalog item has `object_id`, measured `dimensions`, and optional
-  semantic metadata. `policy.make_action` must restrict its pick search to the
-  requested object's mask and return Ravens' `{pose0, pose1}` action. The
-  caller's executor should perform one action and return the next observation.
+  `planner` returns the VLM's validated object order. An optional
+  `search_agent` can consume that order and produce its own simulated
+  pick/place actions; otherwise `policy.make_action` executes each planned
+  object with the baseline Transporter. `scene_provider` returns
+  `(image_bytes, object_catalog, perception_state)`. The caller's executor
+  performs one action and returns the next observation.
   """
 
   def __init__(self, planner,
@@ -26,18 +25,38 @@ class LanguageStackPipeline:
     self.policy = policy
     self.executor = executor
 
-  def run(self, instruction):
+  def run(self, instruction, search_agent=None):
     image_bytes, objects, state = self.scene_provider()
-    # The planner owns validation and retries, so callers consistently receive
-    # either a valid plan or a final StackPlanError.
+    # The planner owns validation and parsing retries.
     plan = self.planner.plan(instruction, image_bytes, objects)
 
+    if search_agent is not None:
+      search_agent.set_preferred_order(plan["stack_order"])
+      steps = []
+      for expected_id in plan["stack_order"]:
+        action = search_agent.act(state["obs"], state.get("info"))
+        object_id = getattr(search_agent, "last_object_id", None)
+        if action is None or object_id is None:
+          raise RuntimeError("Search agent stopped before placing VLM object %s." %
+                             expected_id)
+        if str(object_id) != str(expected_id):
+          raise RuntimeError("Search agent selected object %s; VLM order "
+                             "requires %s." % (object_id, expected_id))
+        result = self.executor(action, object_id=str(object_id))
+        steps.append({"object_id": str(object_id), "result": result})
+        if result.get("success") is False:
+          raise RuntimeError("Execution stopped after object %s: %s" %
+                             (object_id, result))
+        image_bytes, objects, state = self.scene_provider()
+      return {"plan": plan, "steps": steps,
+              "search_agent": search_agent.__class__.__name__,
+              "search_rollouts": getattr(search_agent, "n_rollouts", None)}
+
+    if self.policy is None:
+      raise ValueError("A Transporter policy is required when no search agent is supplied.")
     steps = []
     previous_id = None
     for object_id in plan["stack_order"]:
-      # The target is either the table anchor or the top face of the preceding
-      # planned object. The scene adapter recalculates the target from current
-      # depth after each completed movement.
       action = self.policy.make_action(
           object_id=str(object_id), support_id=previous_id, state=state)
       result = self.executor(action, object_id=str(object_id),
@@ -45,9 +64,7 @@ class LanguageStackPipeline:
       steps.append({"object_id": str(object_id), "support_id": previous_id,
                     "result": result})
       if result.get("success") is False:
-        raise RuntimeError("Execution stopped after object %s: %s" % (
-            object_id, result))
-      # Re-localize after each placement. Do not keep using stale pixel masks
-      # or stack heights after the scene has changed.
+        raise RuntimeError("Execution stopped after object %s: %s" %
+                           (object_id, result))
       image_bytes, objects, state = self.scene_provider()
     return {"plan": plan, "steps": steps}

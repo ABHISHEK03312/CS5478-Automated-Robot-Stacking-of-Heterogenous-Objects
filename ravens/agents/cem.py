@@ -66,6 +66,7 @@ class CEMAgent:
     # Optional starting mean for the search, e.g. a plan from a VLM
     # (the "Hybrid VLM + search" row). Set to an (x, y, yaw) array.
     self.init_mean = None
+    self.last_object_id = None
 
   # -------------------------------------------------------------------------
   # Public API (same signature as the other Ravens agents)
@@ -77,7 +78,9 @@ class CEMAgent:
 
     obj_id = self._next_object()
     if obj_id is None:
+      self.last_object_id = None
       return None
+    self.last_object_id = obj_id
     pick_pose = self._pick_pose(obj_id)
     symmetry = self._goal_symmetry(obj_id)
 
@@ -121,6 +124,10 @@ class CEMAgent:
     # The final mean is usually the most reliable point, so add it.
     tried.append((self._evaluate(obj_id, pick_pose, mean), mean))
     tried.sort(key=lambda t: t[0], reverse=True)
+    if (getattr(self, 'preferred_order', None) is not None and
+        tried[0][0] <= -999.0):
+      self.last_object_id = None
+      return None
     best_a = tried[0][1]
 
     # Teleport scoring ignores how the arm actually carries and lowers the
@@ -130,6 +137,10 @@ class CEMAgent:
       top = [a for _, a in tried[:self.verify_k]]
       real = [self._evaluate(obj_id, pick_pose, a, rollout='full')
               for a in top]
+      if (getattr(self, 'preferred_order', None) is not None and
+          max(real) <= -999.0):
+        self.last_object_id = None
+        return None
       best_a = top[int(np.argmax(real))]
       if self.verbose:
         print(f'  arm check of top {len(top)}: {np.round(real, 3)}')
@@ -385,11 +396,34 @@ class FreeStackCEMAgent(CEMAgent):
   """
 
   def __init__(self, env, task, init_std=(0.015, 0.05, np.pi / 4),
-               w_center=2.0, w_tilt=2.0, **kwargs):
+               w_center=2.0, w_tilt=2.0, preferred_order=None,
+               order_init_std=(0.004, 0.004, np.pi / 16), **kwargs):
     kwargs['init'] = 'base'
     super().__init__(env, task, init_std=init_std, **kwargs)
     self.w_center = w_center
     self.w_tilt = w_tilt
+    self.preferred_order = ([str(oid) for oid in preferred_order]
+                            if preferred_order is not None else None)
+    self.order_init_std = np.float64(order_init_std)
+
+  def set_preferred_order(self, object_ids):
+    """Choose the next unstacked block according to the VLM plan."""
+    self.preferred_order = [str(oid) for oid in object_ids]
+    self.init_std = self.order_init_std.copy()
+
+  def _default_mean(self, obj_id):
+    """Warm-start each placement over the preceding VLM object."""
+    if self.preferred_order is None:
+      return super()._default_mean(obj_id)
+    position = self.preferred_order.index(str(obj_id))
+    support = (self.env.obj_ids['fixed'][0] if position == 0 else
+               int(self.preferred_order[position - 1]))
+    target_pos, target_rot = p.getBasePositionAndOrientation(support)
+    _, object_rot = p.getBasePositionAndOrientation(obj_id)
+    target_yaw = utils.quatXYZW_to_eulerXYZ(target_rot)[2]
+    object_yaw = utils.quatXYZW_to_eulerXYZ(object_rot)[2]
+    return np.float64([target_pos[0], target_pos[1],
+                       target_yaw - object_yaw])
 
   def _has_goals(self):  # no goal list: keep going until all are stacked
     return True
@@ -399,7 +433,7 @@ class FreeStackCEMAgent(CEMAgent):
     return np.pi / 2
 
   def _next_object(self):
-    """Unstacked block closest to the stand."""
+    """Select the VLM-preferred unstacked block, if an order was supplied."""
     stand = self.env.obj_ids['fixed'][0]
     s_pos = np.float64(p.getBasePositionAndOrientation(stand)[0])
     world_to_stand = utils.invert(p.getBasePositionAndOrientation(stand))
@@ -410,10 +444,22 @@ class FreeStackCEMAgent(CEMAgent):
       if not (abs(local[0]) <= STAND_HALF_X + 0.005 and
               abs(local[1]) <= STAND_HALF_Y + 0.005 and pos[2] > s_pos[2]):
         todo.append((np.linalg.norm(np.float64(pos[:2]) - s_pos[:2]), oid))
+    if self.preferred_order is not None:
+      by_id = {str(oid): oid for _, oid in todo}
+      for object_id in self.preferred_order:
+        if object_id in by_id:
+          return by_id[object_id]
+      return None
     return min(todo)[1] if todo else None
 
   def _score(self, obj_id, before):
-    """Outcome-only score: no goal positions anywhere."""
+    """Outcome-only score, with VLM support constraints when supplied."""
+    if self.preferred_order is not None:
+      position = self.preferred_order.index(str(obj_id))
+      support_id = (self.env.obj_ids['fixed'][0] if position == 0 else
+                    int(self.preferred_order[position - 1]))
+      if not p.getContactPoints(bodyA=obj_id, bodyB=support_id):
+        return -1e3
     n_stacked, _, _, tilts = stack_metrics(self.env)
 
     disturb = sum(

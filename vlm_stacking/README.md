@@ -1,7 +1,8 @@
 # Language-guided stacking (Ravens integration)
 
-This folder adds a high-level VLM planning layer without modifying Ravens' core
-agent, demos, datasets, or checkpoints. It sends a language instruction, a
+This folder adds a high-level VLM planning layer and adapters for Ravens'
+existing simulator search agents. It does not modify demos, datasets, or
+checkpoints. It sends a language instruction, a
 scene image, and measured object metadata to a vision-capable model. The model
 returns stable object IDs ordered **bottom to top**. The pipeline checks that
 the IDs match the detected scene objects and rejects obvious footprint support
@@ -26,8 +27,6 @@ localization. A VLM label or bounding box alone is not a metric grasp pose.
 ## Files
 
 - `planner.py`: Ollama vision request, JSON parsing, and plan validation.
-- `search_planner.py`: VLM-guided beam search over supported object orders.
-- `cem_planner.py`: VLM-guided categorical CEM over object-order permutations.
 - `pipeline.py`: re-observe / plan / execute loop with explicit adapters.
 - `ravens_policy.py`: applies object masks to Transporter pick scores and
   constrains placement to the geometry chosen by the high-level plan.
@@ -107,46 +106,33 @@ result = pipeline.run("Stack the largest object at the bottom and the smallest o
 
 ## Compare the zero-shot baseline and hybrid planner
 
-The default `--planner zero-shot` keeps the VLM-only order as the baseline.
-Its three retries apply only when the model response cannot be parsed as JSON;
-invalid object IDs or footprint validation failures are returned directly.
-These formatting retries are still zero-shot inference and do not train or
-update the model.
+The default `--planner zero-shot` keeps the VLM-only order and Transporter
+policy as the baseline. Its three retries apply only when the model response
+cannot be parsed as JSON; invalid object IDs or footprint validation failures
+are returned directly. These formatting retries are still zero-shot inference
+and do not train or update the model.
 
-Select the optional hybrid search with:
-
-```bash
-python -m vlm_stacking.run_ravens_sim \
-  --models-root "../ravens_models" \
-  --planner hybrid --beam-width 12 \
-  --instruction "Build a stable tower with the largest block at the bottom."
-```
-
-The hybrid planner treats the VLM order as its language-grounded proposal,
-uses beam search to explore supported bottom-to-top orders, then evaluates
-candidate towers by saving the current PyBullet state, placing objects at the
-stack target, allowing them to settle, and restoring the original scene. It
-executes the winning order through the same policy as the baseline. This
-simulator evaluator measures stability and source-object workspace bounds; it
-does not simulate the arm's full pick/place trajectory or prove hardware
-reachability. The standalone hybrid planner falls back to a centered-footprint
-heuristic if no evaluator is supplied. Beam search and the added categorical
-CEM planner search discrete orders; continuous placement offsets and yaw are
-not part of either planner yet.
-
-
-To use CEM with the same VLM proposal and PyBullet evaluator, select
-`--planner cem`. The default categorical search uses 12 samples per iteration,
-3 iterations, and retains the best quarter of feasible samples to update its
-position-by-object distribution:
+The optional `beam` and `cem` modes import the concrete Ravens agents from
+`ravens/agents/beam.py` and `ravens/agents/cem.py`. The VLM still produces the
+object order. Beam search then explores placement sequences for the next VLM
+object, while CEM optimizes continuous `(x, y, yaw)` placement parameters for
+the next object. Both use the agents' PyBullet snapshot, rollout, and restore
+logic. Beam search uses fast teleported rollouts and arm-checks the top
+`--verify-k` candidates. CEM defaults to teleported rollouts with top-candidate
+arm checks; `--rollout full` runs every CEM candidate through the arm and is
+slower. These modes do not load a Transporter checkpoint.
 
 ```bash
 python -m vlm_stacking.run_ravens_sim \
-  --models-root "../ravens_models" \
-  --planner cem --cem-population 12 --cem-iterations 3 \
+  --planner beam --beam-width 3 --beam-horizon 2 \
+  --instruction "Build a stable tower with the largest block at the bottom."
+
+python -m vlm_stacking.run_ravens_sim \
+  --planner cem --cem-samples 24 --cem-elites 5 --cem-iterations 3 \
   --instruction "Build a stable tower with the largest block at the bottom."
 ```
 
-CEM searches discrete object orders here. It does not optimize placement
-coordinates or yaw; those are continuous variables and can be a separate CEM
-extension once the plan representation exposes them.
+`--dry-run` prints just the validated VLM order without running the search
+agent. The included Ravens task uses identical cubes and a stand; evaluate
+heterogeneous shapes with a matching task and scene adapter before interpreting
+search results as general heterogeneous stacking performance.
