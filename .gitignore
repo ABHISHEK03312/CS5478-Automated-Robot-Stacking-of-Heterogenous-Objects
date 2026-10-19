@@ -32,6 +32,13 @@ logs/
 *.pkl
 events.out.tfevents.*
 
+# Published Git LFS model package.
+!models/parallel-jaw-v2/checkpoints/
+!models/parallel-jaw-v2/checkpoints/**
+# Local candidate copied during checkpoint comparison; only 40k is published.
+models/**/attention-ckpt-30000.h5
+models/**/transport-ckpt-30000.h5
+
 # Local environment files
 .env
 .env.*
