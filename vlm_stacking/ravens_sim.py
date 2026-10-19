@@ -13,10 +13,11 @@ import pybullet as p
 class RavensSimulationSceneProvider:
   """Build a labeled top-down scene and inventory from a Ravens environment."""
 
-  def __init__(self, env, task, rigid_only=True):
+  def __init__(self, env, task, rigid_only=True, debug_image_path="labeled_scene.png"):
     self.env = env
     self.task = task
     self.rigid_only = rigid_only
+    self.debug_image_path = debug_image_path
 
   def __call__(self):
     obs = self.env._get_obs()  # pylint: disable=protected-access
@@ -62,7 +63,8 @@ class RavensSimulationSceneProvider:
     if not ok:
       raise RuntimeError("Could not encode the simulator scene image.")
 
-    cv2.imwrite("labeled_scene.png", labeled)
+    if self.debug_image_path:
+      cv2.imwrite(self.debug_image_path, labeled)
     state = {
         "obs": obs,
         "info": info,

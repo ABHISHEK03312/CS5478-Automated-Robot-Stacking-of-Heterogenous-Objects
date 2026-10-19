@@ -173,8 +173,8 @@ class OllamaStackPlanner:
         Raises:
             ValueError: If image_bytes is empty.
             StackPlanError: If no objects are provided or the model response
-                remains unparseable after the configured formatting retries.
-            ValueError: If a parsed plan fails deterministic validation.
+                remains unparseable after the configured retries.
+            StackPlanError: If the plan still fails validation after retries.
         """
         if not image_bytes:
             raise ValueError("A non-empty scene image is required.")
@@ -182,30 +182,42 @@ class OllamaStackPlanner:
             raise StackPlanError("No pickable objects were found in the scene.")
 
         previous_output = None
-        parsing_error = None
+        repair_error = None
+        repair_kind = None
         for attempt in range(self.max_retries + 1):
             prompt = self._build_prompt(
-                instruction, objects, previous_output, parsing_error)
+                instruction, objects, previous_output, repair_error,
+                repair_kind)
             try:
                 plan = self._generate_plan(prompt, image_bytes)
             except StackPlanError as error:
+                previous_output = str(error)
+                repair_error = str(error)
+                repair_kind = "JSON parsing"
                 if attempt >= self.max_retries:
                     raise StackPlanError(
-                        "Could not parse a plan after %d retries. Last "
-                        "parsing error: %s" % (self.max_retries, error))
-                # Parsing retries stay within zero-shot inference: send the
-                # malformed response and formatting error back to the model.
-                previous_output = str(error)
-                parsing_error = str(error)
+                        "Could not produce a valid plan after %d retries "
+                        "(%d attempts). Last JSON parsing error: %s" % (
+                            self.max_retries, self.max_retries + 1, error))
                 continue
-            # Invalid IDs or unsafe footprint ordering are deterministic plan
-            # errors. Retries are reserved for malformed model output only.
-            validate_plan(plan, objects)
+
+            try:
+                validate_plan(plan, objects)
+            except StackPlanError as error:
+                previous_output = json.dumps(plan, ensure_ascii=False)
+                repair_error = str(error)
+                repair_kind = "plan validation"
+                if attempt >= self.max_retries:
+                    raise StackPlanError(
+                        "Could not produce a valid plan after %d retries "
+                        "(%d attempts). Last validation error: %s" % (
+                            self.max_retries, self.max_retries + 1, error))
+                continue
             return plan
 
     @staticmethod
     def _build_prompt(instruction, objects, previous_output=None,
-                      parsing_error=None):
+                      repair_error=None, repair_kind=None):
         # prompt = (
         #     "Plan a single stable stack that follows the user's instruction. "
         #     "Use only the supplied object IDs. Return every pickable object "
@@ -238,15 +250,19 @@ class OllamaStackPlanner:
               '{"stack_order": ["<bottom_object_id>", ..., "<top_object_id>"], '
               '"summary": "<brief explanation>"}'
               % (instruction, json.dumps(objects, sort_keys=True)))
-        if previous_output is not None or parsing_error is not None:
+        if previous_output is not None or repair_error is not None:
+            required_ids = [str(obj["object_id"]) for obj in objects]
             prompt += (
-                "\n\nYour previous response could not be parsed as the "
-                "required JSON object. Fix its formatting using the error "
-                "below. Keep the same object ID restrictions and return the "
-                "complete JSON object only.\nPrevious response/error:\n%s\n"
-                "Parsing error:\n%s\n" % (
+                "\n\nYour previous response failed %s checks. Correct "
+                "the response using the error below. The required object IDs "
+                "are %s; include every one exactly once in stack_order, and "
+                "do not include any other IDs. Fix any unsafe footprint order "
+                "identified by the validator. Return only the complete JSON "
+                "object.\nPrevious response or plan:\n%s\nError:\n%s\n" % (
+                    repair_kind or "plan",
+                    json.dumps(required_ids),
                     previous_output or "(empty response)",
-                    parsing_error or "Invalid JSON response."))
+                    repair_error or "The plan did not pass validation."))
         return prompt
 
     def _generate_plan(self, prompt, image_bytes):
