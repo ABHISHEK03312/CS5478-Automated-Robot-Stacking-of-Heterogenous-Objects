@@ -119,8 +119,13 @@ class PickPlaceParallelJaw:
 
     if pick_success:
       timeout |= movep(preplace_pose)
-      timeout |= movep(place_pose, self.speed)
-      ee.step()
+      delta = (np.float32([0, 0, -0.001]), identity)
+      target_pose = preplace_pose
+      while not ee.detect_contact():
+        target_pose = utils.multiply(target_pose, delta)
+        timeout |= movep(target_pose, self.speed)
+        if timeout:
+          return True
       ee.release()
       timeout |= movep(preplace_pose, self.speed)
     else:

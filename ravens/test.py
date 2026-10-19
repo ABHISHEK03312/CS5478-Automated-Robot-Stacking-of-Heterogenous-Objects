@@ -37,6 +37,7 @@ flags.DEFINE_string('agent', 'transporter', '')
 flags.DEFINE_integer('n_demos', 100, '')
 flags.DEFINE_integer('n_steps', 40000, '')
 flags.DEFINE_integer('n_runs', 1, '')
+flags.DEFINE_integer('n_tests', 0, 'Number of test episodes; 0 runs all.')
 flags.DEFINE_integer('gpu', 0, '')
 flags.DEFINE_integer('gpu_limit', None, '')
 
@@ -88,8 +89,10 @@ def main(unused_argv):
 
     # Run testing and save total rewards with last transition info.
     results = []
-    for i in range(ds.n_episodes):
-      print(f'Test: {i + 1}/{ds.n_episodes}')
+    n_tests = FLAGS.n_tests if FLAGS.n_tests > 0 else ds.n_episodes
+    n_tests = min(n_tests, ds.n_episodes)
+    for i in range(n_tests):
+      print(f'Test: {i + 1}/{n_tests}')
       episode, seed = ds.load(i)
       goal = episode[-1]
       total_reward = 0

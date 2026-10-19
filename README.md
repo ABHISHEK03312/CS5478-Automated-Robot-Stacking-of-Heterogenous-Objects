@@ -132,6 +132,10 @@ grasp eligibility is checked inside the jaw volume and a temporary PyBullet
 constraint carries the object until the fingers open. This avoids unstable
 collision impulses while still rejecting picks that are not between the jaws.
 
+The trained parallel-jaw checkpoint, evaluation commands, and final metrics
+are available in [`models/parallel-jaw-v2`](models/parallel-jaw-v2) and the
+[`completion report`](docs/parallel-jaw-v2-completion-report.md).
+
 ## Datasets and Pre-Trained Models
 
 Download our generated train and test datasets and pre-trained models.

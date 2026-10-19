@@ -34,6 +34,7 @@ flags.DEFINE_integer('n_demos', 100, '')
 flags.DEFINE_integer('n_steps', 40000, '')
 flags.DEFINE_integer('n_runs', 1, '')
 flags.DEFINE_integer('interval', 1000, '')
+flags.DEFINE_integer('load_steps', 0, 'Checkpoint step to resume from.')
 flags.DEFINE_integer('gpu', 0, '')
 flags.DEFINE_integer('gpu_limit', None, '')
 
@@ -73,6 +74,8 @@ def main(unused_argv):
     np.random.seed(train_run)
     tf.random.set_seed(train_run)
     agent = agents.names[FLAGS.agent](name, FLAGS.task, FLAGS.train_dir)
+    if FLAGS.load_steps:
+      agent.load(FLAGS.load_steps)
 
     # Limit random sampling during training to a fixed dataset.
     max_demos = train_dataset.n_episodes
