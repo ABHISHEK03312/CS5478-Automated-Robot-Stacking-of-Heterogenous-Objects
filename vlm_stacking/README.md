@@ -45,13 +45,13 @@ plan validation errors are returned without an LLM retry.
 ## Run the included simulator example
 
 From the repository root, start the Ollama service and use the Ravens
-environment. The example uses the available block-pyramid Transporter
-checkpoint and creates the matching Ravens task scene:
+environment. The example uses the included parallel-jaw block-pyramid Transporter
+checkpoint and creates the matching parallel-jaw Ravens task scene:
 
 ```bash
 export OLLAMA_VLM_MODEL="qwen2.5vl:7b"
 python -m vlm_stacking.run_ravens_sim \
-  --models-root "../ravens_models" \
+  --models-root "./models/parallel-jaw-v2" \
   --instruction "Build a stable tower with the largest block at the bottom."
 ```
 

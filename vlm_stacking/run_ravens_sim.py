@@ -26,8 +26,8 @@ def main():
   parser.add_argument("--models-root", default=None,
                       help="Checkpoint folder (required only for zero-shot baseline)")
   parser.add_argument("--checkpoint",
-                      default="stack-block-pyramid-transporter-1000-0")
-  parser.add_argument("--checkpoint-step", type=int, default=20000)
+                      default="stack-block-pyramid-parallel-jaw-transporter-100-0")
+  parser.add_argument("--checkpoint-step", type=int, default=40000)
   parser.add_argument("--seed", type=int, default=11)
   parser.add_argument("--disp", action="store_true",
                       help="Open the PyBullet viewer while running")
@@ -53,7 +53,8 @@ def main():
   if args.rollout == "full" and args.planner != "cem":
     parser.error("--rollout full is supported only with --planner cem")
 
-  task = tasks.names["stack-block-pyramid"]()
+  task_name = "stack-block-pyramid-parallel-jaw"
+  task = tasks.names[task_name]()
   env = Environment(args.assets_root, task=task, disp=args.disp, hz=480)
   try:
     env.seed(args.seed)
@@ -83,7 +84,7 @@ def main():
       # Zero-shot baseline keeps the original learned Transporter action path.
       import pybullet as p
       agent = OriginalTransporterAgent(
-          args.checkpoint, "stack-block-pyramid", args.models_root)
+          args.checkpoint, task_name, args.models_root)
       agent.models_dir = os.path.join(args.models_root, "checkpoints",
                                       args.checkpoint)
       agent.load(args.checkpoint_step)

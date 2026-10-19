@@ -167,10 +167,10 @@ The MDP formulation for each task uses transitions with the following structure:
 ## VLM Stacking
 
 
-Zero-shot vlm
+Zero-shot VLM with the included parallel-jaw Transporter checkpoint (40,000 steps):
 
 ```
-python -m vlm_stacking.run_ravens_sim --models-root "../ravens_models" --planner zero-shot --instruction "Build a stable tower with the largest block at the bottom." --dry-run
+python -m vlm_stacking.run_ravens_sim --models-root "./models/parallel-jaw-v2" --planner zero-shot --instruction "Build a stable tower with the largest block at the bottom." --dry-run
 ```
 
 Beam search planning
