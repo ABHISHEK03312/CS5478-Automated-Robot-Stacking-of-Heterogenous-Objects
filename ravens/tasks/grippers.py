@@ -175,8 +175,20 @@ class ParallelJaw(Gripper):
           self.body, joint, self.finger_positions[joint], targetVelocity=0)
 
   def detect_contact(self):
-    """Parallel-jaw motion primitives do not use contact-driven descent."""
-    return False
+    """Return whether the held object touches the placement surface."""
+    if not self.activated or self.contact_constraint is None:
+      return False
+
+    try:
+      object_id = p.getConstraintInfo(self.contact_constraint)[2]
+    except:  # pylint: disable=bare-except
+      self.contact_constraint = None
+      return False
+
+    points = p.getContactPoints(bodyA=object_id)
+    points = [point for point in points
+              if point[2] not in (self.body, self.robot, object_id)]
+    return bool(points)
 
   def check_grasp(self):
     """Return whether an object is currently secured between the jaws."""
