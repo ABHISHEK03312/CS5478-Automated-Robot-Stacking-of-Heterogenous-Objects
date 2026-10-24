@@ -1,0 +1,59 @@
+[
+  {
+    "episode": "episode_000000",
+    "stacked": 7,
+    "total": 7,
+    "success": true,
+    "actions": [
+      {
+        "object_id": 4,
+        "shape": "rectangle",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 2,
+        "shape": "rectangle",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 0,
+        "shape": "cube",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 5,
+        "shape": "cube",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 1,
+        "shape": "cylinder",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 3,
+        "shape": "cylinder",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 6,
+        "shape": "triangle",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      }
+    ]
+  }
+]
