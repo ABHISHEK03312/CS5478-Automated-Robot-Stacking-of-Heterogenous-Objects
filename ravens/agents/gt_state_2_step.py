@@ -36,8 +36,8 @@ class GtState2StepAgent(GtStateAgent):
     self.pick_model = None
     self.place_model = None
 
-    self.pick_optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
-    self.place_optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
+    self.pick_optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
+    self.place_optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
     self.metric = tf.keras.metrics.Mean(name='metric')
     self.val_metric = tf.keras.metrics.Mean(name='val_metric')
 
@@ -243,9 +243,9 @@ class GtState3Step6DAgent(GtState6DAgent):
     self.place_se2_model = None
     self.place_rpz_model = None
 
-    self.pick_optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
-    self.place_se2_optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
-    self.place_rpz_optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
+    self.pick_optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
+    self.place_se2_optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
+    self.place_rpz_optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
 
     self.metric = tf.keras.metrics.Mean(name='metric')
     self.val_metric = tf.keras.metrics.Mean(name='val_metric')

@@ -57,7 +57,7 @@ class Regression(tf.keras.Model):
 #     else:
 #       self.model = ConvMLP(d_action=6, use_mdn=use_mdn)
 
-#     self.optim = tf.keras.optimizers.Adam(lr=2e-4)
+#     self.optim = tf.keras.optimizers.legacy.Adam(lr=2e-4)
 #     self.metric = tf.keras.metrics.Mean(name='regression_loss')
 #     self.val_metric = tf.keras.metrics.Mean(name='regression_loss_validate')
 

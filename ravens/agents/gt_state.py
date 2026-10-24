@@ -60,8 +60,8 @@ class GtStateAgent:
     # values = [1e-2, 1e-2, 1e-2, 1e-3, 1e-5]
     # learning_rate_fn = tf.keras.optimizers.schedules.PiecewiseConstantDecay(
     #   boundaries, values)
-    # self.optim = tf.keras.optimizers.Adam(learning_rate=learning_rate_fn)
-    self.optim = tf.keras.optimizers.Adam(learning_rate=2e-4)
+    # self.optim = tf.keras.optimizers.legacy.Adam(learning_rate=learning_rate_fn)
+    self.optim = tf.keras.optimizers.legacy.Adam(learning_rate=2e-4)
     self.metric = tf.keras.metrics.Mean(name='metric')
     self.val_metric = tf.keras.metrics.Mean(name='val_metric')
     self.theta_scale = 10.0

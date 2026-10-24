@@ -67,6 +67,15 @@ class CEMAgent:
     # (the "Hybrid VLM + search" row). Set to an (x, y, yaw) array.
     self.init_mean = None
     self.last_object_id = None
+    self.preferred_order = None
+    self.preferred_slot_poses = {}
+
+  def set_preferred_placements(self, placements, target_slots):
+    """Constrain planned objects to their assigned goal poses."""
+    self.preferred_order = [str(row['object_id']) for row in placements]
+    self.preferred_slot_poses = {
+        str(row['object_id']): target_slots[row['slot_id']]['pose']
+        for row in placements}
 
   # -------------------------------------------------------------------------
   # Public API (same signature as the other Ravens agents)
@@ -161,6 +170,18 @@ class CEMAgent:
   def _next_object(self):
     """First object in the current goal that is not yet on a target."""
     objs, _, targs, _, _, _, _, _ = self.task.goals[0]
+    if self.preferred_order is not None:
+      by_id = {str(object_id): (object_id, symmetry)
+               for object_id, (symmetry, _) in objs}
+      for object_id in self.preferred_order:
+        if object_id not in by_id:
+          continue
+        oid, symmetry = by_id[object_id]
+        target = self.preferred_slot_poses[object_id]
+        if not self.task.is_match(p.getBasePositionAndOrientation(oid),
+                                  target, symmetry):
+          return oid
+      return None
     for object_id, (symmetry, _) in objs:
       pose = p.getBasePositionAndOrientation(object_id)
       if not any(self.task.is_match(pose, t, symmetry) for t in targs):
@@ -215,7 +236,10 @@ class CEMAgent:
     """
     obj_pos, obj_rot = p.getBasePositionAndOrientation(obj_id)
     obj_yaw = utils.quatXYZW_to_eulerXYZ(obj_rot)[2]
-    if self.init == 'target':
+    preferred = self.preferred_slot_poses.get(str(obj_id))
+    if preferred is not None:
+      pos, rot = preferred
+    elif self.init == 'target':
       pos, rot = self._nearest_free_target(obj_pos)
     else:
       pos, rot = p.getBasePositionAndOrientation(self.env.obj_ids['fixed'][0])
@@ -313,11 +337,15 @@ class CEMAgent:
     pos = {oid: np.float64(p.getBasePositionAndOrientation(oid)[0])
            for oid in goal_ids}
 
+    preferred = self.preferred_slot_poses.get(str(obj_id))
     target_cost = 0.0
-    for j, targ in enumerate(targs):
-      cands = [goal_ids[i] for i in range(len(goal_ids)) if matches[i, j]]
-      target_cost += min(np.linalg.norm(pos[o] - np.float64(targ[0]))
-                         for o in cands)
+    if preferred is not None:
+      target_cost = np.linalg.norm(pos[obj_id] - np.float64(preferred[0]))
+    else:
+      for j, targ in enumerate(targs):
+        cands = [goal_ids[i] for i in range(len(goal_ids)) if matches[i, j]]
+        target_cost += min(np.linalg.norm(pos[o] - np.float64(targ[0]))
+                           for o in cands)
 
     disturb = sum(
         np.linalg.norm(np.float64(p.getBasePositionAndOrientation(oid)[0]) -
@@ -328,7 +356,8 @@ class CEMAgent:
     obj_pose = p.getBasePositionAndOrientation(obj_id)
     yaw = utils.quatXYZW_to_eulerXYZ(obj_pose[1])[2]
     rot_err = np.pi
-    for targ in targs:
+    selected_targets = [preferred] if preferred is not None else targs
+    for targ in selected_targets:
       t_yaw = utils.quatXYZW_to_eulerXYZ(targ[1])[2]
       d = abs(yaw - t_yaw) % symmetry if symmetry > 0 else 0.0
       rot_err = min(rot_err, min(d, symmetry - d) if symmetry > 0 else 0.0)

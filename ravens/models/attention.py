@@ -48,7 +48,7 @@ class Attention:
       d_in, d_out = ResNet43_8s(in_shape, 1)
 
     self.model = tf.keras.models.Model(inputs=[d_in], outputs=[d_out])
-    self.optim = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    self.optim = tf.keras.optimizers.legacy.Adam(learning_rate=1e-4)
     self.metric = tf.keras.metrics.Mean(name='loss_attention')
 
   def forward(self, in_img, softmax=True):

@@ -54,7 +54,7 @@ class Matching:
     else:
       d_in, d_out = ResNet43_8s(input_shape, self.descriptor_dim)
     self.model = tf.keras.models.Model(inputs=[d_in], outputs=[d_out])
-    self.optim = tf.keras.optimizers.Adam(learning_rate=1e-5)
+    self.optim = tf.keras.optimizers.legacy.Adam(learning_rate=1e-5)
     self.metric = tf.keras.metrics.Mean(name='attention_loss')
 
   def forward(self, input_image):

@@ -11,12 +11,13 @@ from ravens.environments.environment import Environment
 from vlm_stacking.pipeline import LanguageStackPipeline
 from vlm_stacking.planner import OllamaStackPlanner
 from ravens.agents.beam import BeamSearchAgent
-from ravens.agents.cem import FreeStackCEMAgent
+from ravens.agents.cem import CEMAgent
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
 from vlm_stacking.ravens_sim import RavensSimulationExecutor
 from vlm_stacking.ravens_sim import RavensSimulationMaskProvider
 from vlm_stacking.ravens_sim import RavensSimulationSceneProvider
 from vlm_stacking.ravens_sim import RavensSimulationTargetProvider
+from vlm_stacking.ravens_sim import target_slot_catalog
 
 
 def main():
@@ -63,8 +64,10 @@ def main():
     scene_provider = RavensSimulationSceneProvider(env, task)
     vlm_planner = OllamaStackPlanner(model=args.model)
     if args.dry_run:
-      image_bytes, objects, _ = scene_provider()
-      plan = vlm_planner.plan(args.instruction, image_bytes, objects)
+      image_bytes, objects, objects_for_prompt, _ = scene_provider()
+      plan = vlm_planner.plan(args.instruction, image_bytes,
+                              objects_for_prompt,
+                              target_slot_catalog(task, objects_for_prompt))
       print(json.dumps(plan, indent=2))
       return
 
@@ -72,29 +75,27 @@ def main():
     policy = None
     if args.planner == "beam":
       search_agent = BeamSearchAgent(
-          env, task, objective="free", beam_width=args.beam_width,
+          env, task, objective="target", beam_width=args.beam_width,
           horizon=args.beam_horizon, n_place=args.beam_placements,
           verify_k=args.verify_k, rollout="teleport", seed=args.seed)
     elif args.planner == "cem":
-      search_agent = FreeStackCEMAgent(
-          env, task, n_samples=args.cem_samples, n_elites=args.cem_elites,
+      search_agent = CEMAgent(
+          env, task, init="target", n_samples=args.cem_samples, n_elites=args.cem_elites,
           n_iters=args.cem_iterations, verify_k=args.verify_k,
           rollout=args.rollout, seed=args.seed)
     else:
       # Zero-shot baseline keeps the original learned Transporter action path.
-      import pybullet as p
       agent = OriginalTransporterAgent(
           args.checkpoint, task_name, args.models_root)
       agent.models_dir = os.path.join(args.models_root, "checkpoints",
                                       args.checkpoint)
       agent.load(args.checkpoint_step)
-      base_pose = p.getBasePositionAndOrientation(env.obj_ids["fixed"][0])
-      target_provider = RavensSimulationTargetProvider(
-          anchor_xy=base_pose[0][:2])
+      target_provider = RavensSimulationTargetProvider()
       policy = RavensTransporterPolicy(
           agent, RavensSimulationMaskProvider(), target_provider)
     pipeline = LanguageStackPipeline(
-        vlm_planner, scene_provider, policy, RavensSimulationExecutor(env))
+        vlm_planner, scene_provider, policy,
+        RavensSimulationExecutor(env, task))
     result = pipeline.run(args.instruction, search_agent=search_agent)
     print(json.dumps(result, indent=2, default=str))
   finally:

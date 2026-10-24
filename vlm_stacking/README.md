@@ -2,12 +2,12 @@
 
 This folder adds a high-level VLM planning layer and adapters for Ravens'
 existing simulator search agents. It does not modify demos, datasets, or
-checkpoints. It sends a language instruction, a
-scene image, and measured object metadata to a vision-capable model. The model
-returns stable object IDs ordered **bottom to top**. The pipeline checks that
-the IDs match the detected scene objects and rejects obvious footprint support
-violations before asking the Transporter model for a masked pick and a place
-near the planned support.
+checkpoints. It sends a language instruction, a scene image, measured object
+metadata, and named target slots to a vision-capable model. The model returns
+an object-to-slot assignment in build order. Slot poses come from the task's
+goal specification; the VLM does not invent robot coordinates. The planner
+validates object and slot coverage, layer ordering, and the task's allowed
+colors for each layer before execution.
 
 ## What is present in the supplied assets
 
@@ -29,7 +29,7 @@ localization. A VLM label or bounding box alone is not a metric grasp pose.
 - `planner.py`: Ollama vision request, JSON parsing, and plan validation.
 - `pipeline.py`: re-observe / plan / execute loop with explicit adapters.
 - `ravens_policy.py`: applies object masks to Transporter pick scores and
-  constrains placement to the geometry chosen by the high-level plan.
+  constrains placement to the assigned target slot.
 
 ## Configure the VLM
 
@@ -53,7 +53,7 @@ checkpoint and creates the matching parallel-jaw Ravens task scene:
 export OLLAMA_VLM_MODEL="qwen2.5vl:7b"
 python -m vlm_stacking.run_ravens_sim \
   --models-root "./models/parallel-jaw-v2" \
-  --instruction "Build a stable tower with the largest block at the bottom."
+  --instruction "Build a stable pyramid following the block colors."
 ```
 
 Add `--dry-run` to request and print a validated plan without executing robot
@@ -66,15 +66,16 @@ training or evaluating a learned Ravens policy.
 
 Construct `LanguageStackPipeline` with four project-specific adapters:
 
-1. `scene_provider()` returns `(image_bytes, objects, state)`. Each object must
-   include a stable `object_id` and measured `dimensions` in meters. Keep the
-   ID mapping from segmentation through execution.
+1. `scene_provider()` returns the image, full object metadata, the simplified
+   VLM catalog, and execution state. Each object must include a stable
+   `object_id`, readable color, and measured dimensions. Provide a target slot
+   catalog plus a slot-to-pose mapping as well.
 2. `mask_provider(object_id, state)` returns a boolean mask aligned to the
    agent's 320x160 fused heightmap. In simulation, derive this from Ravens'
    segmentation image; on hardware, use your segmentation and depth pipeline.
-3. `target_provider(support_id, state)` returns a world `(x, y)` for the table
-   anchor or the preceding object's top support. Recompute support height from
-   depth after each action.
+3. `target_provider(slot_id, state)` maps the planned slot to a world `(x, y)`.
+   The robot motion planner must determine a collision-free approach and safe
+   release height for that slot.
 4. `executor(action)` runs one Ravens `env.step(action)` or the equivalent robot
    skill and returns a result dictionary.
 
@@ -88,14 +89,14 @@ policy = RavensTransporterPolicy(
     transporter, mask_provider, target_provider)
 pipeline = LanguageStackPipeline(
     OllamaStackPlanner(), scene_provider, policy, executor)
-result = pipeline.run("Stack the largest object at the bottom and the smallest on top.")
+result = pipeline.run("Build a stable pyramid following the block colors.")
 ```
 
 ## Limits to account for
 
-- The plan validator checks object IDs and horizontal footprint fit. It does
-  not prove stability, infer mass/center of gravity, detect collisions, or
-  replace a motion planner.
+- The plan validator checks object and slot coverage, layer ordering, and
+  allowed colors. It does not prove stability, infer mass/center of gravity,
+  detect collisions, or replace a motion planner.
 - Every planned object must be individually visible and pickable at its turn.
   Stacked source piles need a task-specific staging/rearrangement planner.
 - The Transporter checkpoint still determines the grasp pixel and local
@@ -107,18 +108,18 @@ result = pipeline.run("Stack the largest object at the bottom and the smallest o
 
 ## Compare the zero-shot baseline and hybrid planner
 
-The default `--planner zero-shot` keeps the VLM-only order and Transporter
+The default `--planner zero-shot` keeps VLM slot assignment and the Transporter
 policy as the baseline. Its three retries apply when model output cannot be
 parsed or when a parsed plan fails validation, including missing or extra
-object IDs and unsafe footprint order. Each repair prompt includes the previous
-response or plan and the error. These retries are still zero-shot inference and
-do not train or update the model.
+object IDs, repeated slots, invalid colors, or invalid layer order. Each repair
+prompt includes the previous response or plan and the validation error. These
+retries are still zero-shot inference and do not train or update the model.
 
 The optional `beam` and `cem` modes import the concrete Ravens agents from
 `ravens/agents/beam.py` and `ravens/agents/cem.py`. The VLM still produces the
-object order. Beam search then explores placement sequences for the next VLM
-object, while CEM optimizes continuous `(x, y, yaw)` placement parameters for
-the next object. Both use the agents' PyBullet snapshot, rollout, and restore
+slot assignments. Beam search explores placements around each assigned target,
+while CEM optimizes continuous `(x, y, yaw)` parameters around that target.
+Both use the agents' PyBullet snapshot, rollout, and restore
 logic. Beam search uses fast teleported rollouts and arm-checks the top
 `--verify-k` candidates. CEM defaults to teleported rollouts with top-candidate
 arm checks; `--rollout full` runs every CEM candidate through the arm and is
@@ -127,14 +128,14 @@ slower. These modes do not load a Transporter checkpoint.
 ```bash
 python -m vlm_stacking.run_ravens_sim \
   --planner beam --beam-width 3 --beam-horizon 2 \
-  --instruction "Build a stable tower with the largest block at the bottom."
+  --instruction "Build a stable pyramid following the block colors."
 
 python -m vlm_stacking.run_ravens_sim \
   --planner cem --cem-samples 24 --cem-elites 5 --cem-iterations 3 \
-  --instruction "Build a stable tower with the largest block at the bottom."
+  --instruction "Build a stable pyramid following the block colors."
 ```
 
-`--dry-run` prints just the validated VLM order without running the search
+`--dry-run` prints the validated object-to-slot assignments without running the search
 agent. The included Ravens task uses identical cubes and a stand; evaluate
 heterogeneous shapes with a matching task and scene adapter before interpreting
 search results as general heterogeneous stacking performance.
@@ -163,3 +164,10 @@ pyramid has reward at least 0.99, a partial pyramid has reward above zero and
 below 0.99, and zero reward is reported separately. The 95% confidence interval
 uses the Student t distribution. Beam and CEM defaults match the simulator
 runner; tune them only on a separate training seed set.
+
+The evaluator also writes `partial_towers.json`, `error_cases.json`, and
+`zero_reward_cases.json` under `--diagnostics-dir` (default:
+`./vlm_stacking_diagnostics`). Each case includes the VLM plan and object/color
+catalog, initial and final block poses, action pick/place poses, per-step reward,
+and per-goal target-match details. A case with an error can also appear in the
+partial or zero-reward file if it accumulated reward before failing.

@@ -17,14 +17,22 @@ class StackPlanError(ValueError):
 STACK_PLAN_SCHEMA = {
     "type": "object",
     "properties": {
-        "stack_order": {
+        "placements": {
             "type": "array",
-            "items": {"type": "string"},
-            "description": "Object IDs ordered from bottom of stack to top.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "object_id": {"type": "string"},
+                    "slot_id": {"type": "string"},
+                },
+                "required": ["object_id", "slot_id"],
+                "additionalProperties": False,
+            },
+            "description": "Objects assigned to target slots, in safe build order.",
         },
         "summary": {"type": "string"},
     },
-    "required": ["stack_order", "summary"],
+    "required": ["placements", "summary"],
     "additionalProperties": False,
 }
 
@@ -41,7 +49,7 @@ class OpenAIResponsesStackPlanner:
     self.model = model or os.environ.get("OPENAI_VLM_MODEL", "gpt-4o-mini")
     self.timeout = timeout
 
-  def plan(self, instruction, image_bytes, objects):
+  def plan(self, instruction, image_bytes, objects, target_slots=None):
     """Return a validated plan for the current image and object catalog.
 
     Args:
@@ -57,6 +65,8 @@ class OpenAIResponsesStackPlanner:
       raise ValueError("A non-empty scene image is required.")
     if not objects:
       raise StackPlanError("No pickable objects were found in the scene.")
+    if target_slots is None:
+      raise StackPlanError("Target slot descriptions are required for planning.")
 
     content_type = "image/png"
     if image_bytes[:3] == b"\xff\xd8\xff":
@@ -65,17 +75,7 @@ class OpenAIResponsesStackPlanner:
         content_type, base64.b64encode(image_bytes).decode("ascii"))
 
     prompt = (
-        "Plan a single stable stack that follows the user's instruction. "
-        "Use only the supplied object IDs. Return every pickable object exactly "
-        "once in stack_order, from bottom to top. Prefer centered support and "
-        "place larger, flatter objects below smaller objects when that is "
-        "consistent with the instruction. Do not invent dimensions, object IDs, "
-        "or physical properties. If the instruction conflicts with the catalog, "
-        "still return the closest physically plausible order; the robot-side "
-        "validator will reject an unsafe order.\n\n"
-        "User instruction: %s\n\n"
-        "Measured object catalog (dimensions are meters):\n%s" % (
-            instruction, json.dumps(objects, sort_keys=True)))
+        self._build_prompt(instruction, objects, target_slots))
     payload = {
         "model": self.model,
         "store": False,
@@ -119,8 +119,32 @@ class OpenAIResponsesStackPlanner:
       plan = json.loads(text)
     except (TypeError, ValueError) as error:
       raise StackPlanError("VLM response was not valid plan JSON: %s" % error)
-    validate_plan(plan, objects)
+    validate_plan(plan, objects, target_slots)
     return plan
+
+  @staticmethod
+  def _build_prompt(instruction, objects, target_slots, previous_output=None,
+                    repair_error=None, repair_kind=None):
+    if target_slots is None:
+      target_slots = []
+    return (
+        "Plan a stable pyramid matching the user's instruction. Assign each "
+        "catalog object to exactly one available target slot. Use the readable "
+        "color field as the authoritative object color. Respect the slot's "
+        "layer and support requirements. Build in dependency order: base slots, "
+        "then middle slots, then apex. Target slot IDs are labeled in the image; "
+        "use those labels to interpret spatial instructions. Use only supplied object and slot IDs; "
+        "do not return coordinates or invent geometry. The robot will move each "
+        "assigned object to the simulator pose for its slot.\n\n"
+        "User instruction: %s\n\n"
+        "Measured object catalog (dimensions are meters):\n%s" % (
+            instruction, json.dumps(objects, sort_keys=True)) +
+        "\n\nAvailable target slots (slot order is base to apex):\n%s\n\n"
+        "Use each slot's allowed_colors as a hard task constraint.\n"
+        "Return only JSON with this shape: {\"placements\":["
+        "{\"object_id\":\"...\",\"slot_id\":\"...\"}],"
+        "\"summary\":\"...\"}. Include every object and every slot once."
+        % json.dumps(target_slots, sort_keys=True))
 
 class OllamaStackPlanner:
     """Ask a local vision-capable Ollama model for an object ordering.
@@ -158,7 +182,7 @@ class OllamaStackPlanner:
               pass
       return response
 
-    def plan(self, instruction, image_bytes, objects):
+    def plan(self, instruction, image_bytes, objects, target_slots=None):
         """Return a validated plan for the current image and object catalog.
 
         Args:
@@ -180,13 +204,15 @@ class OllamaStackPlanner:
             raise ValueError("A non-empty scene image is required.")
         if not objects:
             raise StackPlanError("No pickable objects were found in the scene.")
+        if target_slots is None:
+            raise StackPlanError("Target slot descriptions are required for planning.")
 
         previous_output = None
         repair_error = None
         repair_kind = None
         for attempt in range(self.max_retries + 1):
             prompt = self._build_prompt(
-                instruction, objects, previous_output, repair_error,
+                instruction, objects, target_slots, previous_output, repair_error,
                 repair_kind)
             try:
                 plan = self._generate_plan(prompt, image_bytes)
@@ -202,12 +228,20 @@ class OllamaStackPlanner:
                 continue
 
             try:
-                validate_plan(plan, objects)
+                validate_plan(plan, objects, target_slots)
             except StackPlanError as error:
                 previous_output = json.dumps(plan, ensure_ascii=False)
                 repair_error = str(error)
                 repair_kind = "plan validation"
                 if attempt >= self.max_retries:
+                    repaired = repair_plan_with_eligibility(
+                        plan, objects, target_slots)
+                    if repaired is not None:
+                        repaired["summary"] = (
+                            "VLM assignment corrected deterministically to "
+                            "satisfy the task's color and layer constraints. "
+                            + str(plan.get("summary", "")))
+                        return validate_plan(repaired, objects, target_slots)
                     raise StackPlanError(
                         "Could not produce a valid plan after %d retries "
                         "(%d attempts). Last validation error: %s" % (
@@ -216,51 +250,61 @@ class OllamaStackPlanner:
             return plan
 
     @staticmethod
-    def _build_prompt(instruction, objects, previous_output=None,
+    def _build_prompt(instruction, objects, target_slots=None, previous_output=None,
                       repair_error=None, repair_kind=None):
-        # prompt = (
-        #     "Plan a single stable stack that follows the user's instruction. "
-        #     "Use only the supplied object IDs. Return every pickable object "
-        #     "exactly once in stack_order, from bottom to top. Prefer centered "
-        #     "support and place larger, flatter objects below smaller objects "
-        #     "when that is consistent with the instruction. Do not invent "
-        #     "dimensions, object IDs, or physical properties. If the instruction "
-        #     "conflicts with the catalog, still return the closest physically "
-        #     "plausible order.\n\n"
-        #     "User instruction: %s\n\n"
-        #     "Measured object catalog (dimensions are meters):\n%s\n\n"
-        #     "Respond with ONLY a JSON object in this exact format, no "
-        #     "explanation, no markdown fences:\n"
-        #     '{"stack_order": ["<bottom_object_id>", ..., "<top_object_id>"], '
-        #     '"summary": "<brief explanation>"}'
-        #     % (instruction, json.dumps(objects, sort_keys=True)))
+        layer_names = {0: "base", 1: "middle", 2: "apex"}
+        grouped_rules = {}
+        for slot in target_slots or []:
+            layer_index = int(slot.get("layer_index", 0))
+            group = grouped_rules.setdefault(layer_index, {
+                "name": layer_names.get(layer_index, "layer %d" % layer_index),
+                "slots": [], "colors": set(), "object_ids": set()})
+            group["slots"].append(slot["slot_id"])
+            group["colors"].update(slot.get("allowed_colors", []))
+            group["object_ids"].update(slot.get("allowed_object_ids", []))
+        color_rules = "\n".join(
+            "- %s slots (%s): objects %s, colors %s only." % (
+                group["name"], ", ".join(group["slots"]),
+                json.dumps(sorted(group["object_ids"])),
+                ", ".join(sorted(group["colors"])))
+            for _, group in sorted(grouped_rules.items()))
         prompt = (
-              "Plan a single stable stack that follows the user's instruction. "
-              "Use only the supplied object IDs. Return every pickable object "
-              "exactly once in stack_order, from bottom to top. Prefer centered "
-              "support and place larger, flatter objects below smaller objects "
-              "when that is consistent with the instruction. Do not invent "
-              "dimensions, object IDs, or physical properties. If the instruction "
-              "conflicts with the catalog, still return the closest physically "
-              "plausible order.\n\n"
+              "Plan a stable pyramid matching the user's instruction. Assign "
+              "each catalog object to exactly one target slot. Each catalog entry may include "
+              "a human-readable color field; use it to identify colors and treat "
+              "it as authoritative; numerical RGB is secondary. Follow each "
+              "slot's layer and support constraints. The color-to-layer rules "
+              "below are hard constraints. Never assign an object to a layer "
+              "that does not list its color. Place base objects before middle "
+              "objects and middle objects before the apex. "
+              "Target slot IDs are labeled in the scene image; use those labels "
+              "to interpret spatial instructions. Do not return coordinates; "
+              "the robot maps slot IDs to measured "
+              "task target poses. Treat each slot's allowed_colors as a hard "
+              "constraint.\n\n"
+              "Required color-to-layer rules:\n%s\n\n"
               "User instruction: %s\n\n"
-              "Measured object catalog (dimensions are meters):\n%s\n\n"
-              "Respond with ONLY a JSON object in this exact format, no "
-              "explanation, no markdown fences:\n"
-              '{"stack_order": ["<bottom_object_id>", ..., "<top_object_id>"], '
-              '"summary": "<brief explanation>"}'
-              % (instruction, json.dumps(objects, sort_keys=True)))
+              "Measured object catalog:\n%s\n\n"
+              "Available target slots, listed in build order:\n%s\n\n"
+              "Return ONLY JSON in this format: {\"placements\":["
+              "{\"object_id\":\"...\",\"slot_id\":\"...\"}],"
+              "\"summary\":\"...\"}. Assign every object and every slot once."
+              % (color_rules, instruction, json.dumps(objects, sort_keys=True),
+                 json.dumps(target_slots or [], sort_keys=True)))
         if previous_output is not None or repair_error is not None:
             required_ids = [str(obj["object_id"]) for obj in objects]
             prompt += (
                 "\n\nYour previous response failed %s checks. Correct "
                 "the response using the error below. The required object IDs "
-                "are %s; include every one exactly once in stack_order, and "
-                "do not include any other IDs. Fix any unsafe footprint order "
-                "identified by the validator. Return only the complete JSON "
+                "are %s; include every one exactly once in placements, and "
+                "do not include any other IDs. Required slot IDs are %s. "
+                "Use every slot ID "
+                "exactly once, obey allowed_colors and build layers in order. "
+                "Return only the complete JSON "
                 "object.\nPrevious response or plan:\n%s\nError:\n%s\n" % (
                     repair_kind or "plan",
                     json.dumps(required_ids),
+                    json.dumps([slot["slot_id"] for slot in target_slots or []]),
                     previous_output or "(empty response)",
                     repair_error or "The plan did not pass validation."))
         return prompt
@@ -332,37 +376,108 @@ def _response_output_text(response):
   return "\n".join(chunks)
 
 
-def validate_plan(plan, objects, footprint_tolerance=0.005):
-  """Validate IDs and simple footprint support before robot execution.
+def validate_plan(plan, objects, target_slots=None):
+  """Validate one-to-one object and target-slot assignment.
 
-  Object dimensions must be measured by the scene adapter. This deliberately
-  checks only a conservative geometric condition; it is not a stability proof.
+  This checks symbolic coverage and task constraints. It is not a physical
+  stability proof or a collision check.
   """
-  if not isinstance(plan, dict) or not isinstance(plan.get("stack_order"), list):
-    raise StackPlanError("Plan must contain a stack_order list.")
+  if not isinstance(plan, dict) or not isinstance(plan.get("placements"), list):
+    raise StackPlanError("Plan must contain a placements list.")
   ids = [str(obj["object_id"]) for obj in objects]
-  order = [str(obj_id) for obj_id in plan["stack_order"]]
+  placements = plan["placements"]
+  order = [str(row.get("object_id")) for row in placements
+           if isinstance(row, dict)]
+  slot_order = [str(row.get("slot_id")) for row in placements
+                if isinstance(row, dict)]
+  if len(order) != len(placements) or len(slot_order) != len(placements):
+    raise StackPlanError("Each placement must contain object_id and slot_id.")
   if len(order) != len(set(order)):
     raise StackPlanError("Plan repeats an object ID: %s" % order)
   if set(order) != set(ids):
     raise StackPlanError(
         "Plan object IDs must match the visible object catalog exactly. Output IDs %s, expected IDs %s" % (order, ids))
-  if not isinstance(plan.get("summary", ""), str):
+  if len(slot_order) != len(set(slot_order)):
+    raise StackPlanError("Plan repeats a target slot: %s" % slot_order)
+  expected_slots = [str(slot["slot_id"]) for slot in (target_slots or [])]
+  if target_slots is not None and set(slot_order) != set(expected_slots):
+    raise StackPlanError("Plan target slots must match available slots exactly. Output %s, expected %s" % (slot_order, expected_slots))
+  slot_layers = {str(slot["slot_id"]): int(slot.get("layer_index", 0))
+                 for slot in (target_slots or [])}
+  if slot_layers and [slot_layers[s] for s in slot_order] != sorted(
+      slot_layers[s] for s in slot_order):
+    raise StackPlanError("Placements must be ordered base-to-apex by layer.")
+  if not isinstance(plan.get("summary"), str):
     raise StackPlanError("Plan summary must be text.")
-
-  by_id = {str(obj["object_id"]): obj for obj in objects}
-  for lower_id, upper_id in zip(order, order[1:]):
-    lower = by_id[lower_id].get("dimensions")
-    upper = by_id[upper_id].get("dimensions")
-    if lower is None or upper is None or len(lower) < 2 or len(upper) < 2:
-      continue
-    # Compare the two horizontal footprint axes without assuming which camera
-    # axis is object width. Conservative sorting handles rectangular objects.
-    lower_xy = sorted([float(lower[0]), float(lower[1])])
-    upper_xy = sorted([float(upper[0]), float(upper[1])])
-    if any(u > l + footprint_tolerance
-           for u, l in zip(upper_xy, lower_xy)):
-      raise StackPlanError(
-          "Unsafe footprint order: %s cannot fully support %s." % (
-              lower_id, upper_id))
+  if target_slots is not None:
+    slots_by_id = {str(slot["slot_id"]): slot for slot in target_slots}
+    colors_by_object = {str(obj["object_id"]): obj.get("color")
+                        for obj in objects}
+    for row in placements:
+      slot = slots_by_id[str(row["slot_id"])]
+      allowed_ids = slot.get("allowed_object_ids")
+      if allowed_ids and str(row["object_id"]) not in {
+          str(value) for value in allowed_ids}:
+        raise StackPlanError(
+            "Object %s is not eligible for slot %s; eligible object IDs are %s." % (
+                row["object_id"], row["slot_id"], allowed_ids))
+      allowed = slot.get("allowed_colors")
+      color = colors_by_object.get(str(row["object_id"]))
+      if allowed and color not in allowed:
+        raise StackPlanError(
+            "Object %s has color %s, which is not allowed in slot %s; "
+            "allowed colors are %s." % (
+                row["object_id"], color, row["slot_id"], allowed))
   return plan
+
+
+def repair_plan_with_eligibility(plan, objects, target_slots):
+  """Repair a complete assignment using hard task eligibility constraints."""
+  if not isinstance(plan, dict) or not isinstance(plan.get("placements"), list):
+    return None
+  object_by_id = {str(obj["object_id"]): obj for obj in objects}
+  slot_by_id = {str(slot["slot_id"]): slot for slot in target_slots or []}
+  assignments = {}
+  assigned_objects = set()
+  for row in plan["placements"]:
+    if not isinstance(row, dict):
+      continue
+    object_id, slot_id = str(row.get("object_id")), str(row.get("slot_id"))
+    if object_id not in object_by_id or slot_id not in slot_by_id:
+      continue
+    slot = slot_by_id[slot_id]
+    obj = object_by_id[object_id]
+    allowed_ids = slot.get("allowed_object_ids")
+    allowed_colors = slot.get("allowed_colors")
+    if (object_id not in assigned_objects and
+        (not allowed_ids or object_id in {str(value) for value in allowed_ids}) and
+        (not allowed_colors or obj.get("color") in allowed_colors)):
+      assignments[slot_id] = object_id
+      assigned_objects.add(object_id)
+
+  for slot_id, slot in slot_by_id.items():
+    if slot_id in assignments:
+      continue
+    allowed_ids = ({str(value) for value in slot.get("allowed_object_ids", [])}
+                   if slot.get("allowed_object_ids") else None)
+    allowed_colors = slot.get("allowed_colors")
+    object_id = next((str(obj["object_id"]) for obj in objects
+                      if str(obj["object_id"]) not in assigned_objects and
+                      (allowed_ids is None or
+                       str(obj["object_id"]) in allowed_ids) and
+                      (not allowed_colors or
+                       obj.get("color") in allowed_colors)), None)
+    if object_id is None:
+      return None
+    assignments[slot_id] = object_id
+    assigned_objects.add(object_id)
+  if assigned_objects != set(object_by_id) or len(assignments) != len(slot_by_id):
+    return None
+  ordered_slots = sorted(target_slots, key=lambda slot: (
+      int(slot.get("layer_index", 0)), target_slots.index(slot)))
+  return {
+      "placements": [{"object_id": assignments[str(slot["slot_id"])],
+                      "slot_id": str(slot["slot_id"])}
+                     for slot in ordered_slots],
+      "summary": "",
+  }

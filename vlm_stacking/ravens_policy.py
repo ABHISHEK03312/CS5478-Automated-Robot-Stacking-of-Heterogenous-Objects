@@ -8,12 +8,10 @@ from ravens.utils import utils
 class RavensTransporterPolicy:
   """Constrain Transporter pick/place predictions using an object-level plan.
 
-  `mask_provider(object_id, state)` must return an object mask aligned with
-  Ravens' 320x160 heightmap. `target_provider(support_id, state)` returns a
-  target `(x, y)` in world coordinates. The standard policy is allowed to
-  choose the grasp pixel and local orientation only inside the selected
-  object's mask; its place distribution is restricted to a small neighborhood
-  around the geometric stacking target.
+  `mask_provider(object_id, state)` must return a boolean mask aligned with
+  Ravens' fused heightmap. `target_provider(slot_id, state)` returns the desired
+  object pose for the named slot. The policy selects a masked grasp and
+  compensates for the measured grasp offset so the object reaches that pose.
   """
 
   def __init__(self, transporter, mask_provider, target_provider,
@@ -45,39 +43,23 @@ class RavensTransporterPolicy:
     if len(p0_index) > 2:
       p0_theta = p0_index[2] * (2 * np.pi / pick_conf.shape[2])
 
-    target_xy = self.target_provider(support_id, state)
-    target_xyz = np.asarray([target_xy[0], target_xy[1], 0.0], dtype=np.float32)
-    target_pix = utils.xyz_to_pix(
-        target_xyz, self.transporter.bounds, self.transporter.pix_size)
-    if not (0 <= target_pix[0] < img.shape[0] and
-            0 <= target_pix[1] < img.shape[1]):
-      raise ValueError("Planned stack target is outside the heightmap bounds.")
-    place_conf = self.transporter.transport.forward(img, p0_pix)
-
-    yy, xx = np.ogrid[:place_conf.shape[0], :place_conf.shape[1]]
-    radius_px = max(1, int(round(
-        self.target_radius_m / self.transporter.pix_size)))
-    target_region = ((yy - target_pix[0]) ** 2 +
-                     (xx - target_pix[1]) ** 2 <= radius_px ** 2)
-    target_region = np.broadcast_to(target_region[:, :, None], place_conf.shape)
-    if not np.any(target_region):
-      raise ValueError("No valid place pixels near the planned support.")
-    restricted_place = np.where(target_region, place_conf, -np.inf)
-    if not np.any(np.isfinite(restricted_place)):
-      raise RuntimeError("Transporter returned no valid place score.")
-    p1_index = np.unravel_index(np.argmax(restricted_place),
-                                restricted_place.shape)
-    p1_pix = p1_index[:2]
-    p1_theta = p1_index[2] * (2 * np.pi / place_conf.shape[2])
-
     hmap = img[:, :, 3]
     p0_xyz = utils.pix_to_xyz(p0_pix, hmap, self.transporter.bounds,
                               self.transporter.pix_size)
-    p1_xyz = utils.pix_to_xyz(p1_pix, hmap, self.transporter.bounds,
-                              self.transporter.pix_size)
     p0_xyzw = utils.eulerXYZ_to_quatXYZW((0, 0, -p0_theta))
-    p1_xyzw = utils.eulerXYZ_to_quatXYZW((0, 0, -p1_theta))
+    pick_pose = (np.asarray(p0_xyz), np.asarray(p0_xyzw))
+
+    target_object_pose = self.target_provider(support_id, state)
+    object_state = next((item for item in state["objects"]
+                         if str(item["object_id"]) == str(object_id)), None)
+    if object_state is None:
+      raise RuntimeError("No measured pose is available for object %s." % object_id)
+    object_pose = (np.asarray(object_state["position_m"], dtype=np.float64),
+                   np.asarray(object_state["quaternion_xyzw"], dtype=np.float64))
+    object_to_pick = utils.multiply(utils.invert(pick_pose), object_pose)
+    pick_to_object = utils.invert(object_to_pick)
+    place_pose = utils.multiply(target_object_pose, pick_to_object)
     return {
-        "pose0": (np.asarray(p0_xyz), np.asarray(p0_xyzw)),
-        "pose1": (np.asarray(p1_xyz), np.asarray(p1_xyzw)),
+        "pose0": pick_pose,
+        "pose1": (np.asarray(place_pose[0]), np.asarray(place_pose[1])),
     }

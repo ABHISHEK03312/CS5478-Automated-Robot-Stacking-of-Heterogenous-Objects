@@ -97,6 +97,13 @@ class BeamSearchAgent:
     """Restrict free-stack search to the VLM's next unplaced object."""
     self.preferred_order = [str(oid) for oid in object_ids]
 
+  def set_preferred_placements(self, placements, target_slots):
+    """Constrain each planned object to its assigned task target slot."""
+    self.preferred_order = [str(row['object_id']) for row in placements]
+    self.preferred_slot_poses = {
+        str(row['object_id']): target_slots[row['slot_id']]['pose']
+        for row in placements}
+
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
     candidates = self._candidate_blocks()
     if not candidates:
@@ -194,6 +201,17 @@ class BeamSearchAgent:
       if layer is None:
         return []
       objs, _, targs = layer[0], layer[1], layer[2]
+      if getattr(self, 'preferred_slot_poses', None):
+        by_id = {str(o): (o, symmetry) for o, (symmetry, _) in objs}
+        for object_id in self.preferred_order:
+          if object_id not in by_id:
+            continue
+          oid, symmetry = by_id[object_id]
+          if not self.task.is_match(
+              p.getBasePositionAndOrientation(oid),
+              self.preferred_slot_poses[object_id], symmetry):
+            return [oid]
+        return []
       todo = [o for o, (s, _) in objs if not any(
           self.task.is_match(p.getBasePositionAndOrientation(o), t, s)
           for t in targs)]
@@ -223,7 +241,9 @@ class BeamSearchAgent:
     spots = []  # list of (x, y, goal_yaw)
     if self.objective == 'target':
       objs, _, targs = self._current_layer()[:3]
-      for t in targs:
+      preferred_pose = getattr(self, 'preferred_slot_poses', {}).get(str(oid))
+      selected_targets = [preferred_pose] if preferred_pose is not None else targs
+      for t in selected_targets:
         if not any(self.task.is_match(p.getBasePositionAndOrientation(o), t, s)
                    for o, (s, _) in objs):
           spots.append((t[0][0], t[0][1],

@@ -56,7 +56,7 @@ class TransportGoal:
 
     self.model = tf.keras.Model(
         inputs=[in0, in1, in2], outputs=[out0, out1, out2])
-    self.optim = tf.keras.optimizers.Adam(learning_rate=self.lr)
+    self.optim = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr)
     self.metric = tf.keras.metrics.Mean(name='transport_loss')
 
   def forward(self, in_img, goal_img, p, apply_softmax=True):  # pylint: disable=g-doc-args
