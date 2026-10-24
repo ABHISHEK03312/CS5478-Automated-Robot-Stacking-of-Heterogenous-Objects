@@ -30,13 +30,16 @@ from vlm_stacking.ravens_sim import is_object_at_target
 from vlm_stacking.ravens_sim import target_slot_catalog
 
 TASK_NAME = "stack-block-pyramid-parallel-jaw"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_SEED_DATASET = os.path.join(
+    REPO_ROOT, "data", "parallel-jaw-v2", TASK_NAME + "-test")
 
 
 def parse_args():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
-      "--seed-dataset", default="../ravens_data/towers-of-hanoi/towers-of-hanoi-test",
-      help="Hanoi test dataset folder; its episode seeds define pyramid scenes")
+      "--seed-dataset", default=DEFAULT_SEED_DATASET,
+      help="Ravens test dataset folder; its episode seeds define pyramid scenes")
   parser.add_argument("--assets-root", default="ravens/environments/assets")
   parser.add_argument("--models-root", default="models/parallel-jaw-v2")
   parser.add_argument(

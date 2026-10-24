@@ -11,13 +11,13 @@ colors for each layer before execution.
 
 ## What is present in the supplied assets
 
-The adjacent `ravens_data` directory contains Towers of Hanoi demonstration
-episodes. `ravens_models/checkpoints` includes Hanoi, block-pyramid, and other
-task-specific Transporter checkpoints. These are not general heterogeneous
-object grasp models. The adapter here uses the existing Transporter API, but a
-task-specific checkpoint should only be used on scenes similar to its training
-task. For arbitrary heterogeneous shapes, collect demonstrations and train a
-matching grasp/place policy.
+The repository's `data/parallel-jaw-v2` directory contains parallel-jaw
+block-pyramid train and test demonstrations, and `models/parallel-jaw-v2`
+contains the matching Transporter checkpoint. These are not general
+heterogeneous object grasp models. The adapter here uses the existing
+Transporter API, but a task-specific checkpoint should only be used on scenes
+similar to its training task. For arbitrary heterogeneous shapes, collect
+demonstrations and train a matching grasp/place policy.
 
 The current Ravens simulator exposes object IDs, dimensions, and poses through
 `info`; this is a **simulation-only privileged-state bridge**. For a real arm,
@@ -142,18 +142,19 @@ search results as general heterogeneous stacking performance.
 
 ## Evaluate all three stacking strategies
 
-The Ravens Hanoi test set supplies 100 held-out episode seeds. The evaluation
-script reuses those seeds to initialize the parallel-jaw block-pyramid task,
-so zero-shot, beam, and CEM are compared on the same reproducible pyramid
-scenes. Hanoi RGB-D frames and actions are not used; the Hanoi task itself is
-not compatible with these stacking planners.
+The repository's parallel-jaw block-pyramid test set supplies 100 held-out
+episode seeds. The evaluation script reads it from `data/parallel-jaw-v2` by
+default and reuses those seeds to initialize the matching task, so zero-shot,
+beam, and CEM are compared on the same reproducible pyramid scenes. The
+default dataset path is resolved from the script location, so it does not
+depend on the current working directory. Pass `--seed-dataset` to use another
+Ravens dataset.
 
 Run all techniques from the repository root with Ollama available and the
 included parallel-jaw checkpoint present:
 
 ```bash
 python -m vlm_stacking.evaluate \
-  --seed-dataset ../ravens_data/towers-of-hanoi/towers-of-hanoi-test \
   --models-root ./models/parallel-jaw-v2 \
   --output ./vlm_stacking_eval.json
 ```
