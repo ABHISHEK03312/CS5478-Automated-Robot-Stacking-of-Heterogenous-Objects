@@ -10,7 +10,6 @@ import numpy as np
 import pybullet as p
 from ravens.utils import utils
 
-
 def _color_name_from_rgba(rgba):
   """Map a simulator RGB(A) value to the nearest Ravens palette color."""
   if rgba is None or len(rgba) < 3:

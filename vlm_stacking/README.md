@@ -172,3 +172,11 @@ The evaluator also writes `partial_towers.json`, `error_cases.json`, and
 catalog, initial and final block poses, action pick/place poses, per-step reward,
 and per-goal target-match details. A case with an error can also appear in the
 partial or zero-reward file if it accumulated reward before failing.
+
+## Results
+### Simple block stacks
+| Method | Episodes | Avg. Trials | Mean Reward | 95% CI | Full Pyramids | Partial Pyramids | Zero Reward | Errors |
+|-----------|:--------:|:-----------:|:-----------:|:------------------:|:-------------:|:----------------:|:-----------:|:------:|
+| Zero-shot VLM | 100 | 5.24 | 0.745 | [0.668, 0.822] | 66 | 20 | 14 | 0 |
+| VLM + Beam | 100 | 5.79 | 0.850 | [0.784, 0.916] | 81 | 9 | 10 | 19 |
+| VLM + CEM | 100 | 5.82 | 0.852 | [0.788, 0.915] | 80 | 12 | 8 | 20 |
