@@ -32,6 +32,15 @@ logs/
 *.pkl
 events.out.tfevents.*
 
+# Published dataset used to train and evaluate the parallel-jaw v2 model.
+# These files are tracked through Git LFS (see .gitattributes).
+!data/
+!data/parallel-jaw-v2/
+!data/parallel-jaw-v2/stack-block-pyramid-parallel-jaw-train/
+!data/parallel-jaw-v2/stack-block-pyramid-parallel-jaw-train/**
+!data/parallel-jaw-v2/stack-block-pyramid-parallel-jaw-test/
+!data/parallel-jaw-v2/stack-block-pyramid-parallel-jaw-test/**
+
 # Published Git LFS model package.
 !models/parallel-jaw-v2/checkpoints/
 !models/parallel-jaw-v2/checkpoints/**
