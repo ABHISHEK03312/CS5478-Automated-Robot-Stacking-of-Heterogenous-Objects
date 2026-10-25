@@ -1,0 +1,5 @@
+Method,Episodes,Avg. Trials,Mean Reward,95% CI,Full Stacks,Partial Stacks,Zero Reward,Errors,Avg. Time (s),level,method,samples,iters,elites,beam_width,valid_episodes,full_stack_rate,total_seconds,returncode
+CEM Low,100,4.5,0.988,"[0.977, 1.000]",96,4,0,0,2.66,low,CEM,24,3,4,,100,0.96,266.46,0
+CEM Medium,100,4.5,0.988,"[0.977, 1.000]",96,4,0,0,5.51,medium,CEM,48,4,8,,100,0.96,551.25,0
+Beam Low,100,4.5,0.982,"[0.967, 0.996]",94,6,0,0,48.31,low,Beam,,,,4,100,0.94,4831.45,0
+Beam Medium,100,4.5,0.977,"[0.962, 0.993]",92,8,0,0,116.35,medium,Beam,,,,8,100,0.92,11634.76,0

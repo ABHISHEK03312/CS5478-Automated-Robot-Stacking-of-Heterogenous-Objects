@@ -1,7 +1,7 @@
 """Generate synthetic stacking demonstrations for a Transporter-style policy.
 
 Install: pip install pybullet numpy pillow
-Run: python generate_stacking_dataset.py --episodes 1000 --out stacking_data
+Run: python generate_stacking_dataset.py --episodes xxx --out mixed-stacking-validated
 
 These are *geometry-oracle* demonstrations. The object is teleported from its
 source pose to its target pose; two-finger grasp feasibility is NOT tested.
@@ -15,7 +15,7 @@ import numpy as np
 import pybullet as p
 from PIL import Image
 
-# Conservative planning bounds inside the standard Ravens heightmap workspace.
+#conservative planning bounds inside the standard Ravens heightmap workspace.
 RAVENS_BOUNDS = ((0.25, 0.75), (-0.50, 0.50), (0.0, 0.28))
 STACK_XY = (0.50, 0.18)
 MAX_STACK_HEIGHT = 0.20

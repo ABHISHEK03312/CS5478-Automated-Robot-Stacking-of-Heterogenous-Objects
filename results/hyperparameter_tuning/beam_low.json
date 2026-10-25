@@ -1,0 +1,5246 @@
+[
+  {
+    "episode": "episode_000000",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 90.5441194,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      5,
+      6,
+      1,
+      0,
+      4,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.115738705639279
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.945888417807119
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977756778132164
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921106833952566
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947796751888381
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95353903487166
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.924340569236877
+      }
+    ]
+  },
+  {
+    "episode": "episode_000001",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 55.2789645,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      5,
+      1,
+      2,
+      3,
+      0,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.077212876941665
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.961974210386181
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.908139694962879
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98144496316391
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.959693590353027
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.975928316444731
+      }
+    ]
+  },
+  {
+    "episode": "episode_000002",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 57.136344699999995,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      1,
+      4,
+      3,
+      5
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114104212284007
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965254787237518
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920037878264585
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.913528661211297
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.929510961352738
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96098494576277
+      }
+    ]
+  },
+  {
+    "episode": "episode_000003",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.5871952999999905,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.110984697118607
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.968542172909022
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.978507709970186
+      }
+    ]
+  },
+  {
+    "episode": "episode_000004",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.9804216,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.106463618195026
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.917117895824472
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955794074018634
+      }
+    ]
+  },
+  {
+    "episode": "episode_000005",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.72956529999999,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.093378008015133
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.954163468300255
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.858799570485036
+      }
+    ]
+  },
+  {
+    "episode": "episode_000006",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 59.70513409999998,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      4,
+      2,
+      3,
+      5
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.107275158023024
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955631482220388
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976169337682798
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97244421082953
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.961336521914632
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.905689168191458
+      }
+    ]
+  },
+  {
+    "episode": "episode_000007",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.918824200000017,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.09034490691642
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976549099782565
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.953186649637106
+      }
+    ]
+  },
+  {
+    "episode": "episode_000008",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 54.98228820000003,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      5,
+      0,
+      4,
+      3,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114413287695315
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.985829604575216
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.974091570257368
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.917420158728653
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971821758547726
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.931527923352201
+      }
+    ]
+  },
+  {
+    "episode": "episode_000009",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 57.352270499999975,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      4,
+      0,
+      5,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.085064815298352
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.991695333256054
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96680486640415
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.924684826163617
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937279761320065
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962459333342892
+      }
+    ]
+  },
+  {
+    "episode": "episode_000010",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.350944700000014,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.103420535879895
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983125253803015
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98430702352553
+      }
+    ]
+  },
+  {
+    "episode": "episode_000011",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 85.04948030000003,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      6,
+      0,
+      2,
+      5,
+      4,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.117002610774554
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.943960250389853
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955300091499263
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983585807090703
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.93000617312945
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.941257103188592
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.946384374733295
+      }
+    ]
+  },
+  {
+    "episode": "episode_000012",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.877487199999962,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.10799117440045
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.915856582844508
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920828445689978
+      }
+    ]
+  },
+  {
+    "episode": "episode_000013",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 8.217604799999947,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.090477402843534
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.951625165230526
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947193118594123
+      }
+    ]
+  },
+  {
+    "episode": "episode_000014",
+    "stacked": 2,
+    "trials": 3,
+    "seconds": 8.66460619999998,
+    "total": 3,
+    "success": false,
+    "order_chosen_by_beam": [
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.083290502890595
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.887014050431288
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.916489501310759
+      }
+    ]
+  },
+  {
+    "episode": "episode_000015",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 19.262313399999925,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.08786193575276
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.982031010727884
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.981821719140006
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.970698536425566
+      }
+    ]
+  },
+  {
+    "episode": "episode_000016",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 35.95381140000006,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2,
+      3,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.07545088922477
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920277479111165
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955699358756917
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.93089603496317
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.968571123820178
+      }
+    ]
+  },
+  {
+    "episode": "episode_000017",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 18.65611960000001,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      3,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.104928138290871
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.982342404505767
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.956406496548901
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.957547720648215
+      }
+    ]
+  },
+  {
+    "episode": "episode_000018",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 62.75872150000009,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2,
+      5,
+      4,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.081136664984948
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.991586211557681
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.951482511891538
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.968913053601783
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.973121384072915
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.886737076802998
+      }
+    ]
+  },
+  {
+    "episode": "episode_000019",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 113.43259380000006,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      5,
+      1,
+      3,
+      2,
+      6,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.106240667109391
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947351631504429
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.984141481963837
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.910864586974231
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955735784314479
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.910011431307746
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.952993393243245
+      }
+    ]
+  },
+  {
+    "episode": "episode_000020",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 39.73772269999995,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      2,
+      0,
+      4,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.070207435572305
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.953043482154445
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95802494366433
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.90360198968382
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.970219458654503
+      }
+    ]
+  },
+  {
+    "episode": "episode_000021",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 19.06637109999997,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.080474632171008
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.906132684570933
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96482255837682
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.931738208245028
+      }
+    ]
+  },
+  {
+    "episode": "episode_000022",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 33.43797829999994,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      4,
+      0,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.117604138304722
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971302864050283
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983077057279818
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.941243369893803
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966503483543526
+      }
+    ]
+  },
+  {
+    "episode": "episode_000023",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 8.071002000000021,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.095421648824379
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.929040941224038
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.9767940046419
+      }
+    ]
+  },
+  {
+    "episode": "episode_000024",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 59.38958059999993,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      4,
+      3,
+      5,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.067035525375617
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.934177936580783
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.927182773884592
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.985937375944461
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95487764834605
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947176034417682
+      }
+    ]
+  },
+  {
+    "episode": "episode_000025",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 7.913970000000063,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.073390801101711
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.932974231603502
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977599799685887
+      }
+    ]
+  },
+  {
+    "episode": "episode_000026",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 8.262140499999987,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.044434431070622
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971807682576523
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.944264701244618
+      }
+    ]
+  },
+  {
+    "episode": "episode_000027",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 55.162378099999955,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      4,
+      1,
+      2,
+      5,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.06989750101348
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.972545903013602
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.93933469954917
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.948971191847667
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.968874664095358
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962257805334662
+      }
+    ]
+  },
+  {
+    "episode": "episode_000028",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 18.773927699999945,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      3,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.072506021727758
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.993576357280633
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.952288163135487
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.936772943838436
+      }
+    ]
+  },
+  {
+    "episode": "episode_000029",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 18.015151299999843,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.10105837010779
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937954813877152
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.952247350463058
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955521506868799
+      }
+    ]
+  },
+  {
+    "episode": "episode_000030",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 38.81900440000004,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      3,
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.068271406942392
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.989179101462321
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.939405425472415
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.914513690643723
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.978620610208706
+      }
+    ]
+  },
+  {
+    "episode": "episode_000031",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 87.76686169999994,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      6,
+      3,
+      5,
+      1,
+      0,
+      2,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.112308652693892
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966532139240087
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.948189447111154
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.925792532435931
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.963530368538457
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.958154081908276
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.886951193731562
+      }
+    ]
+  },
+  {
+    "episode": "episode_000032",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 35.777583899999854,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      3,
+      1,
+      2,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.086439244385716
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95175632221832
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977349335120492
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977157012630435
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96108223187408
+      }
+    ]
+  },
+  {
+    "episode": "episode_000033",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 34.831258500000104,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      2,
+      3,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.10379593561321
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.979057346330476
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.973682384286526
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.973356884484119
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.957625429899823
+      }
+    ]
+  },
+  {
+    "episode": "episode_000034",
+    "stacked": 3,
+    "trials": 4,
+    "seconds": 18.458061099999895,
+    "total": 4,
+    "success": false,
+    "order_chosen_by_beam": [
+      3,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.099173088191293
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.984386633454362
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.969652813284466
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.981206423747835
+      }
+    ]
+  },
+  {
+    "episode": "episode_000035",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 17.968311800000038,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      2,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.063785635978968
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96023774796439
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95160146859225
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97414102139617
+      }
+    ]
+  },
+  {
+    "episode": "episode_000036",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 35.24728640000012,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      4,
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.113002712296169
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.942206028987913
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.984614323333906
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97679879861339
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921984277735508
+      }
+    ]
+  },
+  {
+    "episode": "episode_000037",
+    "stacked": 2,
+    "trials": 3,
+    "seconds": 8.045562100000097,
+    "total": 3,
+    "success": false,
+    "order_chosen_by_beam": [
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.120057900618177
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.909880714292298
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.918055535434641
+      }
+    ]
+  },
+  {
+    "episode": "episode_000038",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 25.682957400000078,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      3,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.096816955364403
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.924957641230122
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.941658700068317
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976318984987333
+      }
+    ]
+  },
+  {
+    "episode": "episode_000039",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 92.72480429999996,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      3,
+      4,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.11339749962209
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.987201163935355
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.967530648209095
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.93065764468714
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.961740350936605
+      }
+    ]
+  },
+  {
+    "episode": "episode_000040",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 21.08360689999995,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.086674759091865
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.92081942349932
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95798223081478
+      }
+    ]
+  },
+  {
+    "episode": "episode_000041",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 91.16327799999999,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      4,
+      0,
+      2,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.067546996995269
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.981350820029324
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977843662109802
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.987906559200244
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.946737339962294
+      }
+    ]
+  },
+  {
+    "episode": "episode_000042",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 20.805486800000153,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.123627885164959
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97652697304889
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.943312267605611
+      }
+    ]
+  },
+  {
+    "episode": "episode_000043",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 138.1287613999998,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      0,
+      2,
+      4,
+      1,
+      5
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.049849995690233
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.960081985823603
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.978789160933191
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.916656656843358
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.953806765702664
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.94095638745743
+      }
+    ]
+  },
+  {
+    "episode": "episode_000044",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 20.850000600000158,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.10178615931156
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921414333356436
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95127762375295
+      }
+    ]
+  },
+  {
+    "episode": "episode_000045",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 139.04635200000007,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      5,
+      1,
+      3,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.060082479007233
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98103466945113
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976158739657592
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965994124591397
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96003859215097
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95606775460453
+      }
+    ]
+  },
+  {
+    "episode": "episode_000046",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 186.96230100000025,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      5,
+      1,
+      0,
+      2,
+      6,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.08816365703425
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98397726098009
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.918306694401497
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.925194617904289
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.963355099154164
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965848598122863
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.893822451245828
+      }
+    ]
+  },
+  {
+    "episode": "episode_000047",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 76.3348732000004,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      3,
+      2,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.058240685590684
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.992692386360616
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983510004784923
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.969130412784143
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.958397758775426
+      }
+    ]
+  },
+  {
+    "episode": "episode_000048",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 82.11641719999989,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      5,
+      4,
+      1,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.090089007315337
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.992573335596852
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.935105101473134
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.986338171598197
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965604062613957
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.9452154494593
+      }
+    ]
+  },
+  {
+    "episode": "episode_000049",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 137.04644629999984,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      3,
+      6,
+      4,
+      1,
+      2,
+      5
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.110061930238384
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98649776060833
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.003594197285002
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.985981946109487
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96349345246876
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96438791725022
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.87761034842237
+      }
+    ]
+  },
+  {
+    "episode": "episode_000050",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 71.64614960000017,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      5,
+      0,
+      3,
+      4,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.100088712349837
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.930371922208721
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.967995370696235
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.988349906770232
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.912676761652074
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.891542223345661
+      }
+    ]
+  },
+  {
+    "episode": "episode_000051",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 25.62901189999957,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.09294278192865
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.992177308761564
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.897222404806696
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.972181258795425
+      }
+    ]
+  },
+  {
+    "episode": "episode_000052",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 47.93311190000031,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      2,
+      3,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.047760397019102
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.969970874872383
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.938716643161206
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.9075538293147
+      }
+    ]
+  },
+  {
+    "episode": "episode_000053",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 85.47060329999977,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      3,
+      4,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.109145045470477
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96781629121655
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.985664182272219
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.932208535345676
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937780746665728
+      }
+    ]
+  },
+  {
+    "episode": "episode_000054",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 70.31708470000012,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      3,
+      1,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.116544650519929
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962661787972719
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.932182355252454
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.974321158928555
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.935556651023257
+      }
+    ]
+  },
+  {
+    "episode": "episode_000055",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 10.27224780000006,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.106258359132397
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.929390511644272
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.972190254881045
+      }
+    ]
+  },
+  {
+    "episode": "episode_000056",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 23.321401100000003,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      3,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.084907996029077
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.988410210474104
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966547274617158
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.918839850582449
+      }
+    ]
+  },
+  {
+    "episode": "episode_000057",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 40.19574889999967,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      4,
+      1,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.052524505452736
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962579755094296
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.980443509616782
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.970110211995362
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.903645628616715
+      }
+    ]
+  },
+  {
+    "episode": "episode_000058",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 21.63508320000028,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      3,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114747794365016
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966085567631428
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.861207116293137
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.941915056942475
+      }
+    ]
+  },
+  {
+    "episode": "episode_000059",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 21.725861899999927,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      3,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.100540474408039
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977853168197004
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.925963566463178
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96352663984844
+      }
+    ]
+  },
+  {
+    "episode": "episode_000060",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 40.2119146,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1,
+      3,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.090428950109823
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.964121032573606
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.985259310847448
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.931390748275662
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962483864706133
+      }
+    ]
+  },
+  {
+    "episode": "episode_000061",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 9.298231300000225,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.112268614262954
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.970963277255535
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.911176374311163
+      }
+    ]
+  },
+  {
+    "episode": "episode_000062",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 63.845346399999926,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      4,
+      1,
+      0,
+      3,
+      5
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.117465701579103
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.946645186933733
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.978362946225456
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96879275472524
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.904181177880924
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937221383431297
+      }
+    ]
+  },
+  {
+    "episode": "episode_000063",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 21.139045100000203,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      3,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.11625699307682
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.912534758623057
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.987190009643884
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983916290971912
+      }
+    ]
+  },
+  {
+    "episode": "episode_000064",
+    "stacked": 2,
+    "trials": 3,
+    "seconds": 8.81872089999979,
+    "total": 3,
+    "success": false,
+    "order_chosen_by_beam": [
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.11501313705595
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.981615032533348
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.961438627209551
+      }
+    ]
+  },
+  {
+    "episode": "episode_000065",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 39.42061190000004,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      4,
+      3,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.097019733248436
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.916190988891342
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.957181700857832
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.951590129920058
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.912621982044042
+      }
+    ]
+  },
+  {
+    "episode": "episode_000066",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 8.988609800000177,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.125400345050855
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.909806459403118
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.964893284199158
+      }
+    ]
+  },
+  {
+    "episode": "episode_000067",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 22.138427200000024,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      3,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.117838135523055
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920378711640845
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.939429371501742
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.951754534340708
+      }
+    ]
+  },
+  {
+    "episode": "episode_000068",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 9.289491499999713,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.103270840515092
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.957087790080907
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.968778279178249
+      }
+    ]
+  },
+  {
+    "episode": "episode_000069",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 39.72998140000027,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      3,
+      4,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114428934962701
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95566171865873
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920282143757584
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.940053269294477
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.91776518545078
+      }
+    ]
+  },
+  {
+    "episode": "episode_000070",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 9.363023200000043,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.106732806715899
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95817088037899
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947692393234863
+      }
+    ]
+  },
+  {
+    "episode": "episode_000071",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 9.619123699999818,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.090608981055114
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920316845375222
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.94111750730249
+      }
+    ]
+  },
+  {
+    "episode": "episode_000072",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 37.57575120000001,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      4,
+      2,
+      0,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.055536141231453
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.924607051124019
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96744469771148
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98657184067734
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.91552747713382
+      }
+    ]
+  },
+  {
+    "episode": "episode_000073",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 21.5861603999997,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.059900171135565
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.954881481276258
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.948805010158738
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97021404451217
+      }
+    ]
+  },
+  {
+    "episode": "episode_000074",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 115.25942179999993,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      4,
+      6,
+      3,
+      5,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.089367117553442
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.922055412007834
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.975644815217453
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937732107321315
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.92261209690174
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.925485311052107
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.926899614311234
+      }
+    ]
+  },
+  {
+    "episode": "episode_000075",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 13.80109100000027,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114547596547185
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977279456182654
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.961676276703951
+      }
+    ]
+  },
+  {
+    "episode": "episode_000076",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 47.906346199999916,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.094962577312161
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.940075232974884
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95489202839339
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.963054474752466
+      }
+    ]
+  },
+  {
+    "episode": "episode_000077",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 149.13554729999987,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      5,
+      0,
+      4,
+      2,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.096704858090911
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.939176200916185
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966532986728863
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.908072383110209
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.974163369459268
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921435616525006
+      }
+    ]
+  },
+  {
+    "episode": "episode_000078",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 16.086268199999722,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.123231140512837
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.938392355623007
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.92763715802718
+      }
+    ]
+  },
+  {
+    "episode": "episode_000079",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 141.58281429999988,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      5,
+      2,
+      0,
+      4,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.06571954859587
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.998113618004982
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.938959901663592
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.978166731598979
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.913919119146962
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.950083689856633
+      }
+    ]
+  },
+  {
+    "episode": "episode_000080",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 15.791916700000002,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.066268774167181
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.943474623679354
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.960914276136183
+      }
+    ]
+  },
+  {
+    "episode": "episode_000081",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 50.996565400000236,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      4,
+      3,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.063995028972133
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.929363613787535
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.98752645731418
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.937532929400398
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.957692364834045
+      }
+    ]
+  },
+  {
+    "episode": "episode_000082",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 21.274316700000327,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.100836027654305
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971344874350768
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.933385958760207
+      }
+    ]
+  },
+  {
+    "episode": "episode_000083",
+    "stacked": 3,
+    "trials": 4,
+    "seconds": 49.584088500000234,
+    "total": 4,
+    "success": false,
+    "order_chosen_by_beam": [
+      1,
+      3,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.114039010947062
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921591996105198
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.932526311729795
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.902800427129288
+      }
+    ]
+  },
+  {
+    "episode": "episode_000084",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 21.78273950000039,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      0,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.044381581827558
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.996068127993865
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.902569743972412
+      }
+    ]
+  },
+  {
+    "episode": "episode_000085",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 46.24678740000036,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      2,
+      0,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.122145820226137
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.948585116932492
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.934932202285196
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.922978943166491
+      }
+    ]
+  },
+  {
+    "episode": "episode_000086",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 229.55273369999986,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      3,
+      6,
+      2,
+      5,
+      1,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.059427540076443
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.013245105719301
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920630346400841
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.963729163304542
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.967417528217073
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96989126352083
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.878383412831177
+      }
+    ]
+  },
+  {
+    "episode": "episode_000087",
+    "stacked": 7,
+    "trials": 7,
+    "seconds": 198.99784920000047,
+    "total": 7,
+    "success": true,
+    "order_chosen_by_beam": [
+      5,
+      0,
+      3,
+      1,
+      2,
+      4,
+      6
+    ],
+    "actions": [
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.042409050541522
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.983965431778781
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.959246233583222
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.91201558082456
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.920967480153191
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.966599641333186
+      },
+      {
+        "object_id": 6,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.928996114925505
+      }
+    ]
+  },
+  {
+    "episode": "episode_000088",
+    "stacked": 2,
+    "trials": 3,
+    "seconds": 20.805331399999886,
+    "total": 3,
+    "success": false,
+    "order_chosen_by_beam": [
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.067636103764116
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.941451164098691
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false,
+        "success": false,
+        "beam_score": 9.911106299621991
+      }
+    ]
+  },
+  {
+    "episode": "episode_000089",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 43.695434600000226,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.073993367265764
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97976302797004
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.903048227494825
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.982962837782946
+      }
+    ]
+  },
+  {
+    "episode": "episode_000090",
+    "stacked": 5,
+    "trials": 5,
+    "seconds": 50.06827870000052,
+    "total": 5,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      2,
+      4,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.085138251663254
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.97462611457091
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.9186177648779
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971989817844895
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921327601283343
+      }
+    ]
+  },
+  {
+    "episode": "episode_000091",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 68.86707849999948,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      4,
+      1,
+      5,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.09658349510214
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.956065043046044
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.943262548478838
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.969662751299323
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.96861536532233
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.916201807228513
+      }
+    ]
+  },
+  {
+    "episode": "episode_000092",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 96.88569909999933,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      3,
+      1,
+      0,
+      2,
+      5,
+      4
+    ],
+    "actions": [
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.044680649975913
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.923333427086082
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.9368675881918
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.970918533433608
+      },
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.921801780906229
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.944400424178614
+      }
+    ]
+  },
+  {
+    "episode": "episode_000093",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 51.56692490000023,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      1,
+      0,
+      3
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.10966538404028
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.952039127976764
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.95305949366353
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.932920580844483
+      }
+    ]
+  },
+  {
+    "episode": "episode_000094",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 19.40358389999983,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.091988038641086
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.931731688951263
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.971540974360744
+      }
+    ]
+  },
+  {
+    "episode": "episode_000095",
+    "stacked": 4,
+    "trials": 4,
+    "seconds": 30.888644399999976,
+    "total": 4,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      2,
+      3,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.111466566792194
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.962416149462975
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976960326299308
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965438340572826
+      }
+    ]
+  },
+  {
+    "episode": "episode_000096",
+    "stacked": 6,
+    "trials": 6,
+    "seconds": 141.57791180000004,
+    "total": 6,
+    "success": true,
+    "order_chosen_by_beam": [
+      5,
+      3,
+      2,
+      4,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 5,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.088013787328048
+      },
+      {
+        "object_id": 3,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.976570588748018
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.955895740207362
+      },
+      {
+        "object_id": 4,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.938666313672137
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.967750398331582
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.972878634198274
+      }
+    ]
+  },
+  {
+    "episode": "episode_000097",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 23.69720049999978,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      2,
+      0,
+      1
+    ],
+    "actions": [
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.087832496426342
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.969285847640585
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.965725882191553
+      }
+    ]
+  },
+  {
+    "episode": "episode_000098",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 24.789760099999512,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      0,
+      1,
+      2
+    ],
+    "actions": [
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.12006083466817
+      },
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977342218532343
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.928804996870653
+      }
+    ]
+  },
+  {
+    "episode": "episode_000099",
+    "stacked": 3,
+    "trials": 3,
+    "seconds": 21.664467200000217,
+    "total": 3,
+    "success": true,
+    "order_chosen_by_beam": [
+      1,
+      2,
+      0
+    ],
+    "actions": [
+      {
+        "object_id": 1,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 10.087232216209186
+      },
+      {
+        "object_id": 2,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.947931414376647
+      },
+      {
+        "object_id": 0,
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true,
+        "success": true,
+        "beam_score": 9.977413062453131
+      }
+    ]
+  }
+]

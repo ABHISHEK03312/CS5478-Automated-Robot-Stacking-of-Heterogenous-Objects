@@ -1,0 +1,36 @@
+pybullet build time: Jul 21 2022 20:00:19
+2026-10-25 23:30:07.255935: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cudart64_101.dll'; dlerror: cudart64_101.dll not found
+2026-10-25 23:30:07.255974: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+Spawned objects: [(0, (0.361, -0.066, 0.02)), (1, (0.407, -0.338, 0.014)), (2, (0.686, -0.029, 0.01)), (3, (0.354, 0.269, 0.012)), (4, (0.694, 0.221, 0.01)), (5, (0.401, -0.217, 0.011)), (6, (0.651, 0.327, 0.015))]
+tower: 7 objects
+  step 0: CEM chose object=3 grasp_yaw=0.00 place_xy=(0.500,0.180) jaw_width=0.078
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 1: CEM chose object=5 grasp_yaw=0.00 place_xy=(0.499,0.180) jaw_width=0.067
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 2: CEM chose object=6 grasp_yaw=0.00 place_xy=(0.498,0.180) jaw_width=0.059
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 3: CEM chose object=1 grasp_yaw=0.00 place_xy=(0.499,0.181) jaw_width=0.047
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 4: CEM chose object=0 grasp_yaw=0.00 place_xy=(0.496,0.183) jaw_width=0.029
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 5: CEM chose object=4 grasp_yaw=0.00 place_xy=(0.485,0.187) jaw_width=0.024
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+  step 6: CEM chose object=2 grasp_yaw=0.00 place_xy=(0.484,0.188) jaw_width=0.019
+STARTING UR5 MOVEMENT
+    executed: grasp=True, stable=True, success=True
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Method      | Episodes | Avg. Trials | Mean Reward | 95% CI         | Full Stacks | Partial Stacks | Zero Reward | Errors
+------------+----------+-------------+-------------+----------------+-------------+----------------+-------------+-------
+CEM - Tower | 1        | 7           | 1.0         | [1.000, 1.000] | 1           | 0              | 0           | 0     
+Results: results\hyperparameter_tuning\cem_high.json; Summary: results\hyperparameter_tuning\cem_high_native_summary.csv
+text argument:ravens\environments\assets
+int args: [

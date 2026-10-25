@@ -1,15 +1,17 @@
-"""Evaluate the beam search planner. Same scenes and grading as cem_test.py.
+"""Evaluate Ravens Beam Search on the original parallel-jaw pyramid task.
+
+Print a CEM-compatible summary and save CSV results only (no PKL output).
 
 Examples:
   python -m ravens.beam_test --objective=target --split=test --n=100
   python -m ravens.beam_test --objective=free --split=test --n=100
 
-Scenes come from the {task}-train / {task}-test folders if they exist (same
-seeds as the Transporter baseline), otherwise seeds 2,4,6... / 1,3,5...
+Uses existing Ravens dataset seeds when available; otherwise uses the standard
+train-even / test-odd seeds. Requires ravens/agents/beam.py.
 """
 
+import csv
 import os
-import pickle
 import time
 
 from absl import app
@@ -17,29 +19,25 @@ from absl import flags
 import numpy as np
 
 from ravens import tasks
-from ravens.agents.beam import BeamSearchAgent
-from ravens.agents.beam import stack_metrics
+from ravens.agents.beam import BeamSearchAgent, stack_metrics
 from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
-flags.DEFINE_string('root_dir', '.', '')
+flags.DEFINE_string('root_dir', '.', 'Directory under which results/ is created.')
 flags.DEFINE_bool('disp', False, '')
 flags.DEFINE_string('task', 'stack-block-pyramid-parallel-jaw', '')
-flags.DEFINE_enum('split', 'test', ['train', 'test'],
-                  'Which scenes: train (for tuning) or test (final).')
+flags.DEFINE_enum('split', 'test', ['train', 'test'], 'Which scenes to run.')
 flags.DEFINE_integer('n', 10, 'Number of episodes.')
 flags.DEFINE_enum('objective', 'target', ['target', 'free'],
-                  'target: match the pyramid goal spots. '
-                  'free: no goal spots, build a stable stack on the stand.')
-flags.DEFINE_integer('beam_width', 3, 'K: sequences kept at each depth.')
-flags.DEFINE_integer('horizon', 2, 'How many moves to look ahead.')
-flags.DEFINE_integer('n_blocks', 3, 'Candidate blocks tried per expansion.')
+                  'target: native Ravens reward; free: fraction on stand.')
+flags.DEFINE_integer('beam_width', 3, 'Sequences kept per depth.')
+flags.DEFINE_integer('horizon', 2, 'Moves to look ahead.')
+flags.DEFINE_integer('n_blocks', 3, 'Candidate blocks per expansion.')
 flags.DEFINE_integer('n_place', 6, 'Candidate placements per block.')
-flags.DEFINE_integer('verify_k', 3,
-                     'Re-check this many top first moves with the real arm.')
-flags.DEFINE_integer('seed', 0, 'Random seed for placement sampling.')
+flags.DEFINE_integer('verify_k', 3, 'Top first moves verified by arm.')
+flags.DEFINE_integer('seed', 0, 'Seed offset for placement sampling.')
 
 FLAGS = flags.FLAGS
 
@@ -57,59 +55,123 @@ def get_seeds():
   return [first + 2 * i for i in range(FLAGS.n)]
 
 
-def main(unused_argv):
-  env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
-  task = tasks.names[FLAGS.task]()
-  task.mode = FLAGS.split
+def save_csv(path, fieldnames, rows):
+  with open(path, 'w', newline='', encoding='utf-8') as f:
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
 
+
+def print_and_save_summary(name, rows):
+  valid = [r for r in rows if not r['error']]
+  rewards = np.asarray([r['reward'] for r in valid], dtype=float)
+  trials = [r['trials'] for r in valid]
+  n = len(rows)
+  full = int(np.sum(rewards > 0.99))
+  partial = int(np.sum((rewards > 0) & (rewards <= 0.99)))
+  zero = int(np.sum(rewards == 0))
+  errors = n - len(valid)
+  mean = float(np.mean(rewards)) if len(valid) else float('nan')
+  ci = (1.96 * float(np.std(rewards, ddof=1)) / np.sqrt(len(rewards))
+        if len(rewards) > 1 else float('nan'))
+  avg_trials = float(np.mean(trials)) if trials else float('nan')
+  method = f'Beam {FLAGS.objective} pyramid'
+  summary = {
+      'Method': method,
+      'Episodes': n,
+      'Avg. Trials': f'{avg_trials:.2f}' if trials else 'N/A',
+      'Mean Reward': f'{mean:.3f}' if valid else 'N/A',
+      '95% CI': f'±{ci:.3f}' if len(valid) > 1 else 'N/A',
+      'Full': full,
+      'Partial': partial,
+      'Zero': zero,
+      'Errors': errors,
+  }
+  outdir = os.path.join(FLAGS.root_dir, 'results')
+  os.makedirs(outdir, exist_ok=True)
+  summary_path = os.path.join(outdir, name + '_summary.csv')
+  episodes_path = os.path.join(outdir, name + '_episodes.csv')
+  save_csv(summary_path, list(summary), [summary])
+  save_csv(episodes_path,
+           ['episode', 'seed', 'reward', 'trials', 'rollouts', 'seconds',
+            'height_m', 'error'], rows)
+  print('\n' + '=' * 110)
+  print(f"{'Method':<24} {'Episodes':>8} {'Avg.Trials':>10} {'Mean Reward':>12} "
+        f"{'95% CI':>12} {'Full':>6} {'Partial':>8} {'Zero':>6} {'Errors':>7}")
+  print(f"{method:<24} {n:>8} {summary['Avg. Trials']:>10} "
+        f"{summary['Mean Reward']:>12} {summary['95% CI']:>12} "
+        f"{full:>6} {partial:>8} {zero:>6} {errors:>7}")
+  print('=' * 110)
+  print('Summary:', summary_path)
+  print('Episodes:', episodes_path)
+  print('Reward: native Ravens task reward (target), fraction stacked (free).')
+  print('Trials: attempted UR5 pick/place actions; CI excludes errored episodes.')
+  print('No PKL results are written.')
+
+
+def main(unused_argv):
   name = (f'{FLAGS.task}-beam-{FLAGS.objective}-{FLAGS.split}-'
           f'K{FLAGS.beam_width}-H{FLAGS.horizon}-v{FLAGS.verify_k}')
-  results = []
-  for k, seed in enumerate(get_seeds()):
-    print(f'Test: {k + 1} (seed {seed})')
-    np.random.seed(seed)
-    env.seed(seed)
-    env.set_task(task)
-    obs = env.reset()
-
-    agent = BeamSearchAgent(
-        env, task, objective=FLAGS.objective, beam_width=FLAGS.beam_width,
-        horizon=FLAGS.horizon, n_blocks=FLAGS.n_blocks,
-        n_place=FLAGS.n_place, verify_k=FLAGS.verify_k,
-        seed=FLAGS.seed + seed)
-
-    info, total_reward, start = None, 0.0, time.time()
-    for _ in range(task.max_steps):
-      act = agent.act(obs, info)
-      if act is None:
-        break
-      obs, reward, done, info = env.step(act)
-      if FLAGS.objective == 'free':
-        n_stacked, n_total, height, _ = stack_metrics(env)
-        total_reward = n_stacked / n_total
-        print(f'Stacked: {n_stacked}/{n_total}  height: {height * 100:.1f} cm')
-        if n_stacked == n_total:
-          break
-      else:
-        total_reward += reward
-        print(f'Total Reward: {total_reward:.3f} Done: {done}')
-        if done:
-          break
-    secs = time.time() - start
-    print(f'  episode time {secs:.0f}s, rollouts {agent.n_rollouts}')
-    if FLAGS.objective == 'free':
-      info = {'height': stack_metrics(env)[2]}
-    results.append((total_reward, info))
-
-    with open(os.path.join(FLAGS.root_dir, f'{name}.pkl'), 'wb') as f:
-      pickle.dump(results, f)
-
-  rewards = np.float32([r for r, _ in results])
-  print(f'\n{name}: success rate {np.mean(rewards > 0.99):.0%}, '
-        f'mean reward {rewards.mean():.3f} over {len(rewards)} episodes')
-  if FLAGS.objective == 'free':
-    heights = np.float32([i['height'] for _, i in results])
-    print(f'mean stack height {heights.mean() * 100:.1f} cm')
+  env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
+  rows = []
+  try:
+    for k, seed in enumerate(get_seeds(), 1):
+      print(f'Test: {k} (seed {seed})', flush=True)
+      start = time.time()
+      trials = 0
+      total_reward = 0.0
+      height = None
+      agent = None
+      error = ''
+      try:
+        task = tasks.names[FLAGS.task]()
+        task.mode = FLAGS.split
+        np.random.seed(seed)
+        env.seed(seed)
+        env.set_task(task)
+        obs = env.reset()
+        agent = BeamSearchAgent(
+            env, task, objective=FLAGS.objective, beam_width=FLAGS.beam_width,
+            horizon=FLAGS.horizon, n_blocks=FLAGS.n_blocks,
+            n_place=FLAGS.n_place, verify_k=FLAGS.verify_k,
+            seed=FLAGS.seed + seed)
+        info = None
+        for _ in range(task.max_steps):
+          action = agent.act(obs, info)
+          if action is None:
+            break
+          trials += 1
+          obs, reward, done, info = env.step(action)
+          if FLAGS.objective == 'free':
+            n_stacked, n_total, height, _ = stack_metrics(env)
+            total_reward = n_stacked / n_total if n_total else 0.0
+            print(f'Stacked: {n_stacked}/{n_total}  height: {height * 100:.1f} cm')
+            if n_stacked == n_total:
+              break
+          else:
+            total_reward += float(reward)
+            print(f'Total Reward: {total_reward:.3f} Done: {done}')
+            if done:
+              break
+        if FLAGS.objective == 'free':
+          _, _, height, _ = stack_metrics(env)
+      except Exception as exc:
+        error = f'{type(exc).__name__}: {exc}'
+        print(f'ERROR episode {k}: {error}', flush=True)
+      elapsed = time.time() - start
+      rollouts = agent.n_rollouts if agent is not None else 0
+      print(f'  episode time {elapsed:.1f}s, rollouts {rollouts}, trials {trials}')
+      rows.append({
+          'episode': k, 'seed': seed,
+          'reward': round(total_reward, 8) if not error else '',
+          'trials': trials, 'rollouts': rollouts,
+          'seconds': round(elapsed, 3),
+          'height_m': round(float(height), 6) if height is not None else '',
+          'error': error,
+      })
+  finally:
+    env.close()
+    print_and_save_summary(name, rows)
 
 
 if __name__ == '__main__':

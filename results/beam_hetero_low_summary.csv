@@ -1,0 +1,2 @@
+method,episodes,valid_episodes,avg_trials,mean_reward,ci95_lower,ci95_upper,full_stacks,partial_stacks,zero_reward,errors
+Beam hetero tower,100,100,4.96,0.97933,0.96508,0.99358,92,8,0,0
