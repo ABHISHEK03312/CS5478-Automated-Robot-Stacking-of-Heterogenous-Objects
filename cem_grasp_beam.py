@@ -15,13 +15,13 @@ from pathlib import Path
 import numpy as np
 import pybullet as p
 
-from generate_stacking_dataset import fits, support_halfwidths
-from generate_stacking_dataset import make_body, COLORS
+from generate_stacking_ravens import fits, support_halfwidths
+from generate_stacking_ravens import make_body, COLORS
 from ravens.environments.environment import Environment
 from ravens.tasks.grippers import ParallelJaw
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
-TARGET = (0.5, 0.18)  # Dataset x + 0.5, to fit the UR5 workspace.
+TARGET = (0.5, 0.18)  # Already in Ravens world coordinates.
 
 
 class DatasetParallelJaw(ParallelJaw):
@@ -117,13 +117,18 @@ class DatasetSceneTask:
         for obj in self.meta['objects']:
             oid = int(obj['id'])
             body = make_body(obj['shape'], obj['dims'], COLORS[oid % len(COLORS)])
-            start = [float(obj['start_xy'][0]) + 0.5,
+            start = [float(obj['start_xy'][0]),
                      float(obj['start_xy'][1]), float(obj['dims'][2]) / 2 + 0.001]
             p.resetBasePositionAndOrientation(body, start, [0, 0, 0, 1])
             env.obj_ids['rigid'].append(body)
             self.bodies[oid] = body
             geom[body] = obj
         env.ee.geometry = geom
+        # All initial objects must be inside the Ravens workspace.
+        for oid, body in self.bodies.items():
+            pos, _ = p.getBasePositionAndOrientation(body)
+            if not (0.25 <= pos[0] <= 0.75 and -0.5 <= pos[1] <= 0.5):
+                raise ValueError(f'Object {oid} spawned outside Ravens: {pos}')
         for _ in range(80):
             p.stepSimulation()
 

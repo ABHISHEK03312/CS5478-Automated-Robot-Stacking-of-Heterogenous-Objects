@@ -271,6 +271,13 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
                 pos, quat = p.getBasePositionAndOrientation(b)
                 roll, pitch, _ = p.getEulerFromQuaternion(quat)
                 exp_z = z + planner.geometry[j]['dims'][2] / 2
+                print(
+                    f"    object={j} "
+                    f"actual_xyz={np.round(pos, 4)} "
+                    f"expected_xyz=({CENTER[0]:.3f}, {CENTER[1]:.3f}, {exp_z:.4f}) "
+                    f"roll={roll:.3f} pitch={pitch:.3f}",
+                    flush=True
+)
                 if (np.linalg.norm(np.asarray(pos[:2]) - CENTER) > 0.018
                         or abs(pos[2]-exp_z) > 0.018
                         or abs(roll) > 0.20 or abs(pitch) > 0.20):
