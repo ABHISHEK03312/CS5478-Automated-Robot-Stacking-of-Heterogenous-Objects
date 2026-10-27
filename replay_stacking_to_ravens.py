@@ -1,7 +1,7 @@
 """Replay geometry-oracle tower episodes into Ravens Dataset format.
 
 Run from the Ravens repository root:
- python replay_stacking_to_ravens.py --data stacking_data_ravens --out data/mixed-stacking-train --assets_root ./ravens/environments/assets
+ python replay_stacking_to_ravens.py --data mixed-stacking-validated --out data/mixed-stacking-validated-train --assets_root ./ravens/environments/assets
 
 IMPORTANT: Uses teleportation and a CUSTOM incremental pose-goal reward, not
 Environment.step(), task.reward(), or verified parallel-jaw grasps.

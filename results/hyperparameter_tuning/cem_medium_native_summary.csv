@@ -1,0 +1,2 @@
+Method,Episodes,Avg. Trials,Mean Reward,95% CI,Full Stacks,Partial Stacks,Zero Reward,Errors
+CEM - Tower,100,4.5,0.988,"[0.977, 1.000]",96,4,0,0

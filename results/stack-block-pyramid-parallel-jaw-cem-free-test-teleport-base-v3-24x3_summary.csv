@@ -1,0 +1,2 @@
+method,task,split,episodes,valid,avg_trials,avg_rollouts,mean_reward,ci95_lower,ci95_upper,full_stacks,partial_stacks,zero_reward,errors
+CEM free,stack-block-pyramid-parallel-jaw,test,100,100,6.25,475.0,0.995,0.9877,1.0,98,2,0,0

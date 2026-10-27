@@ -1,0 +1,1218 @@
+pybullet build time: Jul 21 2022 20:00:19
+2026-10-25 23:44:58.715929: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'cudart64_101.dll'; dlerror: cudart64_101.dll not found
+2026-10-25 23:44:58.715954: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+
+Episode 1/100: episode_000000
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 2/100: episode_000001
+  step 0: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 3/100: episode_000002
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 4/100: episode_000003
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 5/100: episode_000004
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 6/100: episode_000005
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 7/100: episode_000006
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 8/100: episode_000007
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 9/100: episode_000008
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 10/100: episode_000009
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 11/100: episode_000010
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 12/100: episode_000011
+  step 0: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 13/100: episode_000012
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 14/100: episode_000013
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 15/100: episode_000014
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 16/100: episode_000015
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 17/100: episode_000016
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 18/100: episode_000017
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 19/100: episode_000018
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 20/100: episode_000019
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 21/100: episode_000020
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 22/100: episode_000021
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 23/100: episode_000022
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 24/100: episode_000023
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 25/100: episode_000024
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 26/100: episode_000025
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 27/100: episode_000026
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 28/100: episode_000027
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 29/100: episode_000028
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 30/100: episode_000029
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 31/100: episode_000030
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 32/100: episode_000031
+  step 0: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 33/100: episode_000032
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 34/100: episode_000033
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 35/100: episode_000034
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 36/100: episode_000035
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 37/100: episode_000036
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 38/100: episode_000037
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 39/100: episode_000038
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 40/100: episode_000039
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 41/100: episode_000040
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 42/100: episode_000041
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 43/100: episode_000042
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 44/100: episode_000043
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 45/100: episode_000044
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 46/100: episode_000045
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 47/100: episode_000046
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 48/100: episode_000047
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 49/100: episode_000048
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 50/100: episode_000049
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 51/100: episode_000050
+  step 0: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 52/100: episode_000051
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 53/100: episode_000052
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 54/100: episode_000053
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 55/100: episode_000054
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 56/100: episode_000055
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 57/100: episode_000056
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 58/100: episode_000057
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 59/100: episode_000058
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 60/100: episode_000059
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 61/100: episode_000060
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 62/100: episode_000061
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 63/100: episode_000062
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 64/100: episode_000063
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 65/100: episode_000064
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 66/100: episode_000065
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 67/100: episode_000066
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 68/100: episode_000067
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 69/100: episode_000068
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 70/100: episode_000069
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 71/100: episode_000070
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 72/100: episode_000071
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 73/100: episode_000072
+  step 0: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 74/100: episode_000073
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 75/100: episode_000074
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 76/100: episode_000075
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 77/100: episode_000076
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 78/100: episode_000077
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 79/100: episode_000078
+text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 80/100: episode_000079
+  step 0: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 81/100: episode_000080
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 82/100: episode_000081
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 83/100: episode_000082
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 84/100: episode_000083
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 85/100: episode_000084
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 86/100: episode_000085
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 87/100: episode_000086
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 88/100: episode_000087
+  step 0: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 6: Beam Search chose object=6, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 89/100: episode_000088
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=False, success=False
+
+Episode 90/100: episode_000089
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 91/100: episode_000090
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 92/100: episode_000091
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 93/100: episode_000092
+  step 0: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 94/100: episode_000093
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 95/100: episode_000094
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 96/100: episode_000095
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 97/100: episode_000096
+  step 0: Beam Search chose object=5, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=3, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 3: Beam Search chose object=4, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 4: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 5: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 98/100: episode_000097
+  step 0: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 99/100: episode_000098
+  step 0: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+
+Episode 100/100: episode_000099
+  step 0: Beam Search chose object=1, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 1: Beam Search chose object=2, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+  step 2: Beam Search chose object=0, place_xy=(0.5, 0.18)
+    grasp=True, stable=True, success=True
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+
+==============================================================================================================
+Method              Episodes Avg.Trials  Mean Reward           95% CI   Full  Partial   Zero  Errors
+Beam hetero tower        100       4.50        0.982   [0.967, 0.996]     94        6      0       0
+==============================================================================================================
+Results: results\hyperparameter_tuning\beam_low.json
+Summary: results\hyperparameter_tuning\beam_low_summary.csv
+Episodes: results\hyperparameter_tuning\beam_low_episodes.csv
+Reward = executed stacking completion fraction (not native Ravens task reward).
+Trials = attempted UR5 pick/place actions; CI uses valid episodes only.
+
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [text argument:ravens\environments\assets
+int args: [
