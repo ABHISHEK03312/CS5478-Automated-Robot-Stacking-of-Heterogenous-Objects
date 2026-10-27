@@ -51,3 +51,18 @@ names = {
     'sweeping-piles': SweepingPiles,
     'towers-of-hanoi': TowersOfHanoi
 }
+
+#Mixed Shape Stacking Task
+
+from ravens.tasks.mixed_shape_stacking import MixedShapeStackingMixin
+
+MixedShapeStacking = type(
+    'MixedShapeStacking',
+    (
+        MixedShapeStackingMixin,
+        names['stack-block-pyramid-parallel-jaw']
+    ),
+    {}
+)
+
+names['mixed-shape-stacking'] = MixedShapeStacking

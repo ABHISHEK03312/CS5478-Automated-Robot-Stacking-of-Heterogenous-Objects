@@ -163,3 +163,26 @@ The MDP formulation for each task uses transitions with the following structure:
 **Rewards:** total sum of rewards for a successful episode should be =1.
 
 **Info:** 6D poses, sizes, and colors of objects.
+
+## VLM Stacking
+
+
+Zero-shot VLM with the included parallel-jaw Transporter checkpoint (40,000 steps):
+
+```
+python -m vlm_stacking.run_ravens_sim --models-root "./models/parallel-jaw-v2" --planner zero-shot --instruction "Build a stable tower with the largest block at the bottom." --dry-run
+```
+
+Beam search planning
+```
+python -m vlm_stacking.run_ravens_sim \
+  --planner beam --beam-width 3 --beam-horizon 2 \
+  --instruction "Build a stable tower with the largest block at the bottom."
+```
+
+CEM search planning
+```
+python -m vlm_stacking.run_ravens_sim \
+  --planner cem --cem-samples 24 --cem-elites 5 --cem-iterations 3 \
+  --instruction "Build a stable tower with the largest block at the bottom."
+```

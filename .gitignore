@@ -61,3 +61,5 @@ models/**/transport-ckpt-30000.h5
 .DS_Store
 Thumbs.db
 desktop.ini
+
+*.json

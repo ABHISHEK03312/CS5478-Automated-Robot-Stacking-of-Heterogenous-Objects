@@ -73,7 +73,7 @@ class ParallelJaw(Gripper):
   """Kinematic two-finger gripper with geometry-gated rigid grasps."""
 
   TOOL_CENTER_Z = 0.12
-  OPEN_INNER_WIDTH = 0.078
+  OPEN_INNER_WIDTH = 0.15 #CHANGE IS HERE
 
   def __init__(self, assets_root, robot, ee, obj_ids):
     super().__init__(assets_root)

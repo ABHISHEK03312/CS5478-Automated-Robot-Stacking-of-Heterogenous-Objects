@@ -1,0 +1,24 @@
+[
+  {
+    "episode": "episode_000000",
+    "stacked": 1,
+    "total": 7,
+    "success": false,
+    "actions": [
+      {
+        "object_id": 3,
+        "shape": "rectangle",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": true
+      },
+      {
+        "object_id": 5,
+        "shape": "rectangle",
+        "grasp_attached": true,
+        "timeout": false,
+        "stack_stable": false
+      }
+    ]
+  }
+]
