@@ -93,9 +93,13 @@ class PickPlaceParallelJaw:
     self.height = height
     self.speed = speed
     self.grasp_offset = grasp_offset
+    self.last_grasp = False
+    self.last_timeout = False
 
   def __call__(self, movej, movep, ee, pose0, pose1):
     del movej
+    self.last_grasp = False
+    self.last_timeout = False
     identity = (0, 0, 0, 1)
     above = ((0, 0, self.height), identity)
     to_center = ((0, 0, -self.grasp_offset), identity)
@@ -111,11 +115,13 @@ class PickPlaceParallelJaw:
     timeout = movep(prepick_pose)
     timeout |= movep(pick_pose, self.speed)
     if timeout:
+      self.last_timeout = True
       return True
 
     ee.activate()
     timeout |= movep(prepick_pose, self.speed)
     pick_success = ee.check_grasp()
+    self.last_grasp = bool(pick_success)
 
     if pick_success:
       timeout |= movep(preplace_pose)
@@ -125,6 +131,7 @@ class PickPlaceParallelJaw:
         target_pose = utils.multiply(target_pose, delta)
         timeout |= movep(target_pose, self.speed)
         if timeout:
+          self.last_timeout = True
           return True
       ee.release()
       timeout |= movep(preplace_pose, self.speed)
@@ -132,6 +139,7 @@ class PickPlaceParallelJaw:
       ee.release()
       timeout |= movep(prepick_pose)
 
+    self.last_timeout = bool(timeout)
     return timeout
 
 

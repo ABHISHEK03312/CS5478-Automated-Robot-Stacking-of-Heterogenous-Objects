@@ -136,6 +136,20 @@ The trained parallel-jaw checkpoint, evaluation commands, and final metrics
 are available in [`models/parallel-jaw-v2`](models/parallel-jaw-v2) and the
 [`completion report`](docs/parallel-jaw-v2-completion-report.md).
 
+### RGB-D Grasp Quality Learning
+
+The experimental grasp-Q pipeline collects successful and failed parallel-jaw
+attempts, then learns grasp quality over heightmap position, yaw, and jaw width.
+It is intended as a learned grasp scorer for the existing CEM and beam planners:
+
+```shell
+python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=1000 --output_dir=./data/rgbd-grasp-attempts
+python -m ravens.train_grasp_q --data_dir=./data/rgbd-grasp-attempts --steps=40000 --gpu_limit=5
+```
+
+See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
+dataset format, training options, and simulator limitations.
+
 ## Datasets and Pre-Trained Models
 
 Download our generated train and test datasets and pre-trained models.
