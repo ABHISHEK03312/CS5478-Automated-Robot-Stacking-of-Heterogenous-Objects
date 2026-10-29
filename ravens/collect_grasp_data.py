@@ -99,7 +99,7 @@ def main(unused_argv):
       pixel = np.asarray(utils.xyz_to_pix(
           pose0[0], BOUNDS, PIXEL_SIZE), dtype=np.int32)
       _, _, _, info = env.step({'pose0': pose0, 'pose1': pose1})
-      success = bool(task.primitive.last_grasp)
+      success = bool(task.primitive.last_lift_success)
       metadata = {
           'attempt': attempt,
           'seed': seed,
@@ -107,6 +107,11 @@ def main(unused_argv):
           'object_id': object_id,
           'proposed_positive': proposed_positive,
           'timeout': bool(task.primitive.last_timeout),
+          'grasp_attached': bool(task.primitive.last_grasp),
+          'grasped_object_id': task.primitive.last_grasp_object_id,
+          'lift_height_m': float(task.primitive.last_lift_height),
+          'lift_success': bool(task.primitive.last_lift_success),
+          'transport_retained': bool(task.primitive.last_transport_retained),
           'reward_info_keys': sorted(str(key) for key in info),
       }
       path = dataset.add(GraspSample(

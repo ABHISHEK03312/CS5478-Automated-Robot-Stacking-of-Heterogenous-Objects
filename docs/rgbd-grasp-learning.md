@@ -26,7 +26,10 @@ python -m ravens.collect_grasp_data `
 ```
 
 Each compressed sample contains the fused heightmap, grasp pixel, yaw, desired
-jaw width, observed grasp success, timeout state, and collection metadata.
+jaw width, observed lift success, timeout state, grasped object ID, measured
+lift height, and whether the grasp remained secured during transport. A grasp
+is successful only when it remains attached and clears the minimum lift-height
+threshold.
 
 ## Train
 

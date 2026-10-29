@@ -46,6 +46,14 @@ class Gripper:
   def release(self):
     return
 
+  def grasped_object_id(self):
+    """Return the currently secured rigid object, if one exists."""
+    return None
+
+  def grasped_object_position(self):
+    """Return the currently secured object's world position, if available."""
+    return None
+
 
 class Spatula(Gripper):
   """Simulate simple spatula for pushing."""
@@ -193,6 +201,20 @@ class ParallelJaw(Gripper):
   def check_grasp(self):
     """Return whether an object is currently secured between the jaws."""
     return self.contact_constraint is not None
+
+  def grasped_object_id(self):
+    if self.contact_constraint is None:
+      return None
+    try:
+      return int(p.getConstraintInfo(self.contact_constraint)[2])
+    except:  # pylint: disable=bare-except
+      return None
+
+  def grasped_object_position(self):
+    object_id = self.grasped_object_id()
+    if object_id is None:
+      return None
+    return p.getBasePositionAndOrientation(object_id)[0]
 
 
 class Suction(Gripper):

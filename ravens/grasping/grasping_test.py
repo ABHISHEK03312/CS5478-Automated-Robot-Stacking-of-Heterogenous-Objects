@@ -7,6 +7,38 @@ import numpy as np
 from ravens.grasping.dataset import GraspDataset
 from ravens.grasping.dataset import GraspSample
 from ravens.grasping.encoding import GraspActionSpace
+from ravens.tasks.primitives import PickPlaceParallelJaw
+
+
+class _FakeEndEffector:
+
+  def __init__(self, attaches=True, lift_height=0.08):
+    self.attaches = attaches
+    self.lift_height = lift_height
+    self.secured = False
+    self.position_reads = 0
+
+  def activate(self):
+    self.secured = self.attaches
+
+  def release(self):
+    self.secured = False
+
+  def check_grasp(self):
+    return self.secured
+
+  def detect_contact(self):
+    return self.secured
+
+  def grasped_object_id(self):
+    return 9 if self.secured else None
+
+  def grasped_object_position(self):
+    if not self.secured:
+      return None
+    height = 0.02 if self.position_reads == 0 else 0.02 + self.lift_height
+    self.position_reads += 1
+    return (0.4, 0.1, height)
 
 
 class GraspActionSpaceTest(absltest.TestCase):
@@ -51,6 +83,36 @@ class GraspDatasetTest(absltest.TestCase):
         success=False, metadata={})
     with self.assertRaisesRegex(ValueError, 'outside'):
       sample.validate()
+
+
+class PickPlaceOutcomeTest(absltest.TestCase):
+
+  @staticmethod
+  def _run(end_effector):
+    primitive = PickPlaceParallelJaw(min_lift_height=0.05)
+    pose = ((0.5, 0.0, 0.04), (0, 0, 0, 1))
+    primitive(None, lambda unused_pose, unused_speed=0.01: False,
+              end_effector, pose, pose)
+    return primitive
+
+  def test_lift_success_requires_attachment_and_height(self):
+    outcome = self._run(_FakeEndEffector(attaches=True, lift_height=0.08))
+    self.assertTrue(outcome.last_grasp)
+    self.assertTrue(outcome.last_lift_success)
+    self.assertTrue(outcome.last_transport_retained)
+    self.assertEqual(outcome.last_grasp_object_id, 9)
+    self.assertAlmostEqual(outcome.last_lift_height, 0.08)
+
+  def test_short_lift_is_not_success(self):
+    outcome = self._run(_FakeEndEffector(attaches=True, lift_height=0.01))
+    self.assertTrue(outcome.last_grasp)
+    self.assertFalse(outcome.last_lift_success)
+
+  def test_failed_attachment_is_not_success(self):
+    outcome = self._run(_FakeEndEffector(attaches=False))
+    self.assertFalse(outcome.last_grasp)
+    self.assertFalse(outcome.last_lift_success)
+    self.assertIsNone(outcome.last_grasp_object_id)
 
 
 if __name__ == '__main__':
