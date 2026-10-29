@@ -7,6 +7,7 @@ import numpy as np
 from ravens.grasping.dataset import GraspDataset
 from ravens.grasping.dataset import GraspSample
 from ravens.grasping.encoding import GraspActionSpace
+from ravens.grasping.metrics import binary_grasp_metrics
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
 
@@ -53,6 +54,19 @@ class GraspActionSpaceTest(absltest.TestCase):
     encoded = space.encode(0.7, 0.061)
     yaw, width = space.decode(encoded)
     self.assertEqual(space.encode(yaw, width), encoded)
+
+
+class GraspMetricsTest(absltest.TestCase):
+
+  def test_perfect_binary_predictions(self):
+    metrics = binary_grasp_metrics([0, 0, 1, 1], [0.1, 0.2, 0.8, 0.9])
+    self.assertEqual(metrics['accuracy'], 1.0)
+    self.assertEqual(metrics['balanced_accuracy'], 1.0)
+    self.assertEqual(metrics['roc_auc'], 1.0)
+
+  def test_auc_handles_ties(self):
+    metrics = binary_grasp_metrics([0, 1], [0.5, 0.5])
+    self.assertEqual(metrics['roc_auc'], 0.5)
 
 
 class GraspDatasetTest(absltest.TestCase):

@@ -48,6 +48,25 @@ to use the learned Q values as the grasp term in the existing CEM and beam
 planners. The same model can become an off-policy RL critic once collection
 records complete `(observation, action, reward, next_observation)` transitions.
 
+## Evaluate on held-out attempts
+
+Collect a separate directory with different seeds, then evaluate without using
+those samples for training:
+
+```powershell
+python -m ravens.eval_grasp_q `
+  --data_dir=./data/rgbd-grasp-attempts-validation `
+  --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-40000.h5 `
+  --output=./results/grasp-q-validation.json `
+  --gpu_limit=5
+```
+
+The report includes accuracy, balanced accuracy, precision, recall,
+specificity, ROC AUC, log loss, and the confusion-matrix counts.
+
+The first end-to-end pilot and its limitations are recorded in the
+[`pilot results`](rgbd-grasp-pilot-results.md).
+
 ## Current simulator caveat
 
 The Ravens parallel-jaw gripper still uses geometry gating followed by a fixed
