@@ -6,6 +6,7 @@ from absl.testing import absltest
 import numpy as np
 from ravens.grasping.dataset import GraspDataset
 from ravens.grasping.dataset import GraspSample
+from ravens.grasping.crops import candidate_crop
 from ravens.grasping.encoding import GraspActionSpace
 from ravens.grasping.metrics import binary_grasp_metrics
 from ravens.grasping.selection import component_center_mask
@@ -60,6 +61,21 @@ class GraspActionSpaceTest(absltest.TestCase):
     encoded = space.encode(0.7, 0.061)
     yaw, width = space.decode(encoded)
     self.assertEqual(space.encode(yaw, width), encoded)
+
+
+class CandidateCropTest(absltest.TestCase):
+
+  def test_yaw_aligns_source_axis_horizontally(self):
+    image = np.zeros((15, 15, 1), dtype=np.float32)
+    image[3:12, 7, 0] = 1
+    crop = candidate_crop(image, (7, 7), np.pi / 2, size=9)
+    self.assertGreater(np.sum(crop[4, :, 0]), np.sum(crop[:, 4, 0]))
+
+  def test_crop_does_not_mutate_image(self):
+    image = np.random.default_rng(1).random((8, 9, 2), dtype=np.float32)
+    original = image.copy()
+    self.assertEqual(candidate_crop(image, (4, 4), 0.3, 6).shape, (6, 6, 2))
+    np.testing.assert_array_equal(image, original)
 
 
 class GraspMetricsTest(absltest.TestCase):

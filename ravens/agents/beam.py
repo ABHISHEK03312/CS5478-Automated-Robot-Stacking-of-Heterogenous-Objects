@@ -70,6 +70,7 @@ class BeamSearchAgent:
                place_std=(0.004, 0.004, np.pi / 16),  # spread around spots
                rollout='teleport',  # 'teleport' (fast) or 'full' (arm)
                w_target=10.0,       # weight on distance to goal spots
+               grasp_scorer=None, grasp_weight=0.1,
                seed=0, verbose=True, preferred_order=None):
     self.env = env
     self.task = task
@@ -77,6 +78,8 @@ class BeamSearchAgent:
     self.verify_k = verify_k
     self.rollout = rollout
     self.w_target = w_target
+    self.grasp_scorer = grasp_scorer
+    self.grasp_weight = grasp_weight
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulated tries, for reporting cost
@@ -110,6 +113,8 @@ class BeamSearchAgent:
       self.last_object_id = None
       return None
     self.last_object_id = candidates[0]
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
 
     root = self._snapshot()
     # Each beam entry: (value, [(block, placement), ...], snapshot)
@@ -129,7 +134,11 @@ class BeamSearchAgent:
             self._teleport(oid, self._pick_pose(oid), self._place_pose(oid, a))
             self._settle()
             self.n_rollouts += 1
-            children.append((self._value(), seq + [(oid, a)],
+            first_oid = seq[0][0] if seq else oid
+            grasp_bonus = (self.grasp_weight *
+                           self.grasp_scorer.quality(first_oid)
+                           if self.grasp_scorer is not None else 0.0)
+            children.append((self._value() + grasp_bonus, seq + [(oid, a)],
                              self._snapshot()))
 
       # Keep the K best; free the memory of everything else.
@@ -344,7 +353,10 @@ class BeamSearchAgent:
     pos, _ = p.getBasePositionAndOrientation(obj_id)
     top_z = p.getAABB(obj_id)[1][2]
     pick_pose = (np.float64([pos[0], pos[1], top_z]), np.float64([0, 0, 0, 1]))
-    return self.task.get_pick_pose(obj_id, pick_pose)
+    pick_pose = self.task.get_pick_pose(obj_id, pick_pose)
+    if self.grasp_scorer is not None:
+      pick_pose = self.grasp_scorer.pick_pose(obj_id, pick_pose)
+    return pick_pose
 
   def _place_pose(self, obj_id, a):
     """(x, y, yaw) -> gripper place pose; height = top of what is below."""

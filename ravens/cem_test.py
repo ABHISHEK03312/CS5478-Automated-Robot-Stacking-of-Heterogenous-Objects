@@ -15,6 +15,7 @@ from ravens import tasks
 from ravens.agents.cem import CEMAgent, FreeStackCEMAgent, stack_metrics
 from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
+from ravens.grasping.planner import CandidateGraspPlanner
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -31,6 +32,11 @@ flags.DEFINE_enum('objective', 'target', ['target', 'free'], '')
 flags.DEFINE_enum('init', 'target', ['target', 'base'], '')
 flags.DEFINE_integer('verify_k', 3, 'Top candidates rechecked using arm motion.')
 flags.DEFINE_integer('seed', 0, 'Sampling seed offset.')
+flags.DEFINE_string('grasp_checkpoint', '',
+                    'Optional candidate-Q checkpoint used to refine picks.')
+flags.DEFINE_integer('grasp_mc_samples', 8, '')
+flags.DEFINE_bool('grasp_refine_pose', False,
+                  'Experimental: replace planner center picks with Q proposals.')
 FLAGS = flags.FLAGS
 
 
@@ -110,6 +116,14 @@ def main(_):
     name = (f'{FLAGS.task}-cem-{FLAGS.objective}-{FLAGS.split}-{FLAGS.rollout}-'
             f'{init}-v{FLAGS.verify_k}-{FLAGS.n_samples}x{FLAGS.n_iters}')
     rows = []
+    grasp_scorer = None
+    if FLAGS.grasp_checkpoint:
+      from ravens.models.grasp_candidate_q import GraspCandidateQModel
+      grasp_model = GraspCandidateQModel()
+      grasp_model.load(FLAGS.grasp_checkpoint)
+      grasp_scorer = CandidateGraspPlanner(
+          grasp_model, mc_samples=FLAGS.grasp_mc_samples,
+          refine_pose=FLAGS.grasp_refine_pose)
     for k, seed in enumerate(get_seeds(), start=1):
       print(f'\nTest {k} (seed {seed})')
       start = time.time()
@@ -125,7 +139,8 @@ def main(_):
         obs = env.reset()
         kwargs = dict(n_samples=FLAGS.n_samples, n_elites=FLAGS.n_elites,
                       n_iters=FLAGS.n_iters, rollout=FLAGS.rollout,
-                      verify_k=FLAGS.verify_k, seed=FLAGS.seed + seed)
+                      verify_k=FLAGS.verify_k, seed=FLAGS.seed + seed,
+                      grasp_scorer=grasp_scorer)
         agent = (FreeStackCEMAgent(env, task, **kwargs) if FLAGS.objective == 'free'
                  else CEMAgent(env, task, init=FLAGS.init, **kwargs))
         for _ in range(task.max_steps):

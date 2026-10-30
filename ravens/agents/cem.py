@@ -38,6 +38,7 @@ class CEMAgent:
                w_target=10.0,         # weight on distance to goal positions
                w_disturb=20.0,        # weight on moving other blocks
                w_rot=0.5,             # weight on yaw error
+               grasp_scorer=None,
                seed=0,
                verbose=True):
     self.env = env
@@ -59,6 +60,7 @@ class CEMAgent:
     self.w_target = w_target
     self.w_disturb = w_disturb
     self.w_rot = w_rot
+    self.grasp_scorer = grasp_scorer
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -90,6 +92,8 @@ class CEMAgent:
       self.last_object_id = None
       return None
     self.last_object_id = obj_id
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
     pick_pose = self._pick_pose(obj_id)
     symmetry = self._goal_symmetry(obj_id)
 
@@ -193,7 +197,10 @@ class CEMAgent:
     pos, _ = p.getBasePositionAndOrientation(obj_id)
     top_z = p.getAABB(obj_id)[1][2]
     pick_pose = (np.float64([pos[0], pos[1], top_z]), np.float64([0, 0, 0, 1]))
-    return self.task.get_pick_pose(obj_id, pick_pose)
+    pick_pose = self.task.get_pick_pose(obj_id, pick_pose)
+    if self.grasp_scorer is not None:
+      pick_pose = self.grasp_scorer.pick_pose(obj_id, pick_pose)
+    return pick_pose
 
   def _place_pose(self, obj_id, a):
     """Turn a search vector a = (x, y, yaw) into a gripper place pose.

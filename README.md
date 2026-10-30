@@ -145,9 +145,9 @@ approach** for top-down parallel-jaw grasps:
 RGB-D cameras
     -> fused color heightmap
     -> depth components propose object centers, principal-axis yaw, and width
-    -> grasp-Q network ranks the physically plausible proposals
+    -> candidate-Q scores aligned local RGB-D crops and penalizes uncertainty
     -> robot executes the highest-ranked grasp
-    -> CEM / beam search plans object order and placement (next integration)
+    -> CEM / beam search plans object order and placement
 ```
 
 The geometry stage prevents the neural network from selecting arbitrary
@@ -166,9 +166,10 @@ grasped object, measured lift height, timeout state, and lift outcome.
 ```shell
 python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=1000 --output_dir=./data/rgbd-grasp-attempts-train
 python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=200 --seed=20000 --output_dir=./data/rgbd-grasp-attempts-validation
-python -m ravens.train_grasp_q --data_dir=./data/rgbd-grasp-attempts-train --steps=40000 --gpu_limit=5
-python -m ravens.eval_grasp_q --data_dir=./data/rgbd-grasp-attempts-validation --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-40000.h5 --gpu_limit=5
-python -m ravens.eval_grasp_selection --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-40000.h5 --coverage_data_dir=./data/rgbd-grasp-attempts-train --episodes=20 --gpu_limit=5
+python -m ravens.train_grasp_candidate_q --candidate_data_dir=./data/rgbd-grasp-attempts-train --candidate_steps=1500 --gpu_limit=5
+python -m ravens.eval_grasp_candidate_q --candidate_eval_data_dir=./data/rgbd-grasp-attempts-validation --candidate_checkpoint=./runs/grasp-candidate-q/checkpoints/grasp-candidate-q-750.h5 --gpu_limit=5
+python -m ravens.beam_test --task=stack-block-pyramid-parallel-jaw --n=10 --grasp_checkpoint=./runs/grasp-candidate-q/checkpoints/grasp-candidate-q-750.h5 --grasp_weight=0.1
+python -m ravens.cem_test --task=stack-block-pyramid-parallel-jaw --n=10 --grasp_checkpoint=./runs/grasp-candidate-q/checkpoints/grasp-candidate-q-750.h5
 ```
 
 #### Current status
@@ -181,15 +182,26 @@ python -m ravens.eval_grasp_selection --checkpoint=./checkpoints/grasp-q/grasp-q
 - Unrestricted dense-map argmax failed in execution because sparsely supervised
   output locations became overconfident. Inference now ranks depth-derived
   grasp proposals and masks action bins without sufficient training coverage.
+- The replacement candidate-conditioned CNN trains on balanced success/failure
+  batches, rotates a 48 x 48 RGB-D crop into the proposed grasp frame, and uses
+  Monte Carlo dropout to rank by mean success probability minus uncertainty.
+  At 750 updates it reached 0.980 ROC AUC and 0.198 log loss on the same small
+  20-attempt validation split (11 positive, 9 negative).
 - An input-mutation bug initially made learned grasps execute at an invalid
   height; model preprocessing now copies the raw heightmap and has a regression
   test. After the fix, a 20-scene paired benchmark gave 20/20 lifts for learned
   Q ranking, random depth proposals, and privileged geometry. The benchmark is
   therefore saturated under the current kinematic grasp model and does not yet
   demonstrate an advantage for learning.
-- This is currently a one-step grasp Q-function (equivalent to immediate-reward
-  or contextual-bandit learning). Sequential off-policy RL and CEM integration
-  remain future milestones.
+- Beam search can add candidate Q with a conservative `0.1` tie-break weight.
+  On a three-seed, reduced-budget smoke comparison it scored 0.444 mean reward
+  versus 0.389 without Q; a weight of `1.0` reduced reward to 0.167. These
+  samples validate integration but are too small to claim an improvement.
+  CEM has one predetermined object pick per step, so Q is diagnostic there and
+  leaves the proven center pick unchanged by default. Experimental pose
+  replacement is available via `--grasp_refine_pose`, but performed poorly.
+- This remains a one-step grasp Q-function (immediate-reward/contextual-bandit
+  learning). Sequential off-policy RL remains a future milestone.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

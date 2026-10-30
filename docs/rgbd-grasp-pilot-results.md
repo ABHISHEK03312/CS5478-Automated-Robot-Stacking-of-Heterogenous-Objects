@@ -87,3 +87,42 @@ kinematic fixed-constraint gripper are already sufficient for perfect lifting.
 The next evaluation must introduce harder clutter, off-center proposals, and
 contact/friction-based failures before it can measure the value of learned
 ranking.
+
+## Candidate-conditioned Q and planner follow-up
+
+The dense output model was replaced for ranking by a smaller classifier that
+only evaluates physically proposed grasps. It rotates a `48 x 48` local RGB-D
+crop into the candidate yaw frame, adds normalized jaw width, trains with
+class-balanced mini-batches, and estimates uncertainty with Monte Carlo
+dropout. Ranking uses `mean_probability - uncertainty`.
+
+| Candidate checkpoint | Accuracy | Balanced accuracy | ROC AUC | Log loss |
+|---:|---:|---:|---:|---:|
+| 250 | 0.900 | 0.889 | 0.859 | 0.450 |
+| 500 | **0.950** | **0.944** | 0.970 | 0.231 |
+| 750 | 0.900 | 0.889 | **0.980** | **0.198** |
+
+The 750-update checkpoint is used for ranking because ranking quality and
+probability quality, rather than the fixed 0.5 classification threshold, are
+the relevant criteria. The validation split still contains only 20 attempts,
+so these measurements require confirmation on a larger held-out set.
+
+Planner integration was tested on seeds 1, 3, and 5 with deliberately reduced
+search budgets (`8 x 2` CEM and beam width 2, horizon 1). These are smoke tests,
+not statistically powered comparisons.
+
+| Policy | Candidate-Q use | Mean reward | Full stacks |
+|---|---|---:|---:|
+| CEM | none (baseline) | 0.667 | 2/3 |
+| Beam | none (baseline) | 0.389 | 1/3 |
+| Beam | tie-break weight 0.1 | 0.444 | 1/3 |
+| Beam | aggressive weight 1.0 | 0.167 | 0/3 |
+
+CEM selects one object before optimizing its placement, so there is no set of
+pick candidates for Q to reorder. Its default integration therefore computes
+Q diagnostically but preserves the object-center pick; a seed-1 check exactly
+matched the baseline action trace and achieved reward 1.0. Directly replacing
+the center pose with image proposals was also tested and rejected: CEM mean
+reward fell to 0.056 on three seeds. Beam can rank several first-move objects,
+but Q must remain a small tie-break term so it does not overwhelm placement
+and stability value.

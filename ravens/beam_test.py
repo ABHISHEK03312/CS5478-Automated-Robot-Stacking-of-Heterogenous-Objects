@@ -22,6 +22,7 @@ from ravens import tasks
 from ravens.agents.beam import BeamSearchAgent, stack_metrics
 from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
+from ravens.grasping.planner import CandidateGraspPlanner
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -38,6 +39,13 @@ flags.DEFINE_integer('n_blocks', 3, 'Candidate blocks per expansion.')
 flags.DEFINE_integer('n_place', 6, 'Candidate placements per block.')
 flags.DEFINE_integer('verify_k', 3, 'Top first moves verified by arm.')
 flags.DEFINE_integer('seed', 0, 'Seed offset for placement sampling.')
+flags.DEFINE_string('grasp_checkpoint', '',
+                    'Optional candidate-Q checkpoint used to rank/refine picks.')
+flags.DEFINE_float('grasp_weight', 0.1,
+                   'Small tie-break weight for conservative grasp Q.')
+flags.DEFINE_integer('grasp_mc_samples', 8, '')
+flags.DEFINE_bool('grasp_refine_pose', False,
+                  'Experimental: replace planner center picks with Q proposals.')
 
 FLAGS = flags.FLAGS
 
@@ -114,6 +122,14 @@ def main(unused_argv):
           f'K{FLAGS.beam_width}-H{FLAGS.horizon}-v{FLAGS.verify_k}')
   env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
   rows = []
+  grasp_scorer = None
+  if FLAGS.grasp_checkpoint:
+    from ravens.models.grasp_candidate_q import GraspCandidateQModel
+    grasp_model = GraspCandidateQModel()
+    grasp_model.load(FLAGS.grasp_checkpoint)
+    grasp_scorer = CandidateGraspPlanner(
+        grasp_model, mc_samples=FLAGS.grasp_mc_samples,
+        refine_pose=FLAGS.grasp_refine_pose)
   try:
     for k, seed in enumerate(get_seeds(), 1):
       print(f'Test: {k} (seed {seed})', flush=True)
@@ -134,6 +150,7 @@ def main(unused_argv):
             env, task, objective=FLAGS.objective, beam_width=FLAGS.beam_width,
             horizon=FLAGS.horizon, n_blocks=FLAGS.n_blocks,
             n_place=FLAGS.n_place, verify_k=FLAGS.verify_k,
+            grasp_scorer=grasp_scorer, grasp_weight=FLAGS.grasp_weight,
             seed=FLAGS.seed + seed)
         info = None
         for _ in range(task.max_steps):
