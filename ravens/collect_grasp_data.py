@@ -13,11 +13,11 @@ import numpy as np
 import pybullet as p
 from ravens import tasks
 from ravens.dataset import BOUNDS
-from ravens.dataset import CAMERA_CONFIG
 from ravens.dataset import PIXEL_SIZE
 from ravens.environments.environment import Environment
 from ravens.grasping.dataset import GraspDataset
 from ravens.grasping.dataset import GraspSample
+from ravens.grasping.observations import fused_heightmap
 from ravens.tasks.grippers import ParallelJaw
 from ravens.utils import utils
 
@@ -33,15 +33,6 @@ flags.DEFINE_float('negative_min_m', 0.045, '')
 flags.DEFINE_float('negative_max_m', 0.10, '')
 flags.DEFINE_bool('disp', False, '')
 FLAGS = flags.FLAGS
-
-
-def fused_heightmap(obs):
-  color, height = utils.get_fused_heightmap(
-      obs, CAMERA_CONFIG, BOUNDS, PIXEL_SIZE)
-  return np.concatenate((color,
-                         height[..., None],
-                         height[..., None],
-                         height[..., None]), axis=2).astype(np.float32)
 
 
 def sample_offset(rng, near):
@@ -98,7 +89,8 @@ def main(unused_argv):
       image = fused_heightmap(obs)
       pixel = np.asarray(utils.xyz_to_pix(
           pose0[0], BOUNDS, PIXEL_SIZE), dtype=np.int32)
-      _, _, _, info = env.step({'pose0': pose0, 'pose1': pose1})
+      _, _, _, info = env.step({
+          'pose0': pose0, 'pose1': pose1, 'lift_only': True})
       success = bool(task.primitive.last_lift_success)
       metadata = {
           'attempt': attempt,

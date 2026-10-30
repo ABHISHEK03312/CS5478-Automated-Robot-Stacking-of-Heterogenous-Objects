@@ -105,7 +105,7 @@ class PickPlaceParallelJaw:
     self.last_lift_success = False
     self.last_transport_retained = False
 
-  def __call__(self, movej, movep, ee, pose0, pose1):
+  def __call__(self, movej, movep, ee, pose0, pose1, lift_only=False):
     del movej
     self._reset_outcome()
     identity = (0, 0, 0, 1)
@@ -138,6 +138,12 @@ class PickPlaceParallelJaw:
     self.last_lift_success = bool(
         pick_success and not timeout and
         self.last_lift_height >= self.min_lift_height)
+
+    if lift_only:
+      self.last_transport_retained = pick_success
+      ee.release()
+      self.last_timeout = bool(timeout)
+      return timeout
 
     if pick_success:
       timeout |= movep(preplace_pose)

@@ -138,17 +138,63 @@ are available in [`models/parallel-jaw-v2`](models/parallel-jaw-v2) and the
 
 ### RGB-D Grasp Quality Learning
 
-The experimental grasp-Q pipeline collects successful and failed parallel-jaw
-attempts, then learns grasp quality over heightmap position, yaw, and jaw width.
-It is intended as a learned grasp scorer for the existing CEM and beam planners:
+The current grasping technique is a **hybrid depth-geometry + learned grasp-Q
+approach** for top-down parallel-jaw grasps:
 
-```shell
-python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=1000 --output_dir=./data/rgbd-grasp-attempts
-python -m ravens.train_grasp_q --data_dir=./data/rgbd-grasp-attempts --steps=40000 --gpu_limit=5
+```text
+RGB-D cameras
+    -> fused color heightmap
+    -> depth components propose object centers, principal-axis yaw, and width
+    -> grasp-Q network ranks the physically plausible proposals
+    -> robot executes the highest-ranked grasp
+    -> CEM / beam search plans object order and placement (next integration)
 ```
 
+The geometry stage prevents the neural network from selecting arbitrary
+background pixels or unsupported yaw/width combinations. The learned stage
+uses scene appearance and depth to choose between the proposed grasps.
+
+#### Training labels
+
+The collector samples successful and failed grasp attempts. An attempt is
+positive only when an object remains attached and is lifted by at least 5 cm.
+Each sample stores the fused RGB-D heightmap, grasp pixel, yaw, jaw width,
+grasped object, measured lift height, timeout state, and lift outcome.
+
+#### Commands
+
+```shell
+python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=1000 --output_dir=./data/rgbd-grasp-attempts-train
+python -m ravens.collect_grasp_data --assets_root=./ravens/environments/assets/ --attempts=200 --seed=20000 --output_dir=./data/rgbd-grasp-attempts-validation
+python -m ravens.train_grasp_q --data_dir=./data/rgbd-grasp-attempts-train --steps=40000 --gpu_limit=5
+python -m ravens.eval_grasp_q --data_dir=./data/rgbd-grasp-attempts-validation --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-40000.h5 --gpu_limit=5
+python -m ravens.eval_grasp_selection --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-40000.h5 --coverage_data_dir=./data/rgbd-grasp-attempts-train --episodes=20 --gpu_limit=5
+```
+
+#### Current status
+
+- The first 80-train / 20-validation pilot reached 80% held-out accuracy and
+  0.939 ROC AUC at 500 updates.
+- Expanding training to 240 attempts improved yaw/width coverage but reached
+  70% accuracy on the same small validation set, showing that checkpoint loss
+  and dataset size alone do not guarantee better generalization.
+- Unrestricted dense-map argmax failed in execution because sparsely supervised
+  output locations became overconfident. Inference now ranks depth-derived
+  grasp proposals and masks action bins without sufficient training coverage.
+- An input-mutation bug initially made learned grasps execute at an invalid
+  height; model preprocessing now copies the raw heightmap and has a regression
+  test. After the fix, a 20-scene paired benchmark gave 20/20 lifts for learned
+  Q ranking, random depth proposals, and privileged geometry. The benchmark is
+  therefore saturated under the current kinematic grasp model and does not yet
+  demonstrate an advantage for learning.
+- This is currently a one-step grasp Q-function (equivalent to immediate-reward
+  or contextual-bandit learning). Sequential off-policy RL and CEM integration
+  remain future milestones.
+
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
-dataset format, training options, and simulator limitations.
+dataset format, training options, selection benchmark, and simulator
+limitations. Pilot measurements are in the
+[`RGB-D grasp-Q pilot report`](docs/rgbd-grasp-pilot-results.md).
 
 ## Datasets and Pre-Trained Models
 

@@ -23,7 +23,9 @@ class GraspQModel:
 
   @staticmethod
   def _prepare_image(image):
-    image = np.asarray(image, dtype=np.float32)
+    # Ravens preprocessing normalizes arrays in place. Keep the raw heightmap
+    # unchanged because it is also used to convert selected pixels to XYZ.
+    image = np.array(image, dtype=np.float32, copy=True)
     return utils.preprocess(image)[None, ...]
 
   def forward(self, image):

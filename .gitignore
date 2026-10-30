@@ -31,7 +31,7 @@ logs/
 *-test/
 *.pkl
 events.out.tfevents.*
-data/rgbd-grasp-attempts*/
+data/rgbd-grasp-*/
 
 # Published dataset used to train and evaluate the parallel-jaw v2 model.
 # These files are tracked through Git LFS (see .gitattributes).

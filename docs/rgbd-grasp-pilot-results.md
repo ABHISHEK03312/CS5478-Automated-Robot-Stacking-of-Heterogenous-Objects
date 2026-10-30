@@ -49,3 +49,41 @@ constraint rather than frictional finger contact.
 The next experiment should collect at least 1,000 training and 200 validation
 attempts, then compare geometry sampling, random candidates, and Q-selected
 grasps on the same unseen scenes before integrating the scorer into CEM.
+
+## Expanded 240-attempt follow-up
+
+Four lift-only collection shards added 160 attempts, producing 240 training
+attempts in total: 132 successful lifts and 108 failures. All 16 yaw bins and
+both object-width bins were represented; 31 of the 32 observed yaw/width
+combinations contained at least three examples.
+
+| Checkpoint | Accuracy | Balanced accuracy | ROC AUC | Log loss |
+|---:|---:|---:|---:|---:|
+| 750 | 0.700 | 0.687 | **0.828** | 1.352 |
+| 1500 | 0.700 | 0.687 | 0.808 | **0.622** |
+
+These results use the original 20-attempt validation split. They do not show an
+improvement over the 80-attempt pilot, and the validation set is too small for
+model selection. They reinforce the need for a larger held-out split and
+balanced action coverage.
+
+Direct dense-map argmax was also tested on three unseen robot scenes. It failed
+all three because unsupervised pixel/action channels produced overconfident
+scores. The inference pipeline therefore now uses connected depth components
+to propose center, principal-axis yaw, and jaw width, with grasp-Q used only to
+rank those physically plausible candidates.
+
+The geometry-constrained selector initially failed because model preprocessing
+normalized the shared raw heightmap in place. This changed an approximately
+`0.04 m` pick height into roughly `4.0 m` before pixel-to-world conversion.
+Inference now preprocesses a copy, and a regression test protects the raw
+heightmap.
+
+After the fix, the 240-attempt, 750-update checkpoint was evaluated on 20 unseen
+scene seeds. Grasp-Q ranking, random depth proposals, and privileged geometry
+all achieved 20/20 successful lifts with zero timeouts. This verifies execution
+but is a saturated benchmark: connected-component centers combined with the
+kinematic fixed-constraint gripper are already sufficient for perfect lifting.
+The next evaluation must introduce harder clutter, off-center proposals, and
+contact/friction-based failures before it can measure the value of learned
+ranking.

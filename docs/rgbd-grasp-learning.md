@@ -64,6 +64,25 @@ python -m ravens.eval_grasp_q `
 The report includes accuracy, balanced accuracy, precision, recall,
 specificity, ROC AUC, log loss, and the confusion-matrix counts.
 
+To test whether predicted values improve executed grasp choice, run the paired
+selection benchmark on identical unseen scenes:
+
+```powershell
+python -m ravens.eval_grasp_selection `
+  --checkpoint=./checkpoints/grasp-q/grasp-q-ckpt-500.h5 `
+  --episodes=20 `
+  --seed=30000 `
+  --output=./results/grasp-selection.json `
+  --gpu_limit=5
+```
+
+Depth connected components propose object-center pixels, principal-axis yaw,
+and approximate jaw width because training only supervises attempted actions,
+not every possible pixel and orientation. The benchmark then compares a random
+depth proposal, a privileged simulator-geometry baseline, and the proposal
+with the highest learned Q value. For small datasets, yaw/width bins with fewer
+than `--min_action_samples` training examples are excluded.
+
 The first end-to-end pilot and its limitations are recorded in the
 [`pilot results`](rgbd-grasp-pilot-results.md).
 
