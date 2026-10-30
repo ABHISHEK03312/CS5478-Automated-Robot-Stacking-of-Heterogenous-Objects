@@ -194,9 +194,12 @@ python -m ravens.cem_test --task=stack-block-pyramid-parallel-jaw --n=10 --grasp
   therefore saturated under the current kinematic grasp model and does not yet
   demonstrate an advantage for learning.
 - Beam search can add candidate Q with a conservative `0.1` tie-break weight.
-  On a three-seed, reduced-budget smoke comparison it scored 0.444 mean reward
-  versus 0.389 without Q; a weight of `1.0` reduced reward to 0.167. These
-  samples validate integration but are too small to claim an improvement.
+  The initial three-seed smoke comparison favored Q, but the full paired
+  100-seed test did not: baseline mean reward was 0.515 and Q reached 0.495
+  (paired delta -0.020, 95% bootstrap CI [-0.063, 0.025]). Q won on 18 seeds,
+  tied on 58, and lost on 24; it also increased zero-reward episodes from 10
+  to 14. The current grasp Q is therefore not better end-to-end and should be
+  considered experimental rather than a default policy improvement.
   CEM has one predetermined object pick per step, so Q is diagnostic there and
   leaves the proven center pick unchanged by default. Experimental pose
   replacement is available via `--grasp_refine_pose`, but performed poorly.

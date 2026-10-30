@@ -126,3 +126,31 @@ the center pose with image proposals was also tested and rejected: CEM mean
 reward fell to 0.056 on three seeds. Beam can rank several first-move objects,
 but Q must remain a small tie-break term so it does not overwhelm placement
 and stability value.
+
+## Paired 100-seed beam evaluation
+
+The three-seed result was followed by a complete paired evaluation on all 100
+held-out pyramid test seeds. Both variants used beam width 2, horizon 1, three
+candidate blocks, three placements, and one real-arm verification. Candidate
+Q used four dropout passes and weight 0.1. There were no errored episodes.
+
+| Policy | Mean reward | Full | Partial | Zero | Avg. trials |
+|---|---:|---:|---:|---:|---:|
+| Beam baseline | **0.515** | **37** | **53** | **10** | 10.17 |
+| Beam + candidate Q | 0.495 | 35 | 51 | 14 | 10.31 |
+
+The paired mean difference (`Q - baseline`) was -0.020. Its normal 95%
+confidence interval was [-0.064, 0.024], and a fixed-seed 20,000-sample paired
+bootstrap interval was [-0.063, 0.025]. Q improved 18 seeds, tied 58, and
+regressed 24. The interval includes zero, so this test does not establish a
+statistically significant difference, but it clearly rejects the earlier
+three-seed suggestion that Q was already reliably better. The increase from
+10 to 14 zero-reward episodes is especially undesirable for robustness.
+
+High held-out grasp ROC AUC therefore did not translate into better stacking.
+The current lift-attempt dataset teaches single-grasp classification, while
+beam needs reliable *within-scene ranking* among alternative objects and must
+balance graspability against downstream placement value. The next model should
+train on multiple executed candidates per identical scene using a pairwise
+ranking loss, include heterogeneous objects and clutter, and abstain to the
+geometry baseline unless its conservative score exceeds a validated margin.
