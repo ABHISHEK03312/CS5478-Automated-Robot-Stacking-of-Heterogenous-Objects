@@ -171,12 +171,12 @@ improved 9 seeds, tied 80, and regressed 11. Relative to ungated Q it gained
 decisions and abstained on 449; every episode contained at least one accepted
 decision.
 
-The gate therefore limits Q damage but does not produce a measurable benefit.
-For CEM, gated Q object reordering was stopped after a 10-seed safety screen:
-it scored 0.617 versus 0.683 for matched CEM, with zero wins,
-eight ties, and two losses. A 100-seed CEM+Q run was not justified. Both hooks
-remain available for research, but CEM without Q remains the recommended
-policy.
+The gate therefore limits Q damage but does not produce a measurable beam
+benefit. The initial 10-seed CEM safety screen also regressed (0.617 versus
+0.683), but the requested complete 100-seed run reversed that small-sample
+ordering: gated CEM + Q scored 0.678 versus 0.673 for CEM. The +0.005 paired
+difference was not statistically resolved, so both hooks remain research
+options and CEM without Q remains the simpler recommended policy.
 
 ## Alternative algorithm: standard CEM
 
@@ -188,19 +188,30 @@ simulator rollouts to optimize placement instead of adding noisy grasp-Q values.
 
 | Policy | Mean reward | Full | Partial | Zero | Avg. trials | Avg. rollouts |
 |---|---:|---:|---:|---:|---:|---:|
-| Beam baseline (`K=2`, `H=1`) | 0.515 | 37 | 53 | 10 | 10.17 | 61.3 |
-| Beam + candidate Q | 0.495 | 35 | 51 | 14 | 10.31 | 63.5 |
-| **Standard CEM** | **0.673** | **55** | 35 | **10** | **9.40** | 714.4 |
+| Beam (`K=2`, `H=1`) | 0.515 | 37 | 53 | **10** | 10.17 | 61.3 |
+| Beam + gated Q | 0.510 | 37 | 50 | 13 | 10.08 | 61.2 |
+| CEM | 0.673 | 55 | 35 | **10** | 9.40 | 714.4 |
+| **CEM + gated Q** | **0.678** | **58** | 31 | 11 | **9.29** | 706.0 |
 
 CEM improved mean reward over beam by +0.158. The paired normal 95% confidence
 interval was [0.086, 0.231], and the paired 20,000-sample bootstrap interval
 was [0.087, 0.230]. CEM improved 47 seeds, tied 34, and regressed 19. Relative
-to beam + candidate Q, its paired gain was +0.178 with bootstrap interval
-[0.103, 0.253]. All 100 CEM episodes completed without evaluation errors.
+to the ungated beam + candidate Q run, its paired gain was +0.178 with
+bootstrap interval [0.103, 0.253]. All 100 CEM episodes completed without
+evaluation errors.
 
-This establishes CEM as the best tested policy in this RGB-D grasp experiment,
-but not as a compute-matched winner: it used roughly 11.7 times as many
-simulator rollouts as reduced beam. A fair efficiency study should compare
-reward as a function of rollout budget and include the default deeper beam
-configuration. For the current goal of improving task success, standard CEM is
-the recommended policy and candidate Q should remain experimental.
+CEM + gated Q improved 9 seeds, tied 85, and regressed 6 relative to CEM. Its
+paired delta was only +0.005: the normal 95% interval was [-0.036, 0.046] and
+the bootstrap interval was [-0.038, 0.045]. The gate accepted 442 of 929
+object-selection decisions, abstained to CEM's geometry choice on 487, and
+actually changed the selected object 81 times. All 100 episodes completed
+without errors.
+
+This establishes the CEM family as the best tested approach in this RGB-D
+grasp experiment, but not as a compute-matched winner: it used roughly 11.7
+times as many simulator rollouts as reduced beam. A fair efficiency study
+should compare reward as a function of rollout budget and include the default
+deeper beam configuration. For the current goal of improving task success,
+standard CEM is the recommended policy: CEM + Q has the highest point estimate,
+but the extra learned component has not demonstrated a reliable gain and should
+remain experimental.

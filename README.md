@@ -207,11 +207,15 @@ python -m ravens.cem_test --task=stack-block-pyramid-parallel-jaw --n=100 --n_sa
   leaves the proven center pick unchanged by default. Experimental pose
   replacement is available via `--grasp_refine_pose`, but performed poorly.
   Uncertainty-gated Q object reordering is available through
-  `--grasp_rank_objects`; its 10-seed safety screen also regressed, so it is
+  `--grasp_rank_objects`. Over the complete 100-seed test it reached 0.678
+  versus 0.673 for standard CEM (paired delta +0.005, bootstrap 95% CI
+  [-0.038, 0.045]). This is not a measurable improvement, so it remains
   disabled by default.
 - Standard CEM is the current recommended policy. On the same 100 held-out
   seeds it reached 0.673 mean reward with 55 full stacks, improving over the
   reduced-beam baseline by +0.158 (paired bootstrap 95% CI [0.087, 0.230]).
+  CEM + gated Q produced 58 full stacks and the highest observed mean, 0.678,
+  but its difference from CEM was within sampling uncertainty.
   CEM used substantially more planning compute: 714 simulator rollouts per
   episode versus 61 for beam, so this is a better operating point rather than
   a compute-matched algorithm comparison.
