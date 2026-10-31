@@ -252,6 +252,10 @@ in the current Windows simulator environment.
   screen scored 0.483 versus 0.500 for geometry (0 wins, 9 ties, 1 loss), so it
   was not advanced to 100 seeds. The current lift-and-clear RL objective is not
   sufficiently aligned with stacking reward.
+- A placement-aware follow-up now records complete pick-and-place actions and
+  actual stacking returns. Its two-episode smoke test produced 21 transitions,
+  trained a joint RGB-D action critic, and validated planner feature conversion.
+  It remains a pipeline test until trained on a substantially larger replay set.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

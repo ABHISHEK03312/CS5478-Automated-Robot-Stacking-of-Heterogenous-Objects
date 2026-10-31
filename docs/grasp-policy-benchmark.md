@@ -19,6 +19,7 @@ can then consume the scores without policy-specific planner code.
 | GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
 | Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
 | Compact QT-Opt-style RL | 10-seed safety screen complete | No full run: 0 wins, 1 loss |
+| Joint pick-place return critic | Pipeline smoke tested | Larger replay set and planner evaluation |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
 The robust analytic policy is inspired by Dex-Net's robustness objective but
@@ -180,6 +181,31 @@ clearing objective validates Bellman learning but is not sufficiently aligned
 with downstream stacking value. A future RL version should include placement
 in the action and train on actual stacking returns rather than lift-and-clear
 rewards.
+
+## Joint pick-and-place return critic
+
+The next RL formulation conditions on the complete action: a grasp-aligned
+RGB-D crop, jaw width, placement XYZ, and placement yaw. Its replay collector
+mixes oracle and perturbed placements and records actual Ravens stacking reward
+and the next RGB-D observation. Discounted episode returns train a separate
+joint-action critic.
+
+A two-episode smoke run produced 21 transitions with six positive task-reward
+steps and both oracle and perturbed actions. Twenty training updates produced a
+loadable checkpoint. A planner-facing adapter converts candidate pick/place
+poses into the same action representation. This validates collection, return
+targets, model training, checkpoint output, and planner feature conversion;
+the checkpoint is intentionally not enabled because two episodes cannot support
+a meaningful policy evaluation.
+
+```bash
+python -m ravens.collect_stack_action_replay \
+  --episodes=100 --output_dir=./data/stack-action-replay
+
+python -m ravens.train_stack_action_q \
+  --replay_dir=./data/stack-action-replay \
+  --root_dir=./runs/stack-action-q --steps=1500
+```
 
 Collection can be parallelized safely by writing each process to a separate
 directory and repeating `--replay_shard` during training. This avoids index

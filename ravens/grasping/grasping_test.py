@@ -25,7 +25,12 @@ from ravens.grasping.pointcloud import planar_grasp_candidates
 from ravens.grasping.pointcloud_planner import PointCloudGraspPlanner
 from ravens.grasping.replay import GraspReplayDataset
 from ravens.grasping.replay import GraspTransition
+from ravens.grasping.stack_replay import StackActionReplayDataset
+from ravens.grasping.stack_replay import StackActionTransition
+from ravens.grasping.stack_action_planner import StackActionQScorer
 from ravens.models.grasp_q import GraspQModel
+from ravens.models.stack_action_q import StackActionQModel
+from ravens.utils import utils
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
 
@@ -345,6 +350,52 @@ class GraspReplayDatasetTest(absltest.TestCase):
     self.assertAlmostEqual(loaded.reward, 1 / 6, places=6)
     self.assertFalse(loaded.done)
     self.assertEqual(loaded.metadata, {'episode': 2, 'step': 1})
+
+
+class StackActionReplayDatasetTest(absltest.TestCase):
+
+  def test_joint_action_transition_round_trip(self):
+    image = np.zeros((8, 7, 6), dtype=np.float32)
+    transition = StackActionTransition(
+        image=image, pick_pixel=np.asarray([3, 4]), pick_yaw=0.2,
+        width=0.04, place_position=np.asarray([0.5, 0.1, 0.08]),
+        place_yaw=0.6, reward=1 / 6, next_image=image.copy(), done=False,
+        metadata={'episode': 1, 'step': 2, 'seed': 9})
+    with tempfile.TemporaryDirectory() as directory:
+      dataset = StackActionReplayDataset(directory)
+      dataset.add(transition)
+      loaded = dataset.load(0)
+    np.testing.assert_array_equal(loaded.pick_pixel, (3, 4))
+    np.testing.assert_allclose(loaded.place_position, (0.5, 0.1, 0.08))
+    self.assertAlmostEqual(loaded.reward, 1 / 6, places=6)
+    self.assertEqual(loaded.metadata['step'], 2)
+
+  def test_joint_action_features_are_bounded(self):
+    features = StackActionQModel.action_features(
+        0.04, (0.5, 0.0, 0.08), 0.5)
+    self.assertEqual(features.shape, (5,))
+    self.assertTrue(np.all(features >= 0))
+    self.assertTrue(np.all(features <= 1))
+
+  def test_planner_action_scorer_builds_joint_action(self):
+    class Model:
+      def predict(self, transitions):
+        self.transition = transitions[0]
+        return np.asarray([0.75])
+
+    model = Model()
+    scorer = StackActionQScorer(model)
+    image = np.zeros((320, 160, 6), dtype=np.float32)
+    with mock.patch(
+        'ravens.grasping.stack_action_planner.fused_heightmap',
+        return_value=image):
+      scorer.prepare({})
+    pick = ((0.5, 0.0, 0.04), (0, 0, 0, 1))
+    place = ((0.4, 0.1, 0.08), utils.eulerXYZ_to_quatXYZW((0, 0, 0.4)))
+    self.assertAlmostEqual(scorer.quality(pick, place), 0.75)
+    np.testing.assert_array_equal(model.transition.pick_pixel, (160, 80))
+    np.testing.assert_allclose(model.transition.place_position,
+                               (0.4, 0.1, 0.08))
 
 
 class GraspQInputTest(absltest.TestCase):
