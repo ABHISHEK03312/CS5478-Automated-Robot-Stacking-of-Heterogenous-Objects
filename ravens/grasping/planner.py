@@ -13,14 +13,21 @@ class CandidateGraspPlanner:
 
   def __init__(self, model, min_surface_height=0.015, mc_samples=8,
                uncertainty_weight=1.0, max_match_distance=0.06,
-               refine_pose=False):
+               refine_pose=False, min_probability=0.65,
+               max_uncertainty=0.08, min_margin=0.15):
     self.model = model
     self.min_surface_height = min_surface_height
     self.mc_samples = mc_samples
     self.uncertainty_weight = uncertainty_weight
     self.max_match_distance = max_match_distance
     self.refine_pose = refine_pose
+    self.min_probability = min_probability
+    self.max_uncertainty = max_uncertainty
+    self.min_margin = min_margin
     self._by_object = {}
+    self.selection_calls = 0
+    self.selection_changes = 0
+    self.selection_abstentions = 0
 
   def prepare(self, obs, object_ids):
     image = fused_heightmap(obs)
@@ -48,6 +55,28 @@ class CandidateGraspPlanner:
   def quality(self, object_id):
     candidate = self._by_object.get(object_id)
     return candidate['quality'] if candidate is not None else 0.0
+
+  def select_object(self, object_ids, fallback=None):
+    """Select a confidently better object, or abstain to the fallback."""
+    object_ids = list(object_ids)
+    self.selection_calls += 1
+    scored = [(oid, self._by_object[oid]) for oid in object_ids
+              if oid in self._by_object]
+    scored.sort(key=lambda item: item[1]['quality'], reverse=True)
+    if not scored:
+      self.selection_abstentions += 1
+      return fallback
+    top_id, top = scored[0]
+    runner_up = scored[1][1]['quality'] if len(scored) > 1 else 0.0
+    confident = (top['probability'] >= self.min_probability and
+                 top['uncertainty'] <= self.max_uncertainty and
+                 top['quality'] - runner_up >= self.min_margin)
+    if not confident:
+      self.selection_abstentions += 1
+      return fallback
+    if fallback is None or top_id != fallback:
+      self.selection_changes += 1
+    return top_id
 
   def pick_pose(self, object_id, fallback):
     if not self.refine_pose:

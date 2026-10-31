@@ -138,6 +138,7 @@ Q used four dropout passes and weight 0.1. There were no errored episodes.
 |---|---:|---:|---:|---:|---:|
 | Beam baseline | **0.515** | **37** | **53** | **10** | 10.17 |
 | Beam + candidate Q | 0.495 | 35 | 51 | 14 | 10.31 |
+| Beam + gated candidate Q | 0.510 | **37** | 50 | 13 | 10.08 |
 
 The paired mean difference (`Q - baseline`) was -0.020. Its normal 95%
 confidence interval was [-0.064, 0.024], and a fixed-seed 20,000-sample paired
@@ -154,6 +155,28 @@ balance graspability against downstream placement value. The next model should
 train on multiple executed candidates per identical scene using a pairwise
 ranking loss, include heterogeneous objects and clutter, and abstain to the
 geometry baseline unless its conservative score exceeds a validated margin.
+
+### Uncertainty-gated Q follow-up
+
+A shared abstaining selector was added to beam and CEM. It accepts Q only when
+the top proposal has probability at least 0.65, uncertainty at most 0.08, and
+a conservative-score margin of at least 0.15; otherwise it preserves the
+planner fallback. The beam variant was evaluated on all 100 test seeds.
+
+Gated beam reached 0.510 mean reward with 37 full, 50 partial, and 13 zero
+episodes. Relative to geometry-only beam, its paired delta was -0.005 with
+normal 95% interval [-0.037, 0.027] and bootstrap interval [-0.037, 0.027]. It
+improved 9 seeds, tied 80, and regressed 11. Relative to ungated Q it gained
+0.015, but that interval also included zero. The gate accepted 559 of 1008
+decisions and abstained on 449; every episode contained at least one accepted
+decision.
+
+The gate therefore limits Q damage but does not produce a measurable benefit.
+For CEM, gated Q object reordering was stopped after a 10-seed safety screen:
+it scored 0.617 versus 0.683 for matched CEM, with zero wins,
+eight ties, and two losses. A 100-seed CEM+Q run was not justified. Both hooks
+remain available for research, but CEM without Q remains the recommended
+policy.
 
 ## Alternative algorithm: standard CEM
 

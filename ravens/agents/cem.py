@@ -39,6 +39,7 @@ class CEMAgent:
                w_disturb=20.0,        # weight on moving other blocks
                w_rot=0.5,             # weight on yaw error
                grasp_scorer=None,
+               grasp_rank_objects=False,
                seed=0,
                verbose=True):
     self.env = env
@@ -61,6 +62,7 @@ class CEMAgent:
     self.w_disturb = w_disturb
     self.w_rot = w_rot
     self.grasp_scorer = grasp_scorer
+    self.grasp_rank_objects = grasp_rank_objects
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -87,13 +89,13 @@ class CEMAgent:
     if not self._has_goals():
       return None
 
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
     obj_id = self._next_object()
     if obj_id is None:
       self.last_object_id = None
       return None
     self.last_object_id = obj_id
-    if self.grasp_scorer is not None:
-      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
     pick_pose = self._pick_pose(obj_id)
     symmetry = self._goal_symmetry(obj_id)
 
@@ -186,11 +188,16 @@ class CEMAgent:
                                   target, symmetry):
           return oid
       return None
+    todo = []
     for object_id, (symmetry, _) in objs:
       pose = p.getBasePositionAndOrientation(object_id)
       if not any(self.task.is_match(pose, t, symmetry) for t in targs):
-        return object_id
-    return None
+        todo.append(object_id)
+    if not todo:
+      return None
+    if self.grasp_rank_objects and self.grasp_scorer is not None:
+      return self.grasp_scorer.select_object(todo, fallback=todo[0])
+    return todo[0]
 
   def _pick_pose(self, obj_id):
     """Grasp at the object's centre, at the height of its top surface."""
@@ -486,7 +493,13 @@ class FreeStackCEMAgent(CEMAgent):
         if object_id in by_id:
           return by_id[object_id]
       return None
-    return min(todo)[1] if todo else None
+    if not todo:
+      return None
+    fallback = min(todo)[1]
+    if self.grasp_rank_objects and self.grasp_scorer is not None:
+      return self.grasp_scorer.select_object(
+          [oid for _, oid in todo], fallback=fallback)
+    return fallback
 
   def _score(self, obj_id, before):
     """Outcome-only score, with VLM support constraints when supplied."""

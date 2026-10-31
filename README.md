@@ -200,9 +200,15 @@ python -m ravens.cem_test --task=stack-block-pyramid-parallel-jaw --n=100 --n_sa
   tied on 58, and lost on 24; it also increased zero-reward episodes from 10
   to 14. The current grasp Q is therefore not better end-to-end and should be
   considered experimental rather than a default policy improvement.
+  An uncertainty-gated variant recovered most of the loss but did not beat
+  geometry-only beam: 0.510 versus 0.515 over 100 seeds (paired delta -0.005,
+  bootstrap 95% CI [-0.037, 0.027]). It abstained on 449 of 1008 decisions.
   CEM has one predetermined object pick per step, so Q is diagnostic there and
   leaves the proven center pick unchanged by default. Experimental pose
   replacement is available via `--grasp_refine_pose`, but performed poorly.
+  Uncertainty-gated Q object reordering is available through
+  `--grasp_rank_objects`; its 10-seed safety screen also regressed, so it is
+  disabled by default.
 - Standard CEM is the current recommended policy. On the same 100 held-out
   seeds it reached 0.673 mean reward with 55 full stacks, improving over the
   reduced-beam baseline by +0.158 (paired bootstrap 95% CI [0.087, 0.230]).

@@ -14,6 +14,7 @@ from ravens.grasping.selection import component_grasp_candidates
 from ravens.grasping.selection import rank_grasp_candidates
 from ravens.grasping.selection import select_best_grasp
 from ravens.grasping.selection import select_random_grasp
+from ravens.grasping.planner import CandidateGraspPlanner
 from ravens.models.grasp_q import GraspQModel
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -76,6 +77,32 @@ class CandidateCropTest(absltest.TestCase):
     original = image.copy()
     self.assertEqual(candidate_crop(image, (4, 4), 0.3, 6).shape, (6, 6, 2))
     np.testing.assert_array_equal(image, original)
+
+
+class CandidateGraspPlannerTest(absltest.TestCase):
+
+  @staticmethod
+  def _candidate(probability, uncertainty, quality):
+    return {'probability': probability, 'uncertainty': uncertainty,
+            'quality': quality}
+
+  def test_selector_changes_only_for_confident_margin(self):
+    planner = CandidateGraspPlanner(None)
+    planner._by_object = {  # pylint: disable=protected-access
+        1: self._candidate(0.9, 0.02, 0.85),
+        2: self._candidate(0.7, 0.03, 0.60),
+    }
+    self.assertEqual(planner.select_object([1, 2], fallback=2), 1)
+    self.assertEqual(planner.selection_changes, 1)
+
+  def test_selector_abstains_when_margin_is_small(self):
+    planner = CandidateGraspPlanner(None)
+    planner._by_object = {  # pylint: disable=protected-access
+        1: self._candidate(0.9, 0.02, 0.80),
+        2: self._candidate(0.9, 0.02, 0.72),
+    }
+    self.assertEqual(planner.select_object([1, 2], fallback=2), 2)
+    self.assertEqual(planner.selection_abstentions, 1)
 
 
 class GraspMetricsTest(absltest.TestCase):

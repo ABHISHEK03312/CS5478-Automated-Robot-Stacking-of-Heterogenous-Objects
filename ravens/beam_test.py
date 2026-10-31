@@ -46,6 +46,11 @@ flags.DEFINE_float('grasp_weight', 0.1,
 flags.DEFINE_integer('grasp_mc_samples', 8, '')
 flags.DEFINE_bool('grasp_refine_pose', False,
                   'Experimental: replace planner center picks with Q proposals.')
+flags.DEFINE_bool('grasp_gate', True,
+                  'Only apply Q after probability/uncertainty/margin checks.')
+flags.DEFINE_float('grasp_min_probability', 0.65, '')
+flags.DEFINE_float('grasp_max_uncertainty', 0.08, '')
+flags.DEFINE_float('grasp_min_margin', 0.15, '')
 
 FLAGS = flags.FLAGS
 
@@ -102,7 +107,8 @@ def print_and_save_summary(name, rows):
   save_csv(summary_path, list(summary), [summary])
   save_csv(episodes_path,
            ['episode', 'seed', 'reward', 'trials', 'rollouts', 'seconds',
-            'height_m', 'error'], rows)
+            'height_m', 'grasp_gate_calls', 'grasp_gate_changes',
+            'grasp_gate_abstentions', 'error'], rows)
   print('\n' + '=' * 110)
   print(f"{'Method':<24} {'Episodes':>8} {'Avg.Trials':>10} {'Mean Reward':>12} "
         f"{'95% CI':>12} {'Full':>6} {'Partial':>8} {'Zero':>6} {'Errors':>7}")
@@ -129,7 +135,10 @@ def main(unused_argv):
     grasp_model.load(FLAGS.grasp_checkpoint)
     grasp_scorer = CandidateGraspPlanner(
         grasp_model, mc_samples=FLAGS.grasp_mc_samples,
-        refine_pose=FLAGS.grasp_refine_pose)
+        refine_pose=FLAGS.grasp_refine_pose,
+        min_probability=FLAGS.grasp_min_probability,
+        max_uncertainty=FLAGS.grasp_max_uncertainty,
+        min_margin=FLAGS.grasp_min_margin)
   try:
     for k, seed in enumerate(get_seeds(), 1):
       print(f'Test: {k} (seed {seed})', flush=True)
@@ -139,6 +148,10 @@ def main(unused_argv):
       height = None
       agent = None
       error = ''
+      gate_before = ((grasp_scorer.selection_calls,
+                      grasp_scorer.selection_changes,
+                      grasp_scorer.selection_abstentions)
+                     if grasp_scorer is not None else (0, 0, 0))
       try:
         task = tasks.names[FLAGS.task]()
         task.mode = FLAGS.split
@@ -151,6 +164,7 @@ def main(unused_argv):
             horizon=FLAGS.horizon, n_blocks=FLAGS.n_blocks,
             n_place=FLAGS.n_place, verify_k=FLAGS.verify_k,
             grasp_scorer=grasp_scorer, grasp_weight=FLAGS.grasp_weight,
+            grasp_gate=FLAGS.grasp_gate,
             seed=FLAGS.seed + seed)
         info = None
         for _ in range(task.max_steps):
@@ -177,6 +191,10 @@ def main(unused_argv):
         print(f'ERROR episode {k}: {error}', flush=True)
       elapsed = time.time() - start
       rollouts = agent.n_rollouts if agent is not None else 0
+      gate_after = ((grasp_scorer.selection_calls,
+                     grasp_scorer.selection_changes,
+                     grasp_scorer.selection_abstentions)
+                    if grasp_scorer is not None else gate_before)
       print(f'  episode time {elapsed:.1f}s, rollouts {rollouts}, trials {trials}')
       rows.append({
           'episode': k, 'seed': seed,
@@ -184,6 +202,9 @@ def main(unused_argv):
           'trials': trials, 'rollouts': rollouts,
           'seconds': round(elapsed, 3),
           'height_m': round(float(height), 6) if height is not None else '',
+          'grasp_gate_calls': gate_after[0] - gate_before[0],
+          'grasp_gate_changes': gate_after[1] - gate_before[1],
+          'grasp_gate_abstentions': gate_after[2] - gate_before[2],
           'error': error,
       })
   finally:

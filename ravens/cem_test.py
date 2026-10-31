@@ -37,6 +37,11 @@ flags.DEFINE_string('grasp_checkpoint', '',
 flags.DEFINE_integer('grasp_mc_samples', 8, '')
 flags.DEFINE_bool('grasp_refine_pose', False,
                   'Experimental: replace planner center picks with Q proposals.')
+flags.DEFINE_bool('grasp_rank_objects', False,
+                  'Use uncertainty-gated Q to choose among CEM objects.')
+flags.DEFINE_float('grasp_min_probability', 0.65, '')
+flags.DEFINE_float('grasp_max_uncertainty', 0.08, '')
+flags.DEFINE_float('grasp_min_margin', 0.15, '')
 FLAGS = flags.FLAGS
 
 
@@ -123,7 +128,10 @@ def main(_):
       grasp_model.load(FLAGS.grasp_checkpoint)
       grasp_scorer = CandidateGraspPlanner(
           grasp_model, mc_samples=FLAGS.grasp_mc_samples,
-          refine_pose=FLAGS.grasp_refine_pose)
+          refine_pose=FLAGS.grasp_refine_pose,
+          min_probability=FLAGS.grasp_min_probability,
+          max_uncertainty=FLAGS.grasp_max_uncertainty,
+          min_margin=FLAGS.grasp_min_margin)
     for k, seed in enumerate(get_seeds(), start=1):
       print(f'\nTest {k} (seed {seed})')
       start = time.time()
@@ -132,6 +140,10 @@ def main(_):
       info = None
       error = ''
       agent = None
+      gate_before = ((grasp_scorer.selection_calls,
+                      grasp_scorer.selection_changes,
+                      grasp_scorer.selection_abstentions)
+                     if grasp_scorer is not None else (0, 0, 0))
       try:
         np.random.seed(seed)
         env.seed(seed)
@@ -140,7 +152,8 @@ def main(_):
         kwargs = dict(n_samples=FLAGS.n_samples, n_elites=FLAGS.n_elites,
                       n_iters=FLAGS.n_iters, rollout=FLAGS.rollout,
                       verify_k=FLAGS.verify_k, seed=FLAGS.seed + seed,
-                      grasp_scorer=grasp_scorer)
+                      grasp_scorer=grasp_scorer,
+                      grasp_rank_objects=FLAGS.grasp_rank_objects)
         agent = (FreeStackCEMAgent(env, task, **kwargs) if FLAGS.objective == 'free'
                  else CEMAgent(env, task, init=FLAGS.init, **kwargs))
         for _ in range(task.max_steps):
@@ -168,9 +181,16 @@ def main(_):
         traceback.print_exc()
       finally:
         rollouts = int(agent.n_rollouts) if agent is not None else 0
+      gate_after = ((grasp_scorer.selection_calls,
+                     grasp_scorer.selection_changes,
+                     grasp_scorer.selection_abstentions)
+                    if grasp_scorer is not None else gate_before)
       secs = time.time() - start
       rows.append(dict(episode=k, seed=seed, reward=round(total_reward, 6),
                        trials=trials, rollouts=rollouts, seconds=round(secs, 2),
+                       grasp_gate_calls=gate_after[0] - gate_before[0],
+                       grasp_gate_changes=gate_after[1] - gate_before[1],
+                       grasp_gate_abstentions=gate_after[2] - gate_before[2],
                        error=error))
       print(f'Episode: reward={total_reward:.3f}, trials={trials}, rollouts={rollouts}, '
             f'time={secs:.1f}s' + (f', error={error}' if error else ''))

@@ -70,7 +70,7 @@ class BeamSearchAgent:
                place_std=(0.004, 0.004, np.pi / 16),  # spread around spots
                rollout='teleport',  # 'teleport' (fast) or 'full' (arm)
                w_target=10.0,       # weight on distance to goal spots
-               grasp_scorer=None, grasp_weight=0.1,
+               grasp_scorer=None, grasp_weight=0.1, grasp_gate=True,
                seed=0, verbose=True, preferred_order=None):
     self.env = env
     self.task = task
@@ -80,6 +80,8 @@ class BeamSearchAgent:
     self.w_target = w_target
     self.grasp_scorer = grasp_scorer
     self.grasp_weight = grasp_weight
+    self.grasp_gate = grasp_gate
+    self.grasp_preferred_object = None
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulated tries, for reporting cost
@@ -108,13 +110,16 @@ class BeamSearchAgent:
         for row in placements}
 
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
     candidates = self._candidate_blocks()
     if not candidates:
       self.last_object_id = None
       return None
     self.last_object_id = candidates[0]
-    if self.grasp_scorer is not None:
-      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
+    self.grasp_preferred_object = (
+        self.grasp_scorer.select_object(candidates, fallback=None)
+        if self.grasp_scorer is not None and self.grasp_gate else None)
 
     root = self._snapshot()
     # Each beam entry: (value, [(block, placement), ...], snapshot)
@@ -135,9 +140,12 @@ class BeamSearchAgent:
             self._settle()
             self.n_rollouts += 1
             first_oid = seq[0][0] if seq else oid
+            use_grasp = (self.grasp_scorer is not None and
+                         (not self.grasp_gate or
+                          first_oid == self.grasp_preferred_object))
             grasp_bonus = (self.grasp_weight *
                            self.grasp_scorer.quality(first_oid)
-                           if self.grasp_scorer is not None else 0.0)
+                           if use_grasp else 0.0)
             children.append((self._value() + grasp_bonus, seq + [(oid, a)],
                              self._snapshot()))
 
