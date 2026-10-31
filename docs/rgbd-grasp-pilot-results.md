@@ -154,3 +154,30 @@ balance graspability against downstream placement value. The next model should
 train on multiple executed candidates per identical scene using a pairwise
 ranking loss, include heterogeneous objects and clutter, and abstain to the
 geometry baseline unless its conservative score exceeds a validated margin.
+
+## Alternative algorithm: standard CEM
+
+Because grasp Q did not improve beam, the same 100 held-out seeds were also
+evaluated with the standard cross-entropy method planner: 24 samples per
+iteration, 5 elites, 3 iterations, teleport rollouts, and real-arm verification
+of the top 3 placements. CEM retains the reliable object-center grasp and uses
+simulator rollouts to optimize placement instead of adding noisy grasp-Q values.
+
+| Policy | Mean reward | Full | Partial | Zero | Avg. trials | Avg. rollouts |
+|---|---:|---:|---:|---:|---:|---:|
+| Beam baseline (`K=2`, `H=1`) | 0.515 | 37 | 53 | 10 | 10.17 | 61.3 |
+| Beam + candidate Q | 0.495 | 35 | 51 | 14 | 10.31 | 63.5 |
+| **Standard CEM** | **0.673** | **55** | 35 | **10** | **9.40** | 714.4 |
+
+CEM improved mean reward over beam by +0.158. The paired normal 95% confidence
+interval was [0.086, 0.231], and the paired 20,000-sample bootstrap interval
+was [0.087, 0.230]. CEM improved 47 seeds, tied 34, and regressed 19. Relative
+to beam + candidate Q, its paired gain was +0.178 with bootstrap interval
+[0.103, 0.253]. All 100 CEM episodes completed without evaluation errors.
+
+This establishes CEM as the best tested policy in this RGB-D grasp experiment,
+but not as a compute-matched winner: it used roughly 11.7 times as many
+simulator rollouts as reduced beam. A fair efficiency study should compare
+reward as a function of rollout budget and include the default deeper beam
+configuration. For the current goal of improving task success, standard CEM is
+the recommended policy and candidate Q should remain experimental.
