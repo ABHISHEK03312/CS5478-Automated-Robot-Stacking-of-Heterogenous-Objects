@@ -257,7 +257,10 @@ in the current Windows simulator environment.
   trained a joint RGB-D action critic for 1,500 updates. On ten matched seeds,
   Beam + joint Q improved from 0.500 to 0.600, while CEM + joint Q regressed
   from 0.683 to 0.600 at weight 0.5. Beam advances to the full evaluation;
-  CEM requires a smaller weight or an uncertainty gate first.
+  CEM requires a smaller weight or an uncertainty gate first. A subsequent
+  three-model, top-five gated CEM reranker safely reproduced native CEM at
+  0.683 on all ten seeds, but accepted no changes. The next critic dataset must
+  target hard, near-tied CEM candidate pairs rather than generic placements.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

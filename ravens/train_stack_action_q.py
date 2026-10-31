@@ -5,6 +5,7 @@ import os
 from absl import app
 from absl import flags
 import numpy as np
+import tensorflow as tf
 
 from ravens.grasping.stack_replay import StackActionReplayDataset
 from ravens.models.stack_action_q import StackActionQModel
@@ -49,6 +50,7 @@ def main(unused_argv):
     raise ValueError(
         f'stack action replay is empty: {", ".join(replay_paths)}')
   targets = discounted_targets(transitions, FLAGS.gamma)
+  tf.keras.utils.set_random_seed(FLAGS.seed)
   model = StackActionQModel(
       image_channels=transitions[0].image.shape[2],
       learning_rate=FLAGS.learning_rate)

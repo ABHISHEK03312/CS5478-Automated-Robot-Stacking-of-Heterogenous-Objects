@@ -42,6 +42,9 @@ class CEMAgent:
                grasp_rank_objects=False,
                action_scorer=None,
                action_weight=0.5,
+               action_rerank_k=0,
+               action_max_uncertainty=0.05,
+               action_min_margin=0.05,
                seed=0,
                verbose=True):
     self.env = env
@@ -67,6 +70,9 @@ class CEMAgent:
     self.grasp_rank_objects = grasp_rank_objects
     self.action_scorer = action_scorer
     self.action_weight = action_weight
+    self.action_rerank_k = action_rerank_k
+    self.action_max_uncertainty = action_max_uncertainty
+    self.action_min_margin = action_min_margin
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -151,10 +157,37 @@ class CEMAgent:
       return None
     best_a = tried[0][1]
 
+    if self.action_scorer is not None and self.action_rerank_k > 0:
+      top = tried[:self.action_rerank_k]
+      actions = [item[1] for item in top]
+      scores = [item[0] for item in top]
+      places = [self._place_pose(obj_id, action) for action in actions]
+      selected = self.action_scorer.rerank(
+          pick_pose, places, scores, weight=self.action_weight,
+          max_uncertainty=self.action_max_uncertainty,
+          min_margin=self.action_min_margin)
+      best_a = actions[selected]
+      if self.rollout == 'teleport' and self.verify_k > 0:
+        verify_actions = [item[1] for item in tried[:self.verify_k]]
+        if (selected and not any(
+            np.allclose(best_a, action) for action in verify_actions)):
+          verify_actions.append(best_a)
+        real = [self._evaluate(obj_id, pick_pose, action, rollout='full')
+                for action in verify_actions]
+        if (getattr(self, 'preferred_order', None) is not None and
+            max(real) <= -999.0):
+          self.last_object_id = None
+          return None
+        best_a = verify_actions[int(np.argmax(real))]
+      if self.verbose:
+        print(f'  action-Q rerank top {len(actions)}: selected={selected} '
+              f'scores={np.round(scores, 3)}')
+
     # Teleport scoring ignores how the arm actually carries and lowers the
     # block (errors of 4-10 mm, against a 10 mm tolerance). Re-score the top
     # few candidates with the real arm motion and pick the best of those.
-    if self.rollout == 'teleport' and self.verify_k > 0:
+    if (self.rollout == 'teleport' and self.verify_k > 0 and
+        not (self.action_scorer is not None and self.action_rerank_k > 0)):
       top = [a for _, a in tried[:self.verify_k]]
       real = [self._evaluate(obj_id, pick_pose, a, rollout='full')
               for a in top]
@@ -289,7 +322,8 @@ class CEMAgent:
     place_pose = self._place_pose(obj_id, a)
     action_bonus = (self.action_weight *
                     self.action_scorer.quality(pick_pose, place_pose)
-                    if self.action_scorer is not None else 0.0)
+                    if (self.action_scorer is not None and
+                        self.action_rerank_k <= 0) else 0.0)
 
     ok = True
     if rollout == 'full':

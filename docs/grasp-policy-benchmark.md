@@ -19,7 +19,7 @@ can then consume the scores without policy-specific planner code.
 | GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
 | Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
 | Compact QT-Opt-style RL | 10-seed safety screen complete | No full run: 0 wins, 1 loss |
-| Joint pick-place return critic | 10-seed safety screen complete | Full Beam evaluation; retune CEM weight |
+| Joint pick-place return critic | Gated ensemble safety screen complete | Collect hard CEM candidate pairs |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
 The robust analytic policy is inspired by Dex-Net's robustness objective but
@@ -212,6 +212,27 @@ full, five partial, and one zero-reward episode, so it qualifies for a complete
 Q produced four full and six partial episodes. It is not promoted at weight 0.5
 because its point estimate regressed; a smaller weight or uncertainty gate
 should be screened before a full CEM run.
+
+### Conservative CEM ensemble
+
+Three independently seeded joint-action critics were then used to inspect only
+CEM's top five physics candidates. The adapter keeps native CEM's top-three arm
+verification unchanged whenever Q abstains. A Q-selected candidate is added to
+that verification set only when ensemble uncertainty is at most 0.05 and its
+predicted margin over CEM's winner is at least 0.05; physics still makes the
+final execution choice.
+
+On the same ten seeds, both weight 0.1 and weight 0.5 exactly reproduced native
+CEM: mean reward 0.683, five full and five partial episodes, and no errors. At
+weight 0.1 the ensemble checked 101 decisions, made zero changes, and recorded
+one explicit uncertainty abstention. Per-seed rewards, trials, and rollouts
+matched native CEM. This proves the fallback is safe, but the critic does not
+separate CEM's near-tied top candidates strongly enough to improve planning.
+
+The next training set should therefore contain paired rollouts of CEM's top
+candidates, especially candidates with similar physics scores but different
+executed stacking returns. A pairwise ranking loss is more appropriate for
+that data than further tuning the global Q weight on these test seeds.
 
 ```bash
 python -m ravens.collect_stack_action_replay \

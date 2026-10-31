@@ -397,6 +397,27 @@ class StackActionReplayDatasetTest(absltest.TestCase):
     np.testing.assert_allclose(model.transition.place_position,
                                (0.4, 0.1, 0.08))
 
+  def test_joint_action_rerank_abstains_on_ensemble_disagreement(self):
+    class Model:
+      def __init__(self, values):
+        self.values = iter(values)
+
+      def predict(self, transitions):
+        del transitions
+        return np.asarray([next(self.values)])
+
+    scorer = StackActionQScorer([
+        Model([0.5, 0.9]), Model([0.5, 0.1])])
+    scorer.image = np.zeros((320, 160, 6), dtype=np.float32)
+    pick = ((0.5, 0.0, 0.04), (0, 0, 0, 1))
+    places = [((0.5, 0.0, 0.08), (0, 0, 0, 1)),
+              ((0.51, 0.0, 0.08), (0, 0, 0, 1))]
+    selected = scorer.rerank(
+        pick, places, [0.0, 0.01], weight=1.0,
+        max_uncertainty=0.1, min_margin=0.0)
+    self.assertEqual(selected, 0)
+    self.assertEqual(scorer.rerank_abstentions, 1)
+
 
 class GraspQInputTest(absltest.TestCase):
 

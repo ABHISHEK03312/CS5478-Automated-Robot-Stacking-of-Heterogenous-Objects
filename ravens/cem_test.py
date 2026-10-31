@@ -56,10 +56,15 @@ flags.DEFINE_bool('grasp_rank_objects', False,
 flags.DEFINE_float('grasp_min_probability', 0.65, '')
 flags.DEFINE_float('grasp_max_uncertainty', 0.08, '')
 flags.DEFINE_float('grasp_min_margin', 0.15, '')
-flags.DEFINE_string('stack_action_checkpoint', '',
-                    'Optional placement-aware joint-action Q checkpoint.')
+flags.DEFINE_multi_string(
+    'stack_action_checkpoint', [],
+    'Placement-aware Q checkpoint; repeat for an uncertainty ensemble.')
 flags.DEFINE_float('stack_action_weight', 0.5,
                    'Weight for placement-aware Q during planning.')
+flags.DEFINE_integer('stack_action_rerank_k', 0,
+                     'Rerank only the top K physics candidates; zero adds Q.')
+flags.DEFINE_float('stack_action_max_uncertainty', 0.05, '')
+flags.DEFINE_float('stack_action_min_margin', 0.05, '')
 FLAGS = flags.FLAGS
 
 
@@ -175,6 +180,10 @@ def main(_):
                       grasp_scorer.selection_changes,
                       grasp_scorer.selection_abstentions)
                      if grasp_scorer is not None else (0, 0, 0))
+      action_before = ((action_scorer.rerank_calls,
+                        action_scorer.rerank_changes,
+                        action_scorer.rerank_abstentions)
+                       if action_scorer is not None else (0, 0, 0))
       try:
         np.random.seed(seed)
         env.seed(seed)
@@ -186,7 +195,10 @@ def main(_):
                       grasp_scorer=grasp_scorer,
                       grasp_rank_objects=FLAGS.grasp_rank_objects,
                       action_scorer=action_scorer,
-                      action_weight=FLAGS.stack_action_weight)
+                      action_weight=FLAGS.stack_action_weight,
+                      action_rerank_k=FLAGS.stack_action_rerank_k,
+                      action_max_uncertainty=FLAGS.stack_action_max_uncertainty,
+                      action_min_margin=FLAGS.stack_action_min_margin)
         agent = (FreeStackCEMAgent(env, task, **kwargs) if FLAGS.objective == 'free'
                  else CEMAgent(env, task, init=FLAGS.init, **kwargs))
         for _ in range(task.max_steps):
@@ -218,12 +230,20 @@ def main(_):
                      grasp_scorer.selection_changes,
                      grasp_scorer.selection_abstentions)
                     if grasp_scorer is not None else gate_before)
+      action_after = ((action_scorer.rerank_calls,
+                       action_scorer.rerank_changes,
+                       action_scorer.rerank_abstentions)
+                      if action_scorer is not None else action_before)
       secs = time.time() - start
       rows.append(dict(episode=k, seed=seed, reward=round(total_reward, 6),
                        trials=trials, rollouts=rollouts, seconds=round(secs, 2),
                        grasp_gate_calls=gate_after[0] - gate_before[0],
                        grasp_gate_changes=gate_after[1] - gate_before[1],
                        grasp_gate_abstentions=gate_after[2] - gate_before[2],
+                       action_gate_calls=action_after[0] - action_before[0],
+                       action_gate_changes=action_after[1] - action_before[1],
+                       action_gate_abstentions=(action_after[2] -
+                                                action_before[2]),
                        error=error))
       print(f'Episode: reward={total_reward:.3f}, trials={trials}, rollouts={rollouts}, '
             f'time={secs:.1f}s' + (f', error={error}' if error else ''))
