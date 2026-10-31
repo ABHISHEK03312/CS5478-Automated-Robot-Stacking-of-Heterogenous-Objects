@@ -32,6 +32,10 @@ Use the same seeds and planner settings as the existing geometry and learned-Q
 experiments. The policy name is included in output filenames so results do not
 overwrite one another.
 
+Long evaluations can be sharded without changing scene or planner seeds. For
+example, `--start_index=10 --n=30` evaluates held-out seed indices 10 through
+39. Nonzero start indices are included in output filenames.
+
 ```bash
 python -m ravens.beam_test \
   --task=stack-block-pyramid-parallel-jaw --split=test --n=100 \

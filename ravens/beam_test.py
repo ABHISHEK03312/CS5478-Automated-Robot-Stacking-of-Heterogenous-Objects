@@ -32,6 +32,8 @@ flags.DEFINE_bool('disp', False, '')
 flags.DEFINE_string('task', 'stack-block-pyramid-parallel-jaw', '')
 flags.DEFINE_enum('split', 'test', ['train', 'test'], 'Which scenes to run.')
 flags.DEFINE_integer('n', 10, 'Number of episodes.')
+flags.DEFINE_integer('start_index', 0,
+                     'Zero-based held-out seed index for sharded evaluation.')
 flags.DEFINE_enum('objective', 'target', ['target', 'free'],
                   'target: native Ravens reward; free: fraction on stand.')
 flags.DEFINE_integer('beam_width', 3, 'Sequences kept per depth.')
@@ -60,14 +62,19 @@ FLAGS = flags.FLAGS
 
 
 def get_seeds():
+  if FLAGS.start_index < 0:
+    raise ValueError('--start_index must be non-negative')
   path = os.path.join(FLAGS.data_dir, f'{FLAGS.task}-{FLAGS.split}')
   if os.path.isdir(path):
     ds = Dataset(path)
     if ds.n_episodes > 0:
-      n = min(FLAGS.n, ds.n_episodes)
-      print(f'Using {n} seeds from {path}')
-      return [ds.load(i, images=False)[1] for i in range(n)]
+      stop = min(FLAGS.start_index + FLAGS.n, ds.n_episodes)
+      indices = range(FLAGS.start_index, stop)
+      print(f'Using {len(indices)} seeds from {path}, starting at index '
+            f'{FLAGS.start_index}')
+      return [ds.load(i, images=False)[1] for i in indices]
   first = 2 if FLAGS.split == 'train' else 1
+  first += 2 * FLAGS.start_index
   print(f'No {FLAGS.split} dataset found; using seeds {first}, {first + 2}, ...')
   return [first + 2 * i for i in range(FLAGS.n)]
 
@@ -133,6 +140,8 @@ def main(unused_argv):
           f'K{FLAGS.beam_width}-H{FLAGS.horizon}-v{FLAGS.verify_k}')
   if grasp_policy != 'geometry':
     name += f'-grasp-{grasp_policy}'
+  if FLAGS.start_index:
+    name += f'-s{FLAGS.start_index}'
   env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
   rows = []
   grasp_scorer = create_grasp_planner(
