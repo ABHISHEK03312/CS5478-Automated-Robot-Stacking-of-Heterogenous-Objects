@@ -14,6 +14,9 @@ import tensorflow as tf
 
 
 flags.DEFINE_string('replay_dir', './data/rgbd-grasp-replay', '')
+flags.DEFINE_multi_string(
+    'replay_shard', [],
+    'Optional repeated replay directories; overrides --replay_dir.')
 flags.DEFINE_string('root_dir', './runs/grasp-qt-opt', '')
 flags.DEFINE_integer('steps', 1500, '')
 flags.DEFINE_integer('batch_size', 16, '')
@@ -62,10 +65,12 @@ def main(unused_argv):
   if not 0 <= FLAGS.gamma <= 1:
     raise ValueError('--gamma must be in [0, 1]')
   configure_tensorflow()
-  dataset = GraspReplayDataset(FLAGS.replay_dir)
-  if not len(dataset):
-    raise ValueError(f'grasp replay dataset is empty: {dataset.path}')
-  transitions = [dataset.load(index) for index in range(len(dataset))]
+  replay_paths = list(FLAGS.replay_shard) or [FLAGS.replay_dir]
+  datasets = [GraspReplayDataset(path) for path in replay_paths]
+  transitions = [dataset.load(index) for dataset in datasets
+                 for index in range(len(dataset))]
+  if not transitions:
+    raise ValueError(f'grasp replay datasets are empty: {replay_paths}')
   model = GraspCandidateQModel(
       image_channels=transitions[0].image.shape[2],
       crop_size=FLAGS.crop_size, learning_rate=FLAGS.learning_rate)
@@ -75,7 +80,8 @@ def main(unused_argv):
   target.model.set_weights(model.model.get_weights())
   rng = np.random.default_rng(FLAGS.seed)
   writer = tf.summary.create_file_writer(os.path.join(FLAGS.root_dir, 'logs'))
-  print(f'Training on {len(transitions)} sequential transitions.', flush=True)
+  print(f'Training on {len(transitions)} sequential transitions from '
+        f'{len(datasets)} shard(s).', flush=True)
   for step in range(1, FLAGS.steps + 1):
     indices = rng.choice(
         len(transitions), FLAGS.batch_size,

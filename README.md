@@ -247,9 +247,11 @@ in the current Windows simulator environment.
   a compute-matched algorithm comparison.
 - The original grasp-Q checkpoints remain one-step immediate-reward models. A
   separate compact QT-Opt-style path now collects sequential RGB-D replay and
-  trains Bellman targets with a target network. Its eight-transition smoke test
-  validated the pipeline but caused the safety gate to abstain on all 33 beam
-  decisions, so meaningful RL evaluation still requires a larger replay set.
+  trains Bellman targets with a target network. A 100-episode run produced
+  1,054 transitions and trained for 1,500 updates. Its 10-seed beam safety
+  screen scored 0.483 versus 0.500 for geometry (0 wins, 9 ties, 1 loss), so it
+  was not advanced to 100 seeds. The current lift-and-clear RL objective is not
+  sufficiently aligned with stacking reward.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

@@ -18,7 +18,7 @@ can then consume the scores without policy-specific planner code.
 | Point-cloud adapter | Complete | World-frame NPZ subprocess protocol |
 | GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
 | Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
-| Compact QT-Opt-style RL | Pipeline complete; smoke tested | Larger replay dataset and evaluation |
+| Compact QT-Opt-style RL | 10-seed safety screen complete | No full run: 0 wins, 1 loss |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
 The robust analytic policy is inspired by Dex-Net's robustness objective but
@@ -163,6 +163,27 @@ mean reward 0.389 and no errors, exactly matching geometry because the safety
 gate abstained on all 33 decisions. This validates collection, Bellman targets,
 checkpoint loading, and planner integration only; it provides no evidence of
 RL performance from such a tiny replay set.
+
+The subsequent experiment collected 100 episodes in four deterministic shards:
+1,054 transitions covering seeds 42000 through 42099, with 570 positive rewards,
+484 zero-reward actions, and exactly 100 terminal transitions. The critic was
+trained for 1,500 Bellman updates with target-network copies every 100 updates.
+
+On the matched 10-seed reduced-beam safety screen, QT-style ranking scored
+0.483 versus 0.500 for geometry. The paired delta was -0.017 with bootstrap
+interval [-0.050, 0.000]: zero wins, nine ties, and one loss. The gate accepted
+34 of 104 decisions and abstained on 70. QT-style beam produced 4 full, 3
+partial, and 3 zero-reward episodes; all episodes completed without errors.
+
+This checkpoint does not qualify for a 100-seed run. Its sequential object-
+clearing objective validates Bellman learning but is not sufficiently aligned
+with downstream stacking value. A future RL version should include placement
+in the action and train on actual stacking returns rather than lift-and-clear
+rewards.
+
+Collection can be parallelized safely by writing each process to a separate
+directory and repeating `--replay_shard` during training. This avoids index
+collisions while preserving every transition.
 
 ### Complete policy comparison
 

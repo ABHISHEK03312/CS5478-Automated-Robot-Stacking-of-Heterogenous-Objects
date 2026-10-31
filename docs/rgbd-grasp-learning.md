@@ -63,6 +63,13 @@ This compact QT-Opt-style path records complete
 `(observation, action, reward, next_observation, done)` transitions and uses a
 target network for Bellman updates over depth-derived grasp candidates.
 
+The first substantive run used 100 episodes and 1,054 transitions. After 1,500
+updates, its matched 10-seed beam screen scored 0.483 versus 0.500 for geometry,
+with no wins, nine ties, and one loss. It was therefore stopped before a
+100-seed evaluation. The next RL formulation should include placement actions
+and stacking returns; optimizing sequential lift-and-clear reward alone did not
+improve the stacking planner.
+
 ## Evaluate on held-out attempts
 
 Collect a separate directory with different seeds, then evaluate without using
