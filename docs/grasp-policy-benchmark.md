@@ -44,18 +44,25 @@ python -m ravens.cem_test \
   --grasp_policy=analytic --grasp_rank_objects=true
 ```
 
-## Initial integration smoke test
+## Ten-seed analytic safety screen
 
-The first three held-out seeds completed without errors.
+The first ten held-out seeds completed without errors using reduced beam and
+standard CEM. Results are paired against the existing geometry runs.
 
-| Planner | Geometry mean | Analytic mean | Paired seed outcomes | Gate changes / calls |
-|---|---:|---:|---|---:|
-| Reduced beam | 0.389 | 0.389 | 3 ties | 9 / 33 |
-| Standard CEM | 0.722 | 0.667 | 1 win, 1 tie, 1 loss | 2 / 30 |
+| Planner | Geometry | + analytic | Delta | Wins / ties / losses | Bootstrap 95% CI |
+|---|---:|---:|---:|---:|---:|
+| Reduced beam | 0.500 | 0.583 | +0.083 | 1 / 9 / 0 | [0.000, 0.250] |
+| Standard CEM | 0.683 | 0.667 | -0.017 | 2 / 5 / 3 | [-0.183, 0.167] |
 
-These three episodes validate integration only. They do not establish policy
-quality. The analytic gate abstained on 24 beam decisions and 24 CEM decisions.
-A larger paired run is required before enabling the policy by default.
+Beam + analytic produced 5 full, 3 partial, and 2 zero-reward episodes. Its
+gate changed the preferred object on 33 of 103 decisions and abstained on 70.
+CEM + analytic produced 4 full, 6 partial, and no zero-reward episodes. Its
+gate changed the object on 7 of 103 decisions and abstained on 78.
+
+The beam gain came from one seed, while the other nine tied; the normal paired
+interval also crossed zero. CEM's small loss was likewise unresolved. These
+results pass the integration safety screen but do not establish policy quality.
+A 100-seed paired run is required before enabling the policy by default.
 
 ## Evaluation sequence
 
