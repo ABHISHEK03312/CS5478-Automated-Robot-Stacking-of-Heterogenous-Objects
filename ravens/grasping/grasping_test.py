@@ -1,6 +1,8 @@
 """Tests for RGB-D grasp action encoding and dataset storage."""
 
 import tempfile
+import sys
+from unittest import mock
 
 from absl.testing import absltest
 import numpy as np
@@ -17,6 +19,10 @@ from ravens.grasping.selection import select_random_grasp
 from ravens.grasping.planner import CandidateGraspPlanner
 from ravens.grasping.analytic import RobustAnalyticGraspModel
 from ravens.grasping.policies import resolve_policy
+from ravens.grasping.pointcloud import heightmap_pointcloud
+from ravens.grasping.pointcloud import NpzCommandGraspBackend
+from ravens.grasping.pointcloud import planar_grasp_candidates
+from ravens.grasping.pointcloud_planner import PointCloudGraspPlanner
 from ravens.models.grasp_q import GraspQModel
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -134,6 +140,79 @@ class RobustAnalyticGraspModelTest(absltest.TestCase):
 
   def test_checkpoint_keeps_legacy_candidate_q_selection(self):
     self.assertEqual(resolve_policy('geometry', 'model.h5'), 'candidate_q')
+
+  def test_external_policy_requires_backend_command(self):
+    from ravens.grasping.policies import create_grasp_planner
+    with self.assertRaisesRegex(ValueError, 'grasp_backend_arg'):
+      create_grasp_planner('gpd')
+
+
+class PointCloudGraspPolicyTest(absltest.TestCase):
+
+  def test_heightmap_conversion_uses_world_coordinates(self):
+    image = np.zeros((4, 5, 6), dtype=np.float32)
+    image[2, 3, :3] = (10, 20, 30)
+    image[2, 3, 3:] = 0.04
+    cloud = heightmap_pointcloud(image)
+    self.assertEqual(cloud['points'].shape, (1, 3))
+    np.testing.assert_allclose(cloud['points'][0],
+                               (0.259375, -0.49375, 0.04))
+    np.testing.assert_array_equal(cloud['colors'][0], (10, 20, 30))
+    np.testing.assert_array_equal(cloud['pixels'][0], (2, 3))
+
+  def test_six_dof_filter_keeps_only_reachable_top_down_grasps(self):
+    proposals = [
+        {'position': (0.5, 0.0, 0.04), 'approach': (0, 0, -1),
+         'closing_axis': (0, 1, 0), 'width': 0.04, 'score': 0.9},
+        {'position': (0.5, 0.0, 0.04), 'approach': (1, 0, 0),
+         'closing_axis': (0, 1, 0), 'width': 0.04, 'score': 1.0},
+        {'position': (0.9, 0.0, 0.04), 'approach': (0, 0, -1),
+         'closing_axis': (0, 1, 0), 'width': 0.04, 'score': 1.0},
+    ]
+    candidates = planar_grasp_candidates(proposals)
+    self.assertLen(candidates, 1)
+    self.assertAlmostEqual(candidates[0]['yaw'], np.pi / 2)
+    self.assertEqual(candidates[0]['pixel'], (160, 80))
+
+  def test_pointcloud_planner_matches_proposal_to_nearest_object(self):
+    class Backend:
+      def predict(self, unused_points, unused_colors):
+        return [{
+            'position': (0.4, 0.1, 0.04), 'approach': (0, 0, -1),
+            'closing_axis': (1, 0, 0), 'width': 0.04, 'score': 0.9,
+        }]
+
+    image = np.zeros((320, 160, 6), dtype=np.float32)
+    image[192, 48, 3:] = 0.04
+    planner = PointCloudGraspPlanner(Backend(), refine_pose=True)
+    poses = {3: ((0.4, 0.1, 0.02), (0, 0, 0, 1)),
+             4: ((0.6, -0.1, 0.02), (0, 0, 0, 1))}
+    with mock.patch(
+        'ravens.grasping.pointcloud_planner.fused_heightmap',
+        return_value=image), mock.patch(
+            'ravens.grasping.pointcloud_planner.p.getBasePositionAndOrientation',
+            side_effect=lambda oid: poses[oid]):
+      selected = planner.prepare({}, [3, 4])
+    self.assertIn(3, selected)
+    self.assertNotIn(4, selected)
+    self.assertAlmostEqual(planner.quality(3), 0.9)
+
+  def test_npz_subprocess_protocol(self):
+    code = (
+        "import sys,numpy as np;"
+        "src=sys.argv[sys.argv.index('--input')+1];"
+        "dst=sys.argv[sys.argv.index('--output')+1];"
+        "data=np.load(src);"
+        "assert data['points'].shape==(1,3);"
+        "assert str(data['frame'])=='world';"
+        "np.savez(dst,positions=[[.5,0,.04]],approaches=[[0,0,-1]],"
+        "closing_axes=[[1,0,0]],widths=[.04],scores=[.8])")
+    backend = NpzCommandGraspBackend([sys.executable, '-c', code])
+    proposals = backend.predict(
+        np.asarray([[0.5, 0, 0.04]], dtype=np.float32),
+        np.asarray([[255, 0, 0]], dtype=np.uint8))
+    self.assertLen(proposals, 1)
+    self.assertAlmostEqual(float(proposals[0]['score']), 0.8, places=6)
 
 
 class GraspMetricsTest(absltest.TestCase):

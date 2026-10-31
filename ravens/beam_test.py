@@ -45,8 +45,15 @@ flags.DEFINE_integer('seed', 0, 'Seed offset for placement sampling.')
 flags.DEFINE_string('grasp_checkpoint', '',
                     'Optional candidate-Q checkpoint used to rank/refine picks.')
 flags.DEFINE_enum('grasp_policy', 'geometry',
-                  ['geometry', 'candidate_q', 'analytic'],
+                  ['geometry', 'candidate_q', 'analytic', 'gpd',
+                   'contact_graspnet'],
                   'Grasp candidate policy; checkpoint implies candidate_q.')
+flags.DEFINE_multi_string(
+    'grasp_backend_arg', [],
+    'Repeated command arguments for an isolated point-cloud backend.')
+flags.DEFINE_float('grasp_backend_timeout', 120, 'Backend timeout in seconds.')
+flags.DEFINE_float('grasp_max_tilt_degrees', 20,
+                   'Maximum external grasp approach tilt from top-down.')
 flags.DEFINE_float('grasp_weight', 0.1,
                    'Small tie-break weight for conservative grasp Q.')
 flags.DEFINE_integer('grasp_mc_samples', 8, '')
@@ -150,7 +157,10 @@ def main(unused_argv):
       refine_pose=FLAGS.grasp_refine_pose,
       min_probability=FLAGS.grasp_min_probability,
       max_uncertainty=FLAGS.grasp_max_uncertainty,
-      min_margin=FLAGS.grasp_min_margin)
+      min_margin=FLAGS.grasp_min_margin,
+      backend_command=FLAGS.grasp_backend_arg,
+      backend_timeout=FLAGS.grasp_backend_timeout,
+      max_tilt_degrees=FLAGS.grasp_max_tilt_degrees)
   try:
     for k, seed in enumerate(get_seeds(), 1):
       print(f'Test: {k} (seed {seed})', flush=True)

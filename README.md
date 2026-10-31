@@ -187,6 +187,13 @@ GPD and Contact-GraspNet. See the
 [`grasp-policy benchmark plan`](docs/grasp-policy-benchmark.md) for scope,
 compatibility constraints, and current smoke-test results.
 
+The point-cloud boundary is implemented and tested: it exports world-frame
+points through an isolated NPZ subprocess protocol, filters external 6-DoF
+proposals to top-down reachable grasps, and maps them back to planner objects.
+Actual GPD and Contact-GraspNet inference still requires a separate compatible
+Linux environment and pretrained weights; those dependencies are not installed
+in the current Windows simulator environment.
+
 #### Current status
 
 - The first 80-train / 20-validation pilot reached 80% held-out accuracy and

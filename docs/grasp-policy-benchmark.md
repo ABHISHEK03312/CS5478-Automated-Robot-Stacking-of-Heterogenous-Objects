@@ -15,8 +15,9 @@ can then consume the scores without policy-specific planner code.
 | Candidate grasp Q | Complete | Candidate-conditioned RGB-D checkpoint |
 | Robust analytic | Complete | Planar perturbation scoring |
 | Dex-Net GQ-CNN | Planned | Model/environment isolation and planar adapter |
-| GPD | Planned | RGB-D point cloud, 6-DoF frame conversion, reachability filter |
-| Contact-GraspNet | Planned | Separate TensorFlow environment and the same 6-DoF filters |
+| Point-cloud adapter | Complete | World-frame NPZ subprocess protocol |
+| GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
+| Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
 | QT-Opt-style RL | Planned | Simulator replay data and closed-loop action policy |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
@@ -71,6 +72,58 @@ The initial beam gain shrank to near zero at 100 seeds. CEM + analytic has the
 best observed mean and improved more seeds than it regressed, but its confidence
 interval narrowly includes zero. It is therefore promising rather than a
 statistically established improvement and remains disabled by default.
+
+## Point-cloud adapter test
+
+The next integration layer converts the fused RGB-D heightmap into a
+world-frame `N x 3` point cloud with aligned RGB values. An isolated subprocess
+receives `scene.npz` and writes `grasps.npz`; this keeps GPD or Contact-GraspNet
+dependencies out of the working Ravens environment.
+
+The input protocol contains:
+
+- `points`: float32 world coordinates, shape `(N, 3)`;
+- `colors`: uint8 RGB values, shape `(N, 3)`;
+- `frame`: the string `world`;
+- `camera_positions`: the three configured camera origins in world coordinates.
+
+The backend output contains `positions`, `approaches`, `closing_axes`,
+`widths`, and `scores`, plus optional `uncertainties`. The adapter rejects
+non-finite, out-of-workspace, excessive-width, and non-top-down grasps before
+matching proposals to objects. This restriction is necessary because the
+current parallel-jaw primitive cannot execute arbitrary 6-DoF approaches.
+
+The subprocess protocol, frame conversion, filtering, and object matching all
+pass unit tests. A live simulator test supplied six proposals through the same
+adapter, matched all six visible objects, and completed the selected lift with
+attachment and no timeout.
+
+Actual GPD and Contact-GraspNet inference is not yet available on this machine.
+The current environment is Windows, Python 3.10, and TensorFlow 2.10; PCL,
+CMake, Open3D, PyTorch, and both model packages are absent. WSL is installed as
+a command but has no usable distribution or virtualization support. The next
+external-model step therefore requires a separate compatible Linux machine or
+enabling WSL2/virtualization, plus pretrained model weights.
+
+Once a wrapper is available, both planners can invoke it without importing the
+external framework. Each command argument is supplied separately:
+
+```bash
+python -m ravens.cem_test \
+  --grasp_policy=gpd --grasp_rank_objects=true --grasp_refine_pose=true \
+  --grasp_backend_arg=python \
+  --grasp_backend_arg=/path/to/gpd_npz_wrapper.py
+
+python -m ravens.cem_test \
+  --grasp_policy=contact_graspnet --grasp_rank_objects=true \
+  --grasp_refine_pose=true \
+  --grasp_backend_arg=python \
+  --grasp_backend_arg=/path/to/contact_graspnet_npz_wrapper.py
+```
+
+The wrapper receives `--input <scene.npz> --output <grasps.npz>` automatically.
+Without `--grasp_refine_pose=true`, external scores can rank objects but the
+planner deliberately preserves its native center grasp.
 
 ### Complete policy comparison
 
