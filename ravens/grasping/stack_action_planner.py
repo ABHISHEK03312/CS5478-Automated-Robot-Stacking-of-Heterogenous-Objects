@@ -36,3 +36,13 @@ class StackActionQScorer:
         place_yaw=float(place_yaw), reward=0.0,
         next_image=self.image, done=False, metadata={})
     return float(self.model.predict([transition])[0])
+
+
+def create_stack_action_scorer(checkpoint):
+  """Load a placement-aware scorer, or disable it for an empty path."""
+  if not checkpoint:
+    return None
+  from ravens.models.stack_action_q import StackActionQModel
+  model = StackActionQModel()
+  model.load(checkpoint)
+  return StackActionQScorer(model)

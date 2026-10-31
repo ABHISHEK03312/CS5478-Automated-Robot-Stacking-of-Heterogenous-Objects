@@ -17,6 +17,7 @@ from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
 from ravens.grasping.policies import create_grasp_planner
 from ravens.grasping.policies import resolve_policy
+from ravens.grasping.stack_action_planner import create_stack_action_scorer
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -55,6 +56,10 @@ flags.DEFINE_bool('grasp_rank_objects', False,
 flags.DEFINE_float('grasp_min_probability', 0.65, '')
 flags.DEFINE_float('grasp_max_uncertainty', 0.08, '')
 flags.DEFINE_float('grasp_min_margin', 0.15, '')
+flags.DEFINE_string('stack_action_checkpoint', '',
+                    'Optional placement-aware joint-action Q checkpoint.')
+flags.DEFINE_float('stack_action_weight', 0.5,
+                   'Weight for placement-aware Q during planning.')
 FLAGS = flags.FLAGS
 
 
@@ -141,6 +146,8 @@ def main(_):
             f'{init}-v{FLAGS.verify_k}-{FLAGS.n_samples}x{FLAGS.n_iters}')
     if grasp_policy != 'geometry':
       name += f'-grasp-{grasp_policy}'
+    if FLAGS.stack_action_checkpoint:
+      name += '-stack-q'
     if FLAGS.start_index:
       name += f'-s{FLAGS.start_index}'
     rows = []
@@ -154,6 +161,8 @@ def main(_):
         backend_command=FLAGS.grasp_backend_arg,
         backend_timeout=FLAGS.grasp_backend_timeout,
         max_tilt_degrees=FLAGS.grasp_max_tilt_degrees)
+    action_scorer = create_stack_action_scorer(
+        FLAGS.stack_action_checkpoint)
     for k, seed in enumerate(get_seeds(), start=1):
       print(f'\nTest {k} (seed {seed})')
       start = time.time()
@@ -175,7 +184,9 @@ def main(_):
                       n_iters=FLAGS.n_iters, rollout=FLAGS.rollout,
                       verify_k=FLAGS.verify_k, seed=FLAGS.seed + seed,
                       grasp_scorer=grasp_scorer,
-                      grasp_rank_objects=FLAGS.grasp_rank_objects)
+                      grasp_rank_objects=FLAGS.grasp_rank_objects,
+                      action_scorer=action_scorer,
+                      action_weight=FLAGS.stack_action_weight)
         agent = (FreeStackCEMAgent(env, task, **kwargs) if FLAGS.objective == 'free'
                  else CEMAgent(env, task, init=FLAGS.init, **kwargs))
         for _ in range(task.max_steps):

@@ -40,6 +40,8 @@ class CEMAgent:
                w_rot=0.5,             # weight on yaw error
                grasp_scorer=None,
                grasp_rank_objects=False,
+               action_scorer=None,
+               action_weight=0.5,
                seed=0,
                verbose=True):
     self.env = env
@@ -63,6 +65,8 @@ class CEMAgent:
     self.w_rot = w_rot
     self.grasp_scorer = grasp_scorer
     self.grasp_rank_objects = grasp_rank_objects
+    self.action_scorer = action_scorer
+    self.action_weight = action_weight
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -91,6 +95,8 @@ class CEMAgent:
 
     if self.grasp_scorer is not None:
       self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
+    if self.action_scorer is not None:
+      self.action_scorer.prepare(obs)
     obj_id = self._next_object()
     if obj_id is None:
       self.last_object_id = None
@@ -281,6 +287,9 @@ class CEMAgent:
     before = {oid: np.float64(p.getBasePositionAndOrientation(oid)[0])
               for oid in self.env.obj_ids['rigid']}
     place_pose = self._place_pose(obj_id, a)
+    action_bonus = (self.action_weight *
+                    self.action_scorer.quality(pick_pose, place_pose)
+                    if self.action_scorer is not None else 0.0)
 
     ok = True
     if rollout == 'full':
@@ -297,7 +306,7 @@ class CEMAgent:
       p.resetBaseVelocity(obj_id, [0, 0, 0], [0, 0, 0])
 
     self._settle()
-    score = self._score(obj_id, before) if ok else -1e3
+    score = self._score(obj_id, before) + action_bonus if ok else -1e3
     self._restore(snap)
     return score
 

@@ -19,7 +19,7 @@ can then consume the scores without policy-specific planner code.
 | GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
 | Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
 | Compact QT-Opt-style RL | 10-seed safety screen complete | No full run: 0 wins, 1 loss |
-| Joint pick-place return critic | Pipeline smoke tested | Larger replay set and planner evaluation |
+| Joint pick-place return critic | 10-seed safety screen complete | Full Beam evaluation; retune CEM weight |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
 The robust analytic policy is inspired by Dex-Net's robustness objective but
@@ -190,13 +190,28 @@ mixes oracle and perturbed placements and records actual Ravens stacking reward
 and the next RGB-D observation. Discounted episode returns train a separate
 joint-action critic.
 
-A two-episode smoke run produced 21 transitions with six positive task-reward
-steps and both oracle and perturbed actions. Twenty training updates produced a
-loadable checkpoint. A planner-facing adapter converts candidate pick/place
-poses into the same action representation. This validates collection, return
-targets, model training, checkpoint output, and planner feature conversion;
-the checkpoint is intentionally not enabled because two episodes cannot support
-a meaningful policy evaluation.
+The full collection used four independent 25-episode shards and produced 958
+valid transitions across 100 episodes: 176 positive, 766 zero, and 16 negative
+reward steps. The intervention mix was nearly even, with 483 oracle actions and
+475 perturbed actions. Off-image oracle picks are logged and end only the
+affected episode rather than aborting a collection shard. The joint critic was
+trained for 1,500 updates.
+
+The critic is an optional bonus over each planner's physics score; it does not
+replace Beam or CEM search. On the matched ten-seed safety screen, weight 0.5
+produced the following results:
+
+| Planner | Geometry | + joint action Q | Delta | Wins / ties / losses | Bootstrap 95% CI |
+|---|---:|---:|---:|---:|---:|
+| Reduced Beam | 0.500 | **0.600** | +0.100 | 3 / 5 / 2 | [-0.150, 0.350] |
+| Standard CEM | **0.683** | 0.600 | -0.083 | 2 / 6 / 2 | [-0.300, 0.083] |
+
+Both integrations completed without errors. Beam + joint action Q produced four
+full, five partial, and one zero-reward episode, so it qualifies for a complete
+100-seed evaluation, although the ten-seed interval is wide. CEM + joint action
+Q produced four full and six partial episodes. It is not promoted at weight 0.5
+because its point estimate regressed; a smaller weight or uncertainty gate
+should be screened before a full CEM run.
 
 ```bash
 python -m ravens.collect_stack_action_replay \
@@ -205,6 +220,14 @@ python -m ravens.collect_stack_action_replay \
 python -m ravens.train_stack_action_q \
   --replay_dir=./data/stack-action-replay \
   --root_dir=./runs/stack-action-q --steps=1500
+
+python -m ravens.beam_test \
+  --n=10 --beam_width=2 --horizon=1 --n_blocks=3 --n_place=3 --verify_k=1 \
+  --stack_action_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5
+
+python -m ravens.cem_test \
+  --n=10 --n_samples=24 --n_elites=5 --n_iters=3 --verify_k=3 \
+  --stack_action_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5
 ```
 
 Collection can be parallelized safely by writing each process to a separate

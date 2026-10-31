@@ -71,6 +71,12 @@ def main(unused_argv):
         image = fused_heightmap(obs)
         pick_pixel = np.asarray(utils.xyz_to_pix(
             action['pose0'][0], BOUNDS, PIXEL_SIZE), dtype=np.int32)
+        if not (0 <= pick_pixel[0] < image.shape[0] and
+                0 <= pick_pixel[1] < image.shape[1]):
+          print(f'episode={episode + 1}/{FLAGS.episodes} step={step + 1} '
+                f'skipped: pick pixel {pick_pixel.tolist()} is outside '
+                f'{image.shape[:2]}', flush=True)
+          break
         pick_yaw = float(utils.quatXYZW_to_eulerXYZ(action['pose0'][1])[2])
         place_yaw = float(utils.quatXYZW_to_eulerXYZ(action['pose1'][1])[2])
         obs, reward, done, info = env.step(action)

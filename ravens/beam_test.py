@@ -24,6 +24,7 @@ from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
 from ravens.grasping.policies import create_grasp_planner
 from ravens.grasping.policies import resolve_policy
+from ravens.grasping.stack_action_planner import create_stack_action_scorer
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -64,6 +65,10 @@ flags.DEFINE_bool('grasp_gate', True,
 flags.DEFINE_float('grasp_min_probability', 0.65, '')
 flags.DEFINE_float('grasp_max_uncertainty', 0.08, '')
 flags.DEFINE_float('grasp_min_margin', 0.15, '')
+flags.DEFINE_string('stack_action_checkpoint', '',
+                    'Optional placement-aware joint-action Q checkpoint.')
+flags.DEFINE_float('stack_action_weight', 0.5,
+                   'Weight for placement-aware Q during planning.')
 
 FLAGS = flags.FLAGS
 
@@ -147,6 +152,8 @@ def main(unused_argv):
           f'K{FLAGS.beam_width}-H{FLAGS.horizon}-v{FLAGS.verify_k}')
   if grasp_policy != 'geometry':
     name += f'-grasp-{grasp_policy}'
+  if FLAGS.stack_action_checkpoint:
+    name += '-stack-q'
   if FLAGS.start_index:
     name += f'-s{FLAGS.start_index}'
   env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
@@ -161,6 +168,7 @@ def main(unused_argv):
       backend_command=FLAGS.grasp_backend_arg,
       backend_timeout=FLAGS.grasp_backend_timeout,
       max_tilt_degrees=FLAGS.grasp_max_tilt_degrees)
+  action_scorer = create_stack_action_scorer(FLAGS.stack_action_checkpoint)
   try:
     for k, seed in enumerate(get_seeds(), 1):
       print(f'Test: {k} (seed {seed})', flush=True)
@@ -187,6 +195,8 @@ def main(unused_argv):
             n_place=FLAGS.n_place, verify_k=FLAGS.verify_k,
             grasp_scorer=grasp_scorer, grasp_weight=FLAGS.grasp_weight,
             grasp_gate=FLAGS.grasp_gate,
+            action_scorer=action_scorer,
+            action_weight=FLAGS.stack_action_weight,
             seed=FLAGS.seed + seed)
         info = None
         for _ in range(task.max_steps):
