@@ -15,6 +15,8 @@ from ravens.grasping.selection import rank_grasp_candidates
 from ravens.grasping.selection import select_best_grasp
 from ravens.grasping.selection import select_random_grasp
 from ravens.grasping.planner import CandidateGraspPlanner
+from ravens.grasping.analytic import RobustAnalyticGraspModel
+from ravens.grasping.policies import resolve_policy
 from ravens.models.grasp_q import GraspQModel
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -103,6 +105,35 @@ class CandidateGraspPlannerTest(absltest.TestCase):
     }
     self.assertEqual(planner.select_object([1, 2], fallback=2), 2)
     self.assertEqual(planner.selection_abstentions, 1)
+
+
+class RobustAnalyticGraspModelTest(absltest.TestCase):
+
+  def test_scores_candidates_with_common_policy_fields(self):
+    image = np.zeros((32, 32, 6), dtype=np.float32)
+    image[10:20, 11:21, 3:] = 0.04
+    candidate = {'pixel': (14, 15), 'yaw': 0.0, 'width': 0.04,
+                 'quality': None}
+    ranked = RobustAnalyticGraspModel().score_candidates(
+        image, [candidate], mc_samples=3)
+    self.assertLen(ranked, 1)
+    self.assertBetween(ranked[0]['probability'], 0.0, 1.0)
+    self.assertGreaterEqual(ranked[0]['uncertainty'], 0.0)
+    self.assertLessEqual(ranked[0]['quality'], ranked[0]['probability'])
+
+  def test_centered_candidate_is_more_robust_than_edge_candidate(self):
+    image = np.zeros((32, 32, 6), dtype=np.float32)
+    image[10:20, 10:20, 3:] = 0.04
+    candidates = [
+        {'pixel': (14, 14), 'yaw': 0.0, 'width': 0.04, 'quality': None},
+        {'pixel': (10, 10), 'yaw': 0.0, 'width': 0.04, 'quality': None},
+    ]
+    ranked = RobustAnalyticGraspModel().score_candidates(
+        image, candidates, mc_samples=5)
+    self.assertEqual(ranked[0]['pixel'], (14, 14))
+
+  def test_checkpoint_keeps_legacy_candidate_q_selection(self):
+    self.assertEqual(resolve_policy('geometry', 'model.h5'), 'candidate_q')
 
 
 class GraspMetricsTest(absltest.TestCase):

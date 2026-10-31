@@ -22,7 +22,8 @@ from ravens import tasks
 from ravens.agents.beam import BeamSearchAgent, stack_metrics
 from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
-from ravens.grasping.planner import CandidateGraspPlanner
+from ravens.grasping.policies import create_grasp_planner
+from ravens.grasping.policies import resolve_policy
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -41,6 +42,9 @@ flags.DEFINE_integer('verify_k', 3, 'Top first moves verified by arm.')
 flags.DEFINE_integer('seed', 0, 'Seed offset for placement sampling.')
 flags.DEFINE_string('grasp_checkpoint', '',
                     'Optional candidate-Q checkpoint used to rank/refine picks.')
+flags.DEFINE_enum('grasp_policy', 'geometry',
+                  ['geometry', 'candidate_q', 'analytic'],
+                  'Grasp candidate policy; checkpoint implies candidate_q.')
 flags.DEFINE_float('grasp_weight', 0.1,
                    'Small tie-break weight for conservative grasp Q.')
 flags.DEFINE_integer('grasp_mc_samples', 8, '')
@@ -124,21 +128,20 @@ def print_and_save_summary(name, rows):
 
 
 def main(unused_argv):
+  grasp_policy = resolve_policy(FLAGS.grasp_policy, FLAGS.grasp_checkpoint)
   name = (f'{FLAGS.task}-beam-{FLAGS.objective}-{FLAGS.split}-'
           f'K{FLAGS.beam_width}-H{FLAGS.horizon}-v{FLAGS.verify_k}')
+  if grasp_policy != 'geometry':
+    name += f'-grasp-{grasp_policy}'
   env = Environment(FLAGS.assets_root, disp=FLAGS.disp, hz=480)
   rows = []
-  grasp_scorer = None
-  if FLAGS.grasp_checkpoint:
-    from ravens.models.grasp_candidate_q import GraspCandidateQModel
-    grasp_model = GraspCandidateQModel()
-    grasp_model.load(FLAGS.grasp_checkpoint)
-    grasp_scorer = CandidateGraspPlanner(
-        grasp_model, mc_samples=FLAGS.grasp_mc_samples,
-        refine_pose=FLAGS.grasp_refine_pose,
-        min_probability=FLAGS.grasp_min_probability,
-        max_uncertainty=FLAGS.grasp_max_uncertainty,
-        min_margin=FLAGS.grasp_min_margin)
+  grasp_scorer = create_grasp_planner(
+      grasp_policy, checkpoint=FLAGS.grasp_checkpoint,
+      mc_samples=FLAGS.grasp_mc_samples,
+      refine_pose=FLAGS.grasp_refine_pose,
+      min_probability=FLAGS.grasp_min_probability,
+      max_uncertainty=FLAGS.grasp_max_uncertainty,
+      min_margin=FLAGS.grasp_min_margin)
   try:
     for k, seed in enumerate(get_seeds(), 1):
       print(f'Test: {k} (seed {seed})', flush=True)

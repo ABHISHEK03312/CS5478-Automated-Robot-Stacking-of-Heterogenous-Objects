@@ -172,6 +172,21 @@ python -m ravens.beam_test --task=stack-block-pyramid-parallel-jaw --n=10 --gras
 python -m ravens.cem_test --task=stack-block-pyramid-parallel-jaw --n=100 --n_samples=24 --n_elites=5 --n_iters=3 --verify_k=3
 ```
 
+The planners now share an explicit grasp-policy adapter. `geometry` preserves
+the native object-center pick, `candidate_q` loads the learned checkpoint, and
+`analytic` uses a Dex-Net-inspired perturbation-robust geometry score (not the
+Dex-Net GQ-CNN):
+
+```bash
+python -m ravens.beam_test --grasp_policy=analytic --grasp_gate=true
+python -m ravens.cem_test --grasp_policy=analytic --grasp_rank_objects=true
+```
+
+The adapter is the integration point for future point-cloud policies such as
+GPD and Contact-GraspNet. See the
+[`grasp-policy benchmark plan`](docs/grasp-policy-benchmark.md) for scope,
+compatibility constraints, and current smoke-test results.
+
 #### Current status
 
 - The first 80-train / 20-validation pilot reached 80% held-out accuracy and
