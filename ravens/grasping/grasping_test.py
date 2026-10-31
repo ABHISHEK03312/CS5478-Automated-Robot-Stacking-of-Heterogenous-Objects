@@ -23,6 +23,8 @@ from ravens.grasping.pointcloud import heightmap_pointcloud
 from ravens.grasping.pointcloud import NpzCommandGraspBackend
 from ravens.grasping.pointcloud import planar_grasp_candidates
 from ravens.grasping.pointcloud_planner import PointCloudGraspPlanner
+from ravens.grasping.replay import GraspReplayDataset
+from ravens.grasping.replay import GraspTransition
 from ravens.models.grasp_q import GraspQModel
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -322,6 +324,27 @@ class GraspDatasetTest(absltest.TestCase):
         success=False, metadata={})
     with self.assertRaisesRegex(ValueError, 'outside'):
       sample.validate()
+
+
+class GraspReplayDatasetTest(absltest.TestCase):
+
+  def test_transition_round_trip(self):
+    image = np.zeros((8, 7, 6), dtype=np.float32)
+    next_image = image.copy()
+    next_image[3, 4, 3:] = 0.04
+    transition = GraspTransition(
+        image=image, pixel=np.asarray([3, 4]), yaw=0.2, width=0.04,
+        reward=1 / 6, next_image=next_image, done=False,
+        metadata={'episode': 2, 'step': 1})
+    with tempfile.TemporaryDirectory() as directory:
+      dataset = GraspReplayDataset(directory)
+      dataset.add(transition)
+      loaded = dataset.load(0)
+    np.testing.assert_array_equal(loaded.image, image)
+    np.testing.assert_array_equal(loaded.next_image, next_image)
+    self.assertAlmostEqual(loaded.reward, 1 / 6, places=6)
+    self.assertFalse(loaded.done)
+    self.assertEqual(loaded.metadata, {'episode': 2, 'step': 1})
 
 
 class GraspQInputTest(absltest.TestCase):

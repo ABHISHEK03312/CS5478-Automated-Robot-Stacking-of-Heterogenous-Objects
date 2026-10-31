@@ -4,7 +4,7 @@ from ravens.grasping.analytic import RobustAnalyticGraspModel
 from ravens.grasping.planner import CandidateGraspPlanner
 
 
-POLICIES = ('geometry', 'candidate_q', 'analytic', 'gpd',
+POLICIES = ('geometry', 'candidate_q', 'qt_opt', 'analytic', 'gpd',
             'contact_graspnet')
 
 
@@ -26,9 +26,9 @@ def create_grasp_planner(policy='geometry', checkpoint='', mc_samples=8,
   policy = resolve_policy(policy, checkpoint)
   if policy == 'geometry':
     return None
-  if policy == 'candidate_q':
+  if policy in ('candidate_q', 'qt_opt'):
     if not checkpoint:
-      raise ValueError('--grasp_checkpoint is required for candidate_q')
+      raise ValueError(f'--grasp_checkpoint is required for {policy}')
     from ravens.models.grasp_candidate_q import GraspCandidateQModel
     model = GraspCandidateQModel()
     model.load(checkpoint)

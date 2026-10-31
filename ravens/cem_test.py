@@ -38,7 +38,7 @@ flags.DEFINE_integer('seed', 0, 'Sampling seed offset.')
 flags.DEFINE_string('grasp_checkpoint', '',
                     'Optional candidate-Q checkpoint used to refine picks.')
 flags.DEFINE_enum('grasp_policy', 'geometry',
-                  ['geometry', 'candidate_q', 'analytic', 'gpd',
+                  ['geometry', 'candidate_q', 'qt_opt', 'analytic', 'gpd',
                    'contact_graspnet'],
                   'Grasp candidate policy; checkpoint implies candidate_q.')
 flags.DEFINE_multi_string(

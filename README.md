@@ -180,6 +180,7 @@ Dex-Net GQ-CNN):
 ```bash
 python -m ravens.beam_test --grasp_policy=analytic --grasp_gate=true
 python -m ravens.cem_test --grasp_policy=analytic --grasp_rank_objects=true
+python -m ravens.beam_test --grasp_policy=qt_opt --grasp_checkpoint=./runs/grasp-qt-opt/checkpoints/grasp-qt-opt-1500.h5
 ```
 
 The adapter is the integration point for future point-cloud policies such as
@@ -244,8 +245,11 @@ in the current Windows simulator environment.
   CEM used substantially more planning compute: 714 simulator rollouts per
   episode versus 61 for beam, so this is a better operating point rather than
   a compute-matched algorithm comparison.
-- This remains a one-step grasp Q-function (immediate-reward/contextual-bandit
-  learning). Sequential off-policy RL remains a future milestone.
+- The original grasp-Q checkpoints remain one-step immediate-reward models. A
+  separate compact QT-Opt-style path now collects sequential RGB-D replay and
+  trains Bellman targets with a target network. Its eight-transition smoke test
+  validated the pipeline but caused the safety gate to abstain on all 33 beam
+  decisions, so meaningful RL evaluation still requires a larger replay set.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

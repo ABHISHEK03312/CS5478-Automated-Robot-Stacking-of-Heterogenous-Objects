@@ -51,12 +51,21 @@ class GraspCandidateQModel:
     return crop, self._width_feature(candidate['width'])
 
   def train_batch(self, samples):
+    return self.train_targets(samples, [float(sample.success)
+                                        for sample in samples])
+
+  def train_targets(self, samples, targets):
+    """Train candidate values against supplied targets in [0, 1]."""
+    if len(samples) != len(targets):
+      raise ValueError('samples and targets must have the same length')
+    if not samples:
+      raise ValueError('train_targets requires at least one sample')
     crops, widths, labels = [], [], []
-    for sample in samples:
+    for sample, target in zip(samples, targets):
       crop, width = self.prepare(sample)
       crops.append(crop)
       widths.append([width])
-      labels.append([float(sample.success)])
+      labels.append([float(np.clip(target, 0, 1))])
     inputs = (np.asarray(crops), np.asarray(widths, dtype=np.float32))
     labels = tf.convert_to_tensor(labels, dtype=tf.float32)
     with tf.GradientTape() as tape:

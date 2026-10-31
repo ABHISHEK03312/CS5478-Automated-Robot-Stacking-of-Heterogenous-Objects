@@ -18,7 +18,7 @@ can then consume the scores without policy-specific planner code.
 | Point-cloud adapter | Complete | World-frame NPZ subprocess protocol |
 | GPD | Adapter ready; backend unavailable | Isolated Linux/PCL environment and wrapper |
 | Contact-GraspNet | Adapter ready; backend unavailable | Isolated legacy TensorFlow environment and wrapper |
-| QT-Opt-style RL | Planned | Simulator replay data and closed-loop action policy |
+| Compact QT-Opt-style RL | Pipeline complete; smoke tested | Larger replay dataset and evaluation |
 | Tactile / multi-finger | Blocked by platform | New sensors, end effector, action space, and task dynamics |
 
 The robust analytic policy is inspired by Dex-Net's robustness objective but
@@ -124,6 +124,45 @@ python -m ravens.cem_test \
 The wrapper receives `--input <scene.npz> --output <grasps.npz>` automatically.
 Without `--grasp_refine_pose=true`, external scores can rank objects but the
 planner deliberately preserves its native center grasp.
+
+## Compact QT-Opt-style test
+
+A separate replay dataset now records
+`(RGB-D state, grasp, reward, next RGB-D state, done)` transitions. Collection
+is closed-loop: a successful lift removes that object from the active workspace,
+the next observation contains the remaining objects, and each newly cleared
+object earns `1 / initial_object_count` reward.
+
+The TD trainer uses a slowly copied target network and candidate maximization:
+
+```text
+target = reward + gamma * max_next_candidate Q_target(next_state, candidate)
+```
+
+This is a compact QT-Opt-style experiment, not a reproduction of QT-Opt. It
+uses discrete depth-derived candidates instead of continuous-action CEM and is
+trained entirely in the Ravens simulator.
+
+```bash
+python -m ravens.collect_grasp_replay \
+  --episodes=100 --output_dir=./data/rgbd-grasp-replay
+
+python -m ravens.train_grasp_td \
+  --replay_dir=./data/rgbd-grasp-replay \
+  --root_dir=./runs/grasp-qt-opt --steps=1500
+
+python -m ravens.beam_test \
+  --grasp_policy=qt_opt \
+  --grasp_checkpoint=./runs/grasp-qt-opt/checkpoints/grasp-qt-opt-1500.h5
+```
+
+The end-to-end smoke test collected eight sequential transitions: five
+object-clearing rewards and three failures. Ten Bellman updates produced a
+loadable checkpoint. Reduced beam then completed three held-out seeds with
+mean reward 0.389 and no errors, exactly matching geometry because the safety
+gate abstained on all 33 decisions. This validates collection, Bellman targets,
+checkpoint loading, and planner integration only; it provides no evidence of
+RL performance from such a tiny replay set.
 
 ### Complete policy comparison
 

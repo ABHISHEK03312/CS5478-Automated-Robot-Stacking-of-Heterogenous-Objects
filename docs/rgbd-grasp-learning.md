@@ -45,8 +45,23 @@ python -m ravens.train_grasp_q `
 
 Checkpoints are written to `checkpoints/grasp-q/`. The next integration step is
 to use the learned Q values as the grasp term in the existing CEM and beam
-planners. The same model can become an off-policy RL critic once collection
-records complete `(observation, action, reward, next_observation)` transitions.
+planners. For off-policy RL, use the separate sequential replay collector and
+TD trainer, which preserve the supervised attempt dataset unchanged:
+
+```powershell
+python -m ravens.collect_grasp_replay `
+  --episodes=100 `
+  --output_dir=./data/rgbd-grasp-replay
+
+python -m ravens.train_grasp_td `
+  --replay_dir=./data/rgbd-grasp-replay `
+  --root_dir=./runs/grasp-qt-opt `
+  --steps=1500
+```
+
+This compact QT-Opt-style path records complete
+`(observation, action, reward, next_observation, done)` transitions and uses a
+target network for Bellman updates over depth-derived grasp candidates.
 
 ## Evaluate on held-out attempts
 
