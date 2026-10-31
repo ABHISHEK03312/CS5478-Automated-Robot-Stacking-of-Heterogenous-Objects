@@ -190,8 +190,10 @@ simulator rollouts to optimize placement instead of adding noisy grasp-Q values.
 |---|---:|---:|---:|---:|---:|---:|
 | Beam (`K=2`, `H=1`) | 0.515 | 37 | 53 | **10** | 10.17 | 61.3 |
 | Beam + gated Q | 0.510 | 37 | 50 | 13 | 10.08 | 61.2 |
+| Beam + analytic | 0.522 | 36 | 54 | **10** | 10.18 | 60.8 |
 | CEM | 0.673 | 55 | 35 | **10** | 9.40 | 714.4 |
-| **CEM + gated Q** | **0.678** | **58** | 31 | 11 | **9.29** | 706.0 |
+| CEM + gated Q | 0.678 | 58 | 31 | 11 | 9.29 | 706.0 |
+| **CEM + analytic** | **0.710** | **59** | 32 | **9** | **9.25** | 703.0 |
 
 CEM improved mean reward over beam by +0.158. The paired normal 95% confidence
 interval was [0.086, 0.231], and the paired 20,000-sample bootstrap interval
@@ -207,11 +209,19 @@ object-selection decisions, abstained to CEM's geometry choice on 487, and
 actually changed the selected object 81 times. All 100 episodes completed
 without errors.
 
+The perturbation-robust analytic scorer was also evaluated on the complete 100
+seeds. Beam + analytic was effectively neutral: +0.007 versus beam, with
+bootstrap interval [-0.020, 0.035] and 7 wins, 88 ties, and 5 losses. CEM +
+analytic reached the highest observed mean, 0.710. Relative to CEM its paired
+gain was +0.037 with bootstrap interval [-0.003, 0.080], comprising 15 wins,
+77 ties, and 8 losses. The interval narrowly includes zero, so this remains a
+promising experimental result rather than a demonstrated improvement.
+
 This establishes the CEM family as the best tested approach in this RGB-D
 grasp experiment, but not as a compute-matched winner: it used roughly 11.7
 times as many simulator rollouts as reduced beam. A fair efficiency study
 should compare reward as a function of rollout budget and include the default
 deeper beam configuration. For the current goal of improving task success,
-standard CEM is the recommended policy: CEM + Q has the highest point estimate,
-but the extra learned component has not demonstrated a reliable gain and should
-remain experimental.
+standard CEM remains the conservative default. CEM + analytic has the highest
+point estimate, but its gain has not reached 95% paired confidence and should
+remain experimental pending replication on heterogeneous-object scenes.

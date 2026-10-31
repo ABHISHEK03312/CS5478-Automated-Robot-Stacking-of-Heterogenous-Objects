@@ -48,25 +48,45 @@ python -m ravens.cem_test \
   --grasp_policy=analytic --grasp_rank_objects=true
 ```
 
-## Ten-seed analytic safety screen
+## Analytic evaluation
 
-The first ten held-out seeds completed without errors using reduced beam and
-standard CEM. Results are paired against the existing geometry runs.
+The ten-seed safety screen completed without errors and qualified both planner
+integrations for the complete 100-seed paired evaluation. All full-run seeds
+matched the existing geometry result sets exactly, and no episode errored.
 
 | Planner | Geometry | + analytic | Delta | Wins / ties / losses | Bootstrap 95% CI |
 |---|---:|---:|---:|---:|---:|
-| Reduced beam | 0.500 | 0.583 | +0.083 | 1 / 9 / 0 | [0.000, 0.250] |
-| Standard CEM | 0.683 | 0.667 | -0.017 | 2 / 5 / 3 | [-0.183, 0.167] |
+| Reduced beam | 0.515 | 0.522 | +0.007 | 7 / 88 / 5 | [-0.020, 0.035] |
+| Standard CEM | 0.673 | **0.710** | +0.037 | 15 / 77 / 8 | [-0.003, 0.080] |
 
-Beam + analytic produced 5 full, 3 partial, and 2 zero-reward episodes. Its
-gate changed the preferred object on 33 of 103 decisions and abstained on 70.
-CEM + analytic produced 4 full, 6 partial, and no zero-reward episodes. Its
-gate changed the object on 7 of 103 decisions and abstained on 78.
+Beam + analytic produced 36 full, 54 partial, and 10 zero-reward episodes. Its
+gate accepted 304 of 1018 decisions and abstained on 714. Average planning cost
+was 60.8 rollouts per episode, effectively matching geometry beam's 61.3.
 
-The beam gain came from one seed, while the other nine tied; the normal paired
-interval also crossed zero. CEM's small loss was likewise unresolved. These
-results pass the integration safety screen but do not establish policy quality.
-A 100-seed paired run is required before enabling the policy by default.
+CEM + analytic produced 59 full, 32 partial, and 9 zero-reward episodes. Its
+gate accepted 258 of 925 decisions, abstained on 667, and changed CEM's object
+choice 55 times. It averaged 703.0 rollouts per episode versus 714.4 for CEM.
+
+The initial beam gain shrank to near zero at 100 seeds. CEM + analytic has the
+best observed mean and improved more seeds than it regressed, but its confidence
+interval narrowly includes zero. It is therefore promising rather than a
+statistically established improvement and remains disabled by default.
+
+### Complete policy comparison
+
+| Policy | Mean reward | Full | Partial | Zero |
+|---|---:|---:|---:|---:|
+| Beam | 0.515 | 37 | 53 | 10 |
+| Beam + gated Q | 0.510 | 37 | 50 | 13 |
+| Beam + analytic | 0.522 | 36 | 54 | 10 |
+| CEM | 0.673 | 55 | 35 | 10 |
+| CEM + gated Q | 0.678 | 58 | 31 | 11 |
+| **CEM + analytic** | **0.710** | **59** | 32 | **9** |
+
+CEM + analytic exceeded CEM + gated Q by +0.032, but that paired bootstrap
+interval also included zero: [-0.023, 0.088]. The robust conclusion remains
+that the CEM planner family outperforms reduced beam; the choice among CEM
+grasp-ranking variants is not yet resolved at 95% confidence.
 
 ## Evaluation sequence
 

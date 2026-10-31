@@ -229,8 +229,11 @@ compatibility constraints, and current smoke-test results.
 - Standard CEM is the current recommended policy. On the same 100 held-out
   seeds it reached 0.673 mean reward with 55 full stacks, improving over the
   reduced-beam baseline by +0.158 (paired bootstrap 95% CI [0.087, 0.230]).
-  CEM + gated Q produced 58 full stacks and the highest observed mean, 0.678,
-  but its difference from CEM was within sampling uncertainty.
+  CEM + gated Q produced 58 full stacks and mean reward 0.678. The new robust
+  analytic scorer reached the highest observed result: 0.710 with 59 full
+  stacks and 9 zero-reward episodes. Its +0.037 paired gain over CEM was
+  promising but unresolved (bootstrap 95% CI [-0.003, 0.080]), so standard CEM
+  remains the default and analytic ranking remains experimental.
   CEM used substantially more planning compute: 714 simulator rollouts per
   episode versus 61 for beam, so this is a better operating point rather than
   a compute-matched algorithm comparison.
