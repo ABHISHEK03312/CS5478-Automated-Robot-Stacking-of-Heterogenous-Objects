@@ -18,6 +18,7 @@ import pybullet as p
 from generate_stacking_ravens import fits, support_halfwidths
 from cem_grasp_beam import DatasetSceneTask, settle
 from ravens.environments.environment import Environment
+from ravens.grasping.policies import POLICIES
 from ravens.grasping.policies import create_grasp_planner
 
 CENTER = np.array([0.5, 0.18], dtype=float)
@@ -447,12 +448,16 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--gui', action='store_true')
     ap.add_argument('--debug', action='store_true')
-    ap.add_argument('--grasp-policy', choices=('geometry', 'analytic'),
-                    default='geometry')
+    ap.add_argument('--grasp-policy', choices=POLICIES, default='geometry')
+    ap.add_argument('--grasp-checkpoint', default='')
     ap.add_argument('--grasp-mc-samples', type=int, default=8)
     ap.add_argument('--grasp-min-probability', type=float, default=0.65)
     ap.add_argument('--grasp-max-uncertainty', type=float, default=0.08)
     ap.add_argument('--grasp-min-margin', type=float, default=0.15)
+    ap.add_argument('--grasp-refine-pose', action='store_true')
+    ap.add_argument('--grasp-backend-arg', action='append', default=[])
+    ap.add_argument('--grasp-backend-timeout', type=float, default=120)
+    ap.add_argument('--grasp-max-tilt-degrees', type=float, default=20)
     ap.add_argument('--out', type=Path, default=Path('results/cem_hetero_results.json'))
     ap.add_argument('--summary-out', type=Path, default=Path('results/cem_hetero_summary.csv'))
     args = ap.parse_args()
@@ -464,10 +469,15 @@ def main():
     if not files:
         ap.error(f'No episode_*/episode.json found under {args.data}')
     grasp_scorer = create_grasp_planner(
-        args.grasp_policy, mc_samples=args.grasp_mc_samples,
+        args.grasp_policy, checkpoint=args.grasp_checkpoint,
+        mc_samples=args.grasp_mc_samples,
+        refine_pose=args.grasp_refine_pose,
         min_probability=args.grasp_min_probability,
         max_uncertainty=args.grasp_max_uncertainty,
-        min_margin=args.grasp_min_margin)
+        min_margin=args.grasp_min_margin,
+        backend_command=args.grasp_backend_arg,
+        backend_timeout=args.grasp_backend_timeout,
+        max_tilt_degrees=args.grasp_max_tilt_degrees)
     results = []
     for i, file in enumerate(files):
         try:
@@ -481,7 +491,8 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.summary_out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2))
-    method = 'CEM + analytic' if grasp_scorer is not None else 'CEM'
+    method = ('CEM' if grasp_scorer is None else
+              'CEM + ' + args.grasp_policy.replace('_', '-'))
     report = summarize(results, 'tower', method)
     with args.summary_out.open('w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=list(report))

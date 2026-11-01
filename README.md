@@ -283,6 +283,20 @@ in the current Windows simulator environment.
   (44 abstentions), so it safely preserved CEM but did not improve this easier
   completion-fraction benchmark.
 
+Run a matched one-scene grasp-policy demo (geometry, analytic, and the included
+QT-Opt checkpoint) with:
+
+```bash
+conda activate ravens-transporter
+python tools/run_grasp_policy_demo.py --episodes 1
+```
+
+Add `--gui` to watch the robot. Increase `--episodes` for a comparison rather
+than a visual smoke test. The underlying `cem_hetero_towers.py` CLI also accepts
+`candidate_q`, `gpd`, and `contact_graspnet`; learned policies require
+`--grasp-checkpoint`, while point-cloud policies require repeated
+`--grasp-backend-arg` values for their external inference command.
+
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
 limitations. Pilot measurements are in the
