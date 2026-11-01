@@ -309,6 +309,26 @@ python tools/run_grasp_policy_demo.py --data mixed-stacking-hard-test \
   --episodes 100 --refine-pose
 ```
 
+### Interpreting the reported CEM scores
+
+Scores from different rows below are **not directly comparable** because the
+scene difficulty and gripper assumptions change. Reward is the mean fraction
+of objects successfully stacked in each episode.
+
+| Benchmark | Gripper conditions | Original CEM | Best CEM + grasping | Meaning |
+| --- | --- | ---: | ---: | --- |
+| Easier heterogeneous, 100 scenes | Ideal rigid attachment | 0.986 | 0.986 | Near-saturated; grasp ranking had no room to help. |
+| Hard heterogeneous, 100 scenes | Ideal rigid attachment | 0.963 | 0.975 | Grasp refinement gave a small, statistically supported gain. |
+| Hard robustness, 100 scenes | 4 mm position noise, 7-degree yaw noise, slip | 0.694 | 0.704 | Grasping alone helped slightly, but its paired interval crossed zero. |
+| Hard robustness + recovery | Same noise/slip, one regrasp allowed | 0.694 | **0.758** | Best current robust result; recovery prevents many early failures. |
+
+Therefore, the project still achieves `0.9+` under the original ideal-gripper
+conditions. The lower robust scores do not represent a regression: they come
+from adding execution noise and grasp slip that were absent from the original
+simulation. Compare algorithm improvements only within the same benchmark row.
+The earlier 0.673/0.710 planner results elsewhere in this README also use a
+different dataset and evaluation objective.
+
 A 100-scene hard benchmark (`seed=5478`) contained 685 objects. Geometry scored
 0.963 (88 full, 10 partial, 2 zero), while both analytic and QT-Opt pose
 refinement scored 0.975 (95 full, 3 partial, 2 zero). Each refined policy had 10
