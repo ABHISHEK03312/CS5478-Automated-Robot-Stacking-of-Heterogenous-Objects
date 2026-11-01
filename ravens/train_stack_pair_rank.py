@@ -23,6 +23,9 @@ flags.DEFINE_float('learning_rate', 1e-4, '')
 flags.DEFINE_float('min_reward_gap', 0.1, '')
 flags.DEFINE_float('validation_fraction', 0.2, '')
 flags.DEFINE_integer('pair_seed', 0, '')
+flags.DEFINE_integer(
+    'pair_max_episode', -1,
+    'If non-negative, only load episode indices below this value per shard.')
 FLAGS = flags.FLAGS
 
 
@@ -58,15 +61,20 @@ def main(unused_argv):
   datasets = [StackActionReplayDataset(path) for path in paths]
   transitions = [dataset.load(index) for dataset in datasets
                  for index in range(len(dataset))]
-  groups = sorted({item.metadata['candidate_group'] for item in transitions})
+  if FLAGS.pair_max_episode >= 0:
+    transitions = [item for item in transitions
+                   if item.metadata['episode'] < FLAGS.pair_max_episode]
+  if not transitions:
+    raise ValueError('no transitions after replay filtering')
+  scenes = sorted({item.metadata['seed'] for item in transitions})
   rng = np.random.default_rng(FLAGS.pair_seed)
-  rng.shuffle(groups)
-  validation_count = max(1, int(len(groups) * FLAGS.validation_fraction))
-  validation_groups = set(groups[:validation_count])
+  rng.shuffle(scenes)
+  validation_count = max(1, int(len(scenes) * FLAGS.validation_fraction))
+  validation_scenes = set(scenes[:validation_count])
   training = [item for item in transitions
-              if item.metadata['candidate_group'] not in validation_groups]
+              if item.metadata['seed'] not in validation_scenes]
   validation = [item for item in transitions
-                if item.metadata['candidate_group'] in validation_groups]
+                if item.metadata['seed'] in validation_scenes]
   train_pairs = preference_pairs(training, FLAGS.min_reward_gap)
   validation_pairs = preference_pairs(validation, FLAGS.min_reward_gap)
   if not train_pairs or not validation_pairs:
@@ -78,7 +86,8 @@ def main(unused_argv):
   if FLAGS.pair_init_checkpoint:
     model.load_backbone(FLAGS.pair_init_checkpoint)
   print(f'Training on {len(train_pairs)} pairs; validating on '
-        f'{len(validation_pairs)} held-out pairs.', flush=True)
+        f'{len(validation_pairs)} pairs from {len(validation_scenes)} '
+        f'held-out scenes.', flush=True)
   print(f'initial_validation_accuracy='
         f'{pair_accuracy(model, validation_pairs):.4f}', flush=True)
   for step in range(1, FLAGS.steps + 1):

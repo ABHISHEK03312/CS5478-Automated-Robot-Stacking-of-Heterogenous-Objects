@@ -266,11 +266,22 @@ training accuracy to 0.693 while validation fell to 0.483. At a conservative
 0.80 gate, the standard one-seed planner diagnostic exactly preserved native
 CEM and made no changes.
 
-The relative representation and planner integration are working, but 20
-episodes do not provide enough scene diversity to learn a general comparison
-rule. The ranker remains disabled. A future run should expand hard-pair
-collection substantially and retain decision-group or scene-level holdout
-evaluation before any planner benchmark.
+The replay was then expanded to 60 independent scenes. Validation now holds out
+entire scene seeds, preventing candidates or decisions from the same simulated
+scene from appearing on both sides of the split. With 769 training pairs and
+148 pairs from 12 held-out scenes, the pretrained relative ranker reached 0.649
+validation accuracy after 2,000 updates (training accuracy 0.550). The lower
+training score is acceptable here because scene-held-out accuracy is the
+qualification metric and the held-out set is relatively small.
+
+The qualified model completed a full-stack one-seed smoke test. On the standard
+ten-seed CEM benchmark, both the conservative 0.80 gate and the intended 0.65
+gate exactly matched native CEM: 0.683 mean reward, 5 full stacks, 5 partial
+stacks, and no zero-reward episodes or errors. Thus added scene diversity fixed
+the chance-level offline result, but the ranker still abstains on live CEM
+candidates at safe thresholds. It remains disabled; standard CEM remains the
+recommended policy until probability calibration or additional informative
+hard pairs produce a measured online gain.
 
 ```bash
 python -m ravens.collect_cem_pair_replay \
@@ -284,7 +295,8 @@ python -m ravens.train_stack_action_rank \
 python -m ravens.train_stack_pair_rank \
   --pair_replay_dir=./data/cem-pair-replay \
   --pair_init_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5 \
-  --root_dir=./runs/stack-pair-rank --steps=1000
+  --root_dir=./runs/stack-pair-rank --steps=2000 \
+  --validation_fraction=0.2
 ```
 
 ```bash

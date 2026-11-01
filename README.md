@@ -269,8 +269,12 @@ in the current Windows simulator environment.
 - The candidate-relative ranker is now implemented and planner-integrated. Its
   scratch and pretrained variants reached only 0.500 and 0.483 held-out
   accuracy respectively despite higher training accuracy. A high-confidence
-  one-seed diagnostic safely fell back to native CEM. It remains disabled until
-  substantially more hard-pair scenes improve held-out ranking.
+  one-seed diagnostic safely fell back to native CEM. Expanding the replay from
+  20 to 60 scenes and holding out 12 complete scenes raised validation accuracy
+  to 0.649 (148 preference pairs). However, both 0.80 and 0.65 confidence gates
+  reproduced native CEM exactly on ten seeds: 0.683 mean reward, 5 full and 5
+  partial stacks. The ranker therefore remains disabled: it generalizes better
+  offline, but is not yet calibrated strongly enough to improve planning.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
