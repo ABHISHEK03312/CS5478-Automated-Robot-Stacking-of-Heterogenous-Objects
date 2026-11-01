@@ -29,11 +29,15 @@ def main():
   parser.add_argument('--grasp-position-noise-mm', type=float, default=0.0)
   parser.add_argument('--grasp-yaw-noise-degrees', type=float, default=0.0)
   parser.add_argument('--grasp-slip-scale', type=float, default=0.0)
+  parser.add_argument('--grasp-cem-weight', type=float, default=0.0,
+                      help='Jointly optimize grasp quality during CEM search.')
+  parser.add_argument('--grasp-orthogonal-yaw-search', action='store_true')
+  parser.add_argument('--grasp-retries', type=int, choices=(0, 1), default=0)
   args = parser.parse_args()
   if (args.episodes < 1 or args.start_index < 0 or
       args.grasp_position_noise_mm < 0 or
       args.grasp_yaw_noise_degrees < 0 or
-      not 0 <= args.grasp_slip_scale <= 1):
+      not 0 <= args.grasp_slip_scale <= 1 or args.grasp_cem_weight < 0):
     parser.error('invalid episode range or grasp robustness setting')
 
   args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -52,6 +56,7 @@ def main():
         '--grasp-position-noise-mm', str(args.grasp_position_noise_mm),
         '--grasp-yaw-noise-degrees', str(args.grasp_yaw_noise_degrees),
         '--grasp-slip-scale', str(args.grasp_slip_scale),
+        '--grasp-cem-weight', str(args.grasp_cem_weight),
         '--out', str(output), '--summary-out', str(summary),
     ]
     if policy == 'qt_opt':
@@ -69,6 +74,10 @@ def main():
       command.append('--gui')
     if args.refine_pose:
       command.append('--grasp-refine-pose')
+    if args.grasp_orthogonal_yaw_search:
+      command.append('--grasp-orthogonal-yaw-search')
+    if args.grasp_retries:
+      command.extend(['--grasp-retries', str(args.grasp_retries)])
     print(f'\nRunning {policy}:', ' '.join(command), flush=True)
     subprocess.run(command, check=True)
     with summary.open(newline='', encoding='utf-8') as stream:

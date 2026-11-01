@@ -345,7 +345,28 @@ zero). The paired gains over geometry were +0.0092 for analytic and +0.0075 for
 QT-Opt, but their bootstrap intervals [-0.0291, 0.0464] and [-0.0308, 0.0450]
 cross zero. Analytic beat QT-Opt on one scene and tied it on 99, so the learned
 checkpoint still does not improve on the analytic policy. Robustness-aware
-training data, rather than additional evaluation alone, is the next step.
+training data, rather than additional evaluation alone, remains useful.
+
+CEM can also recover once from a modeled slip, center miss, or jaw-width
+failure. The recovery recenters on the object, selects the better of two
+orthogonal jaw directions, and adjusts placement yaw to preserve the object
+orientation that CEM planned:
+
+```bash
+python tools/run_grasp_policy_demo.py --data mixed-stacking-hard-test \
+  --episodes 100 --refine-pose --grasp-retries 1 \
+  --grasp-position-noise-mm 4 --grasp-yaw-noise-degrees 7 \
+  --grasp-slip-scale 0.5 --output-dir results/cem-grasp-retry-hard-100
+```
+
+On the same 100 scenes, CEM + analytic + one retry improved mean reward from
+0.704 to 0.758. It produced 58 full, 33 partial, and 9 zero-reward scenes,
+versus 58, 26, and 16 without retry. The paired gain was +0.0545 with a 95%
+bootstrap interval [0.0131, 0.1024]: 12 wins, 80 ties, and 8 losses. Of 43
+recovery attempts, 11 succeeded. QT-Opt + retry produced identical results, so
+the analytic policy remains the simpler choice. Recovery improves progress and
+reduces catastrophic early failure, but does not yet increase the full-stack
+count; the next objective should explicitly reward complete towers.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

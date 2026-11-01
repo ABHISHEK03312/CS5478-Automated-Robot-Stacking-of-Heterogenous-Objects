@@ -26,6 +26,8 @@ from ravens.grasping.pointcloud_planner import PointCloudGraspPlanner
 from ravens.grasping.replay import GraspReplayDataset
 from ravens.grasping.replay import GraspTransition
 from ravens.grasping.robustness import ParallelJawRobustnessModel
+from ravens.grasping.robustness import parallel_jaw_quality
+from ravens.grasping.robustness import is_modelled_grasp_failure
 from ravens.grasping.stack_replay import StackActionReplayDataset
 from ravens.grasping.stack_replay import StackActionTransition
 from ravens.grasping.stack_action_planner import StackActionQScorer
@@ -63,6 +65,21 @@ class GraspRobustnessTest(absltest.TestCase):
     short_axis = model.evaluate(self.meta, (0.0, 0.0, 0.12), np.pi / 2)
     self.assertLess(short_axis.jaw_width_m, long_axis.jaw_width_m)
     self.assertGreater(short_axis.quality, long_axis.quality)
+
+  def test_nominal_quality_rewards_centering_and_clearance(self):
+    centered = parallel_jaw_quality(0.0, 0.04, 'rectangle')
+    off_center = parallel_jaw_quality(0.02, 0.04, 'rectangle')
+    wide = parallel_jaw_quality(0.0, 0.14, 'rectangle')
+    self.assertGreater(centered, off_center)
+    self.assertGreater(centered, wide)
+
+  def test_only_modelled_failures_are_recoverable(self):
+    self.assertTrue(is_modelled_grasp_failure(
+        {'success': False, 'reason': 'slip'}))
+    self.assertFalse(is_modelled_grasp_failure(
+        {'success': True, 'reason': 'secured'}))
+    self.assertFalse(is_modelled_grasp_failure(
+        {'success': False, 'reason': 'motion_timeout'}))
 
 
 class _FakeEndEffector:

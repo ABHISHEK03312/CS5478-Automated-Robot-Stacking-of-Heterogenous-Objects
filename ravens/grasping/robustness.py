@@ -7,6 +7,36 @@ import math
 import numpy as np
 
 
+MODELLED_FAILURE_REASONS = frozenset(
+    ('slip', 'missed_center', 'jaw_width_exceeded'))
+
+
+def is_modelled_grasp_failure(result):
+  """Return whether a robustness record represents a recoverable grasp miss."""
+  return bool(result is not None and
+              not result.get('success', False) and
+              result.get('reason') in MODELLED_FAILURE_REASONS)
+
+
+def parallel_jaw_quality(center_error_m, jaw_width_m, shape,
+                         open_width=0.15, capture_radius=0.028):
+  """Return a smooth nominal quality from centering and jaw clearance."""
+  center_quality = math.exp(
+      -0.5 * (float(center_error_m) /
+              max(float(capture_radius) * 0.55, 1e-6)) ** 2)
+  width_margin = float(open_width) - float(jaw_width_m) - 0.002
+  margin_quality = float(np.clip(width_margin / 0.035, 0.0, 1.0))
+  shape_quality = {
+      'cube': 1.0,
+      'rectangle': 1.0,
+      'cylinder': 0.90,
+      'triangle': 0.82,
+  }.get(shape, 0.85)
+  return float(np.clip(
+      center_quality * (0.35 + 0.65 * margin_quality) * shape_quality,
+      0.0, 1.0))
+
+
 @dataclass(frozen=True)
 class GraspRobustnessResult:
   """One reproducible robustness trial for a proposed grasp."""
@@ -15,6 +45,7 @@ class GraspRobustnessResult:
   reason: str
   quality: float
   slip_probability: float
+  slip_draw: float
   center_error_m: float
   yaw_error_rad: float
   jaw_width_m: float
@@ -64,18 +95,9 @@ class ParallelJawRobustnessModel:
       jaw_width = abs(length * math.cos(yaw)) + abs(width * math.sin(yaw))
 
     width_margin = self.open_width - jaw_width - 0.002
-    center_quality = math.exp(
-        -0.5 * (center_error / max(self.capture_radius * 0.55, 1e-6)) ** 2)
-    margin_quality = float(np.clip(width_margin / 0.035, 0.0, 1.0))
-    shape_quality = {
-        'cube': 1.0,
-        'rectangle': 1.0,
-        'cylinder': 0.90,
-        'triangle': 0.82,
-    }.get(object_meta['shape'], 0.85)
-    quality = float(np.clip(
-        center_quality * (0.35 + 0.65 * margin_quality) * shape_quality,
-        0.0, 1.0))
+    quality = parallel_jaw_quality(
+        center_error, jaw_width, object_meta['shape'], self.open_width,
+        self.capture_radius)
     slip_probability = self.slip_scale * (1.0 - quality)
 
     if center_error > self.capture_radius:
@@ -91,6 +113,7 @@ class ParallelJawRobustnessModel:
         reason=reason,
         quality=quality,
         slip_probability=float(slip_probability),
+        slip_draw=slip_draw,
         center_error_m=float(center_error),
         yaw_error_rad=yaw_error,
         jaw_width_m=float(jaw_width),
