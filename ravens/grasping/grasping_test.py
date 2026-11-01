@@ -25,6 +25,7 @@ from ravens.grasping.pointcloud import planar_grasp_candidates
 from ravens.grasping.pointcloud_planner import PointCloudGraspPlanner
 from ravens.grasping.replay import GraspReplayDataset
 from ravens.grasping.replay import GraspTransition
+from ravens.grasping.robustness import ParallelJawRobustnessModel
 from ravens.grasping.stack_replay import StackActionReplayDataset
 from ravens.grasping.stack_replay import StackActionTransition
 from ravens.grasping.stack_action_planner import StackActionQScorer
@@ -34,6 +35,34 @@ from ravens.models.stack_action_q import StackActionQModel
 from ravens.models.stack_pair_rank import StackActionPairRankModel
 from ravens.utils import utils
 from ravens.tasks.primitives import PickPlaceParallelJaw
+
+
+class GraspRobustnessTest(absltest.TestCase):
+
+  def setUp(self):
+    self.meta = {
+        'id': 4, 'shape': 'rectangle', 'dims': [0.12, 0.04, 0.03]
+    }
+
+  def test_disturbance_is_deterministic_for_seed_and_object(self):
+    model = ParallelJawRobustnessModel(
+        7, position_noise_mm=4, yaw_noise_degrees=6, slip_scale=0.5)
+    first = model.evaluate(self.meta, (0.0, 0.0, 0.12), 0.0)
+    second = model.evaluate(self.meta, (0.0, 0.0, 0.12), 0.0)
+    self.assertEqual(first, second)
+
+  def test_large_center_error_is_rejected(self):
+    model = ParallelJawRobustnessModel(7, slip_scale=0.0)
+    result = model.evaluate(self.meta, (0.04, 0.0, 0.12), 0.0)
+    self.assertFalse(result.success)
+    self.assertEqual(result.reason, 'missed_center')
+
+  def test_short_axis_grasp_has_more_clearance(self):
+    model = ParallelJawRobustnessModel(7, slip_scale=0.0)
+    long_axis = model.evaluate(self.meta, (0.0, 0.0, 0.12), 0.0)
+    short_axis = model.evaluate(self.meta, (0.0, 0.0, 0.12), np.pi / 2)
+    self.assertLess(short_axis.jaw_width_m, long_axis.jaw_width_m)
+    self.assertGreater(short_axis.quality, long_axis.quality)
 
 
 class _FakeEndEffector:

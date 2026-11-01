@@ -26,9 +26,15 @@ def main():
   parser.add_argument('--gui', action='store_true')
   parser.add_argument('--refine-pose', action='store_true',
                       help='Execute each policy RGB-D pick pixel and yaw.')
+  parser.add_argument('--grasp-position-noise-mm', type=float, default=0.0)
+  parser.add_argument('--grasp-yaw-noise-degrees', type=float, default=0.0)
+  parser.add_argument('--grasp-slip-scale', type=float, default=0.0)
   args = parser.parse_args()
-  if args.episodes < 1 or args.start_index < 0:
-    parser.error('episodes must be positive and start-index non-negative')
+  if (args.episodes < 1 or args.start_index < 0 or
+      args.grasp_position_noise_mm < 0 or
+      args.grasp_yaw_noise_degrees < 0 or
+      not 0 <= args.grasp_slip_scale <= 1):
+    parser.error('invalid episode range or grasp robustness setting')
 
   args.output_dir.mkdir(parents=True, exist_ok=True)
   summaries = []
@@ -43,6 +49,9 @@ def main():
         '--start-index', str(args.start_index),
         '--samples', '24', '--iters', '3', '--elites', '4',
         '--grasp-policy', policy,
+        '--grasp-position-noise-mm', str(args.grasp_position_noise_mm),
+        '--grasp-yaw-noise-degrees', str(args.grasp_yaw_noise_degrees),
+        '--grasp-slip-scale', str(args.grasp_slip_scale),
         '--out', str(output), '--summary-out', str(summary),
     ]
     if policy == 'qt_opt':

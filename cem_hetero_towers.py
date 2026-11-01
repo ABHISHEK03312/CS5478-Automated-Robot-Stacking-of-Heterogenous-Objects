@@ -327,10 +327,11 @@ class JointCEM:
 
 
 def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, debug,
-                structure='tower', grasp_scorer=None):
+                structure='tower', grasp_scorer=None, grasp_robustness=None):
     meta = (pyramid_meta(seed) if structure == 'pyramid'
             else json.loads(Path(path).read_text()))
-    task = DatasetSceneTask(meta)
+    task = DatasetSceneTask(meta, grasp_robustness=grasp_robustness,
+                            grasp_seed=seed)
     env = Environment(str(assets), task=task, disp=gui, hz=240)
     placed, actions = [], []
     try:
@@ -377,6 +378,7 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
                             'place': [list(a['place'][0]), list(a['place'][1])],
                             'jaw_width': a['jaw_width'], 'cem_score': a['score'],
                             'grasp_attached': bool(task.primitive.last_grasp),
+                            'grasp_robustness': getattr(env.ee, 'last_robustness', None),
                             'timeout': bool(timeout), 'stack_stable': bool(stable),
                             'success': ok})
             print(f'    executed: grasp={task.primitive.last_grasp}, '
@@ -471,12 +473,17 @@ def main():
     ap.add_argument('--grasp-backend-arg', action='append', default=[])
     ap.add_argument('--grasp-backend-timeout', type=float, default=120)
     ap.add_argument('--grasp-max-tilt-degrees', type=float, default=20)
+    ap.add_argument('--grasp-position-noise-mm', type=float, default=0.0)
+    ap.add_argument('--grasp-yaw-noise-degrees', type=float, default=0.0)
+    ap.add_argument('--grasp-slip-scale', type=float, default=0.0)
     ap.add_argument('--out', type=Path, default=Path('results/cem_hetero_results.json'))
     ap.add_argument('--summary-out', type=Path, default=Path('results/cem_hetero_summary.csv'))
     args = ap.parse_args()
     if (not 1 <= args.elites <= args.samples or args.episodes < 1 or
-            args.start_index < 0):
-        ap.error('Invalid samples/elites/episodes')
+            args.start_index < 0 or args.grasp_position_noise_mm < 0 or
+            args.grasp_yaw_noise_degrees < 0 or
+            not 0 <= args.grasp_slip_scale <= 1):
+        ap.error('Invalid samples/elites/episodes or grasp robustness setting')
     all_files = sorted(args.data.glob('episode_*/episode.json'))
     files = all_files[args.start_index:args.start_index + args.episodes]
     if not files:
@@ -491,12 +498,18 @@ def main():
         backend_command=args.grasp_backend_arg,
         backend_timeout=args.grasp_backend_timeout,
         max_tilt_degrees=args.grasp_max_tilt_degrees)
+    grasp_robustness = {
+        'position_noise_mm': args.grasp_position_noise_mm,
+        'yaw_noise_degrees': args.grasp_yaw_noise_degrees,
+        'slip_scale': args.grasp_slip_scale,
+    }
     results = []
     for i, file in enumerate(files):
         try:
             results.append(run_episode(file, args.assets, args.gui, args.samples,
                 args.iters, args.elites, args.settle_steps,
-                args.seed + args.start_index + i, args.debug, 'tower', grasp_scorer))
+                args.seed + args.start_index + i, args.debug, 'tower', grasp_scorer,
+                grasp_robustness))
         except Exception as exc:
             print(f'{file}: {type(exc).__name__}: {exc}', flush=True)
             results.append({'episode': file.parent.name, 'success':False,

@@ -321,6 +321,32 @@ limitation is the constraint-assisted gripper: every centered width-feasible
 proposal attaches rigidly, so contact/slip and grasp perturbation models are
 still needed to discriminate grasp quality more strongly.
 
+To evaluate grasp robustness instead of ideal fixed-constraint attachment, add
+seeded execution noise and quality-dependent slip to the same matched scenes:
+
+```bash
+python tools/run_grasp_policy_demo.py --data mixed-stacking-hard-test \
+  --episodes 100 --refine-pose \
+  --grasp-position-noise-mm 4 --grasp-yaw-noise-degrees 7 \
+  --grasp-slip-scale 0.5 --output-dir results/grasp-robust-hard-100
+```
+
+The disturbance is keyed by episode seed and object ID, so every policy sees
+the same position/yaw error and slip draw for a given object. Each action saves
+the modeled grasp quality, slip probability, applied perturbation, and outcome
+reason under `grasp_robustness`. Setting all three robustness options to zero
+preserves the original geometry-gated behavior.
+
+On the 100 hard scenes above, using 4 mm position noise, 7-degree yaw noise,
+and a 0.5 slip scale removed the ceiling effect. Geometry scored 0.694 (54
+full, 31 partial, 15 zero), analytic refinement scored 0.704 (58 full, 26
+partial, 16 zero), and QT-Opt refinement scored 0.702 (57 full, 27 partial, 16
+zero). The paired gains over geometry were +0.0092 for analytic and +0.0075 for
+QT-Opt, but their bootstrap intervals [-0.0291, 0.0464] and [-0.0308, 0.0450]
+cross zero. Analytic beat QT-Opt on one scene and tied it on 99, so the learned
+checkpoint still does not improve on the analytic policy. Robustness-aware
+training data, rather than additional evaluation alone, is the next step.
+
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
 limitations. Pilot measurements are in the
