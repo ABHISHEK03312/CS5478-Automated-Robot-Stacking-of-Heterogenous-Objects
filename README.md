@@ -309,12 +309,15 @@ python tools/run_grasp_policy_demo.py --data mixed-stacking-hard-test \
   --episodes 100 --refine-pose
 ```
 
-A ten-scene pilot (`seed=5478`) contained 75 objects. Geometry, analytic, and
-QT-Opt each scored 0.900 (9 full stacks and 1 zero). With pose refinement,
-analytic and QT-Opt issued different RGB-D grasp yaws but retained the same
-outcomes. The remaining limitation is the constraint-assisted gripper: every
-centered width-feasible proposal attaches rigidly, so a contact/slip or grasp
-perturbation model is needed for complex scenes to discriminate grasp quality.
+A 30-scene hard benchmark (`seed=5478`) contained 213 objects. Geometry scored
+0.958 (27 full, 2 partial, 1 zero), while both analytic and QT-Opt pose
+refinement scored 0.967 (29 full, 0 partial, 1 zero). Each refined policy had 2
+wins, 28 ties, and 0 losses against geometry, a mean gain of +0.0083. The paired
+bootstrap interval [0.0000, 0.0208] still touched zero, so the gain is promising
+but not conclusive. The remaining limitation is the constraint-assisted
+gripper: every centered width-feasible proposal attaches rigidly, so a
+contact/slip or grasp perturbation model is still needed to discriminate grasp
+quality more strongly.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
