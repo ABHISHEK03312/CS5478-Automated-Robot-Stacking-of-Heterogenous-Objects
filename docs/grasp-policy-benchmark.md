@@ -234,6 +234,38 @@ candidates, especially candidates with similar physics scores but different
 executed stacking returns. A pairwise ranking loss is more appropriate for
 that data than further tuning the global Q weight on these test seeds.
 
+### Hard-candidate pairwise pilot
+
+The counterfactual collector now exposes CEM's top five unique proposals and
+executes each one in an isolated simulator snapshot. It records actual task
+reward and restores the scene before testing the next proposal or advancing
+the native CEM episode. This produced informative groups such as
+`[0, 0.167, 0, 0, -0.167]` without contaminating the behavior policy.
+
+Twenty reduced-CEM training episodes produced 995 candidate transitions and
+298 ordered preference pairs. Splitting complete decision groups rather than
+individual candidates yielded 238 training and 60 validation pairs. Starting
+from the 100-episode joint-action checkpoint, pairwise fine-tuning at `1e-5`
+improved held-out ranking accuracy from 0.517 to 0.550 (training accuracy
+0.555). A `1e-4` run overfit, ending at 0.483 validation accuracy. The better
+checkpoint preserved native CEM on a standard one-seed diagnostic but made no
+ranking changes.
+
+The counterfactual data pipeline is therefore valid, but the current scalar-Q
+architecture is not yet accurate enough to control CEM. The next model should
+compare candidates directly using relative placement deltas and physics-score
+deltas; forcing changes by weakening the gate would not be evidence-based.
+
+```bash
+python -m ravens.collect_cem_pair_replay \
+  --episodes=20 --candidates=5 --output_dir=./data/cem-pair-replay
+
+python -m ravens.train_stack_action_rank \
+  --replay_dir=./data/cem-pair-replay \
+  --init_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5 \
+  --root_dir=./runs/stack-action-rank --steps=1000
+```
+
 ```bash
 python -m ravens.collect_stack_action_replay \
   --episodes=100 --output_dir=./data/stack-action-replay

@@ -45,6 +45,7 @@ class CEMAgent:
                action_rerank_k=0,
                action_max_uncertainty=0.05,
                action_min_margin=0.05,
+               record_candidates=0,
                seed=0,
                verbose=True):
     self.env = env
@@ -73,6 +74,8 @@ class CEMAgent:
     self.action_rerank_k = action_rerank_k
     self.action_max_uncertainty = action_max_uncertainty
     self.action_min_margin = action_min_margin
+    self.record_candidates = int(record_candidates)
+    self.last_candidates = []
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -96,6 +99,7 @@ class CEMAgent:
   # -------------------------------------------------------------------------
 
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
+    self.last_candidates = []
     if not self._has_goals():
       return None
 
@@ -151,6 +155,22 @@ class CEMAgent:
     # The final mean is usually the most reliable point, so add it.
     tried.append((self._evaluate(obj_id, pick_pose, mean), mean))
     tried.sort(key=lambda t: t[0], reverse=True)
+    if self.record_candidates > 0:
+      unique = []
+      for score, candidate in tried:
+        if any(np.allclose(candidate, item[1]) for item in unique):
+          continue
+        unique.append((score, np.array(candidate, copy=True)))
+        if len(unique) >= self.record_candidates:
+          break
+      self.last_candidates = [{
+          'physics_score': float(score),
+          'action': {
+              'pose0': (np.array(pick_pose[0], copy=True),
+                        np.array(pick_pose[1], copy=True)),
+              'pose1': tuple(np.array(value, copy=True) for value in
+                             self._place_pose(obj_id, candidate)),
+          }} for score, candidate in unique]
     if (getattr(self, 'preferred_order', None) is not None and
         tried[0][0] <= -999.0):
       self.last_object_id = None

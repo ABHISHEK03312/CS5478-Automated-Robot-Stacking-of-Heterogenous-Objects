@@ -66,6 +66,29 @@ class StackActionQModel:
     self.optim.apply_gradients(zip(gradients, self.model.trainable_variables))
     return float(loss)
 
+  def train_pairs(self, preferred, rejected):
+    """Train preferred actions to have higher logits than rejected actions."""
+    if not preferred or len(preferred) != len(rejected):
+      raise ValueError('preferred and rejected must have equal nonzero length')
+    preferred_prepared = [self.prepare(item) for item in preferred]
+    rejected_prepared = [self.prepare(item) for item in rejected]
+    preferred_crops = np.asarray([item[0] for item in preferred_prepared])
+    preferred_actions = np.asarray(
+        [item[1] for item in preferred_prepared], dtype=np.float32)
+    rejected_crops = np.asarray([item[0] for item in rejected_prepared])
+    rejected_actions = np.asarray(
+        [item[1] for item in rejected_prepared], dtype=np.float32)
+    with tf.GradientTape() as tape:
+      preferred_logits = self.model(
+          (preferred_crops, preferred_actions), training=False)
+      rejected_logits = self.model(
+          (rejected_crops, rejected_actions), training=False)
+      loss = tf.reduce_mean(tf.nn.softplus(
+          -(preferred_logits - rejected_logits)))
+    gradients = tape.gradient(loss, self.model.trainable_variables)
+    self.optim.apply_gradients(zip(gradients, self.model.trainable_variables))
+    return float(loss)
+
   def predict(self, transitions):
     prepared = [self.prepare(transition) for transition in transitions]
     crops = np.asarray([item[0] for item in prepared])

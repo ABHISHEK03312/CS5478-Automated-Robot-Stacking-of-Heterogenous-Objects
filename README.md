@@ -261,6 +261,11 @@ in the current Windows simulator environment.
   three-model, top-five gated CEM reranker safely reproduced native CEM at
   0.683 on all ten seeds, but accepted no changes. The next critic dataset must
   target hard, near-tied CEM candidate pairs rather than generic placements.
+- A counterfactual CEM collector now records those hard pairs without changing
+  the real episode. Its 20-episode pilot produced 995 candidate transitions and
+  298 preference pairs. Pairwise fine-tuning improved held-out ranking accuracy
+  from 0.517 to 0.550, which is not yet reliable enough to control CEM; a
+  candidate-relative ranker is the next model step.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
