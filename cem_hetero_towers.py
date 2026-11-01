@@ -18,6 +18,7 @@ import pybullet as p
 from generate_stacking_ravens import fits, support_halfwidths
 from cem_grasp_beam import DatasetSceneTask, settle
 from ravens.environments.environment import Environment
+from ravens.grasping.policies import create_grasp_planner
 
 CENTER = np.array([0.5, 0.18], dtype=float)
 
@@ -104,12 +105,13 @@ class JointCEM:
     """
 
     def __init__(self, env, task, rng, samples=48, iters=4, elites=8, settle_steps=90,
-                 debug=False, structure="tower"):
+                 debug=False, structure="tower", grasp_scorer=None):
         self.structure = structure
         self.env, self.task, self.rng = env, task, rng
         self.samples, self.iters, self.elites = samples, iters, elites
         self.settle_steps = settle_steps
         self.debug = debug
+        self.grasp_scorer = grasp_scorer
         self.geometry = {int(o['id']): o for o in task.meta['objects']}
         self.rollouts = 0
 
@@ -229,6 +231,7 @@ class JointCEM:
             means[int(oid)] = np.array([0., 0., seed_yaw, 0., 0., seed_yaw])
             stds[int(oid)] = np.array([0.008, 0.008, 0.65, 0.010, 0.010, 0.65])
         best_score, best_oid, best_x = -float('inf'), None, None
+        best_by_oid = {}
         min_std = np.array([0.002, 0.002, 0.07, 0.002, 0.002, 0.07])
         for iteration in range(self.iters):
             batch = []
@@ -247,6 +250,9 @@ class JointCEM:
                         x = means[oid].copy()
                 score = self._candidate_score(oid, x, placed, remaining)
                 batch.append((score, oid, x.copy()))
+                if score > -1e4 and (oid not in best_by_oid or
+                                     score > best_by_oid[oid][0]):
+                    best_by_oid[oid] = (score, x.copy())
                 if score > best_score:
                     best_score, best_oid, best_x = score, oid, x.copy()
             batch.sort(key=lambda item: item[0], reverse=True)
@@ -278,6 +284,14 @@ class JointCEM:
                       f'object_probs={dict(zip(ids.tolist(), np.round(probs, 2).tolist()))}', flush=True)
         if best_oid is None or best_score <= -1e4:
             return None
+        if self.grasp_scorer is not None and best_by_oid:
+            body_to_oid = {self.task.bodies[oid]: oid for oid in best_by_oid}
+            fallback_body = self.task.bodies[best_oid]
+            selected_body = self.grasp_scorer.select_object(
+                body_to_oid, fallback=fallback_body)
+            selected_oid = body_to_oid.get(selected_body, best_oid)
+            best_oid = selected_oid
+            best_score, best_x = best_by_oid[selected_oid]
         grasp = self._grasp(best_oid, 0, best_x)
         if grasp is None:
             return None
@@ -299,7 +313,7 @@ class JointCEM:
 
 
 def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, debug,
-                structure='tower'):
+                structure='tower', grasp_scorer=None):
     meta = (pyramid_meta(seed) if structure == 'pyramid'
             else json.loads(Path(path).read_text()))
     task = DatasetSceneTask(meta)
@@ -315,9 +329,16 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
               p.getBasePositionAndOrientation(body)[0]))
               for oid, body in task.bodies.items()], flush=True)
         planner = JointCEM(env, task, np.random.default_rng(seed), samples,
-                           iters, elites, settle_steps, debug, structure=structure)
+                           iters, elites, settle_steps, debug, structure=structure,
+                           grasp_scorer=grasp_scorer)
+        gate_before = ((grasp_scorer.selection_calls,
+                        grasp_scorer.selection_changes,
+                        grasp_scorer.selection_abstentions)
+                       if grasp_scorer is not None else (0, 0, 0))
         print(f'{structure}: {len(meta["objects"])} objects', flush=True)
         for step in range(len(meta['objects'])):
+            if grasp_scorer is not None:
+                grasp_scorer.prepare(env._get_obs(), task.bodies.values())
             a = planner.plan(placed)
             if a is None:
                 print(f'  step {step}: CEM found no feasible full-stack action', flush=True)
@@ -351,9 +372,16 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
             placed.append(oid)
             if gui:
                 time.sleep(0.3)
+        gate_after = ((grasp_scorer.selection_calls,
+                       grasp_scorer.selection_changes,
+                       grasp_scorer.selection_abstentions)
+                      if grasp_scorer is not None else (0, 0, 0))
         return {'episode': (Path(path).parent.name if path is not None else f'pyramid_seed_{seed}'), 'structure': structure, 'total': len(meta['objects']),
                 'stacked': len(placed), 'success': len(placed) == len(meta['objects']),
                 'order_chosen_by_cem': placed, 'rollouts': planner.rollouts,
+                'grasp_gate_calls': gate_after[0] - gate_before[0],
+                'grasp_gate_changes': gate_after[1] - gate_before[1],
+                'grasp_gate_abstentions': gate_after[2] - gate_before[2],
                 'actions': actions}
     finally:
         env.close()
@@ -361,7 +389,7 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
 
 
 
-def summarize(results, structure):
+def summarize(results, structure, method='CEM'):
     """Count all requested episodes, including planning and execution failures.
 
     Tower reward is the completion fraction; pyramid uses native Ravens reward.
@@ -389,7 +417,7 @@ def summarize(results, structure):
     avg = statistics.mean(rewards) if n else 0.0
     se = (statistics.stdev(rewards) / math.sqrt(n)) if n > 1 else 0.0
     lo, hi = max(0.0, avg - 1.96 * se), min(1.0, avg + 1.96 * se)
-    return {'Method': 'CEM - ' + structure.title(), 'Episodes': n,
+    return {'Method': method + ' - ' + structure.title(), 'Episodes': n,
             'Avg. Trials': round(statistics.mean(trials), 2) if n else 0,
             'Mean Reward': round(avg, 3), '95% CI': f'[{lo:.3f}, {hi:.3f}]',
             'Full Stacks': full, 'Partial Stacks': partial,
@@ -411,6 +439,7 @@ def main():
     ap.add_argument('--data', type=Path, default=Path('mixed-data-validated'))
     ap.add_argument('--assets', type=Path, default=Path('ravens/environments/assets'))
     ap.add_argument('--episodes', type=int, default=1)
+    ap.add_argument('--start-index', type=int, default=0)
     ap.add_argument('--samples', type=int, default=48)
     ap.add_argument('--iters', type=int, default=4)
     ap.add_argument('--elites', type=int, default=8)
@@ -418,19 +447,33 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--gui', action='store_true')
     ap.add_argument('--debug', action='store_true')
+    ap.add_argument('--grasp-policy', choices=('geometry', 'analytic'),
+                    default='geometry')
+    ap.add_argument('--grasp-mc-samples', type=int, default=8)
+    ap.add_argument('--grasp-min-probability', type=float, default=0.65)
+    ap.add_argument('--grasp-max-uncertainty', type=float, default=0.08)
+    ap.add_argument('--grasp-min-margin', type=float, default=0.15)
     ap.add_argument('--out', type=Path, default=Path('results/cem_hetero_results.json'))
     ap.add_argument('--summary-out', type=Path, default=Path('results/cem_hetero_summary.csv'))
     args = ap.parse_args()
-    if not 1 <= args.elites <= args.samples or args.episodes < 1:
+    if (not 1 <= args.elites <= args.samples or args.episodes < 1 or
+            args.start_index < 0):
         ap.error('Invalid samples/elites/episodes')
-    files = sorted(args.data.glob('episode_*/episode.json'))[:args.episodes]
+    all_files = sorted(args.data.glob('episode_*/episode.json'))
+    files = all_files[args.start_index:args.start_index + args.episodes]
     if not files:
         ap.error(f'No episode_*/episode.json found under {args.data}')
+    grasp_scorer = create_grasp_planner(
+        args.grasp_policy, mc_samples=args.grasp_mc_samples,
+        min_probability=args.grasp_min_probability,
+        max_uncertainty=args.grasp_max_uncertainty,
+        min_margin=args.grasp_min_margin)
     results = []
     for i, file in enumerate(files):
         try:
             results.append(run_episode(file, args.assets, args.gui, args.samples,
-                args.iters, args.elites, args.settle_steps, args.seed+i, args.debug, 'tower'))
+                args.iters, args.elites, args.settle_steps,
+                args.seed + args.start_index + i, args.debug, 'tower', grasp_scorer))
         except Exception as exc:
             print(f'{file}: {type(exc).__name__}: {exc}', flush=True)
             results.append({'episode': file.parent.name, 'success':False,
@@ -438,7 +481,8 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.summary_out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2))
-    report = summarize(results, 'tower')
+    method = 'CEM + analytic' if grasp_scorer is not None else 'CEM'
+    report = summarize(results, 'tower', method)
     with args.summary_out.open('w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=list(report))
         writer.writeheader(); writer.writerow(report)

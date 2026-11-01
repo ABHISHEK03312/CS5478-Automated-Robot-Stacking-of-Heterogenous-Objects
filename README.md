@@ -275,6 +275,13 @@ in the current Windows simulator environment.
   reproduced native CEM exactly on ten seeds: 0.683 mean reward, 5 full and 5
   partial stacks. The ranker therefore remains disabled: it generalizes better
   offline, but is not yet calibrated strongly enough to improve planning.
+- On the separate 100-scene heterogeneous-tower benchmark, the saved native
+  CEM baseline is already near saturation at 0.986 mean completion reward (92
+  full stacks, 8 partial, 0 failures). A matched CEM + analytic run used the
+  same scenes and seeds and produced exactly the same result: 0 wins, 100 ties,
+  and 0 losses. The analytic gate made 0 object-order changes over 497 calls
+  (44 abstentions), so it safely preserved CEM but did not improve this easier
+  completion-fraction benchmark.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
