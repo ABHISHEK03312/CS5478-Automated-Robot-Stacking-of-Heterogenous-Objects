@@ -18,6 +18,7 @@ from ravens.environments.environment import Environment
 from ravens.grasping.policies import create_grasp_planner
 from ravens.grasping.policies import resolve_policy
 from ravens.grasping.stack_action_planner import create_stack_action_scorer
+from ravens.grasping.stack_pair_planner import create_stack_pair_scorer
 
 flags.DEFINE_string('assets_root', './ravens/environments/assets/', '')
 flags.DEFINE_string('data_dir', '.', '')
@@ -65,6 +66,9 @@ flags.DEFINE_integer('stack_action_rerank_k', 0,
                      'Rerank only the top K physics candidates; zero adds Q.')
 flags.DEFINE_float('stack_action_max_uncertainty', 0.05, '')
 flags.DEFINE_float('stack_action_min_margin', 0.05, '')
+flags.DEFINE_string('stack_pair_checkpoint', '',
+                    'Optional candidate-relative CEM ranker checkpoint.')
+flags.DEFINE_float('stack_pair_min_probability', 0.65, '')
 FLAGS = flags.FLAGS
 
 
@@ -153,6 +157,8 @@ def main(_):
       name += f'-grasp-{grasp_policy}'
     if FLAGS.stack_action_checkpoint:
       name += '-stack-q'
+    if FLAGS.stack_pair_checkpoint:
+      name += '-pair-rank'
     if FLAGS.start_index:
       name += f'-s{FLAGS.start_index}'
     rows = []
@@ -168,6 +174,9 @@ def main(_):
         max_tilt_degrees=FLAGS.grasp_max_tilt_degrees)
     action_scorer = create_stack_action_scorer(
         FLAGS.stack_action_checkpoint)
+    action_pair_scorer = create_stack_pair_scorer(
+        FLAGS.stack_pair_checkpoint)
+    rerank_scorer = action_pair_scorer or action_scorer
     for k, seed in enumerate(get_seeds(), start=1):
       print(f'\nTest {k} (seed {seed})')
       start = time.time()
@@ -180,10 +189,10 @@ def main(_):
                       grasp_scorer.selection_changes,
                       grasp_scorer.selection_abstentions)
                      if grasp_scorer is not None else (0, 0, 0))
-      action_before = ((action_scorer.rerank_calls,
-                        action_scorer.rerank_changes,
-                        action_scorer.rerank_abstentions)
-                       if action_scorer is not None else (0, 0, 0))
+      action_before = ((rerank_scorer.rerank_calls,
+                        rerank_scorer.rerank_changes,
+                        rerank_scorer.rerank_abstentions)
+                       if rerank_scorer is not None else (0, 0, 0))
       try:
         np.random.seed(seed)
         env.seed(seed)
@@ -198,7 +207,10 @@ def main(_):
                       action_weight=FLAGS.stack_action_weight,
                       action_rerank_k=FLAGS.stack_action_rerank_k,
                       action_max_uncertainty=FLAGS.stack_action_max_uncertainty,
-                      action_min_margin=FLAGS.stack_action_min_margin)
+                      action_min_margin=FLAGS.stack_action_min_margin,
+                      action_pair_scorer=action_pair_scorer,
+                      action_pair_min_probability=(
+                          FLAGS.stack_pair_min_probability))
         agent = (FreeStackCEMAgent(env, task, **kwargs) if FLAGS.objective == 'free'
                  else CEMAgent(env, task, init=FLAGS.init, **kwargs))
         for _ in range(task.max_steps):
@@ -230,10 +242,10 @@ def main(_):
                      grasp_scorer.selection_changes,
                      grasp_scorer.selection_abstentions)
                     if grasp_scorer is not None else gate_before)
-      action_after = ((action_scorer.rerank_calls,
-                       action_scorer.rerank_changes,
-                       action_scorer.rerank_abstentions)
-                      if action_scorer is not None else action_before)
+      action_after = ((rerank_scorer.rerank_calls,
+                       rerank_scorer.rerank_changes,
+                       rerank_scorer.rerank_abstentions)
+                      if rerank_scorer is not None else action_before)
       secs = time.time() - start
       rows.append(dict(episode=k, seed=seed, reward=round(total_reward, 6),
                        trials=trials, rollouts=rollouts, seconds=round(secs, 2),

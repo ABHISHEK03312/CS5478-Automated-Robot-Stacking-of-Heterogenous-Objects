@@ -28,8 +28,10 @@ from ravens.grasping.replay import GraspTransition
 from ravens.grasping.stack_replay import StackActionReplayDataset
 from ravens.grasping.stack_replay import StackActionTransition
 from ravens.grasping.stack_action_planner import StackActionQScorer
+from ravens.grasping.stack_pair_planner import StackActionPairScorer
 from ravens.models.grasp_q import GraspQModel
 from ravens.models.stack_action_q import StackActionQModel
+from ravens.models.stack_pair_rank import StackActionPairRankModel
 from ravens.utils import utils
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -417,6 +419,39 @@ class StackActionReplayDatasetTest(absltest.TestCase):
         max_uncertainty=0.1, min_margin=0.0)
     self.assertEqual(selected, 0)
     self.assertEqual(scorer.rerank_abstentions, 1)
+
+  def test_candidate_relative_features_reverse_sign(self):
+    image = np.zeros((8, 7, 6), dtype=np.float32)
+    first = StackActionTransition(
+        image=image, pick_pixel=np.asarray([3, 4]), pick_yaw=0.0,
+        width=0.04, place_position=np.asarray([0.5, 0.1, 0.08]),
+        place_yaw=0.4, reward=0.0, next_image=image, done=False, metadata={})
+    second = StackActionTransition(
+        image=image, pick_pixel=np.asarray([3, 4]), pick_yaw=0.0,
+        width=0.04, place_position=np.asarray([0.51, 0.08, 0.08]),
+        place_yaw=0.2, reward=0.0, next_image=image, done=False, metadata={})
+    forward = StackActionPairRankModel.pair_features(
+        first, second, 0.3, 0.2)
+    reverse = StackActionPairRankModel.pair_features(
+        second, first, 0.2, 0.3)
+    self.assertEqual(forward.shape, (16,))
+    np.testing.assert_allclose(forward[10:], -reverse[10:])
+
+  def test_candidate_relative_scorer_selects_confident_challenger(self):
+    class Model:
+      def predict_pairs(self, first, second, first_scores, second_scores):
+        del first, second, first_scores, second_scores
+        return np.asarray([0.4, 0.8])
+
+    scorer = StackActionPairScorer(Model())
+    scorer.image = np.zeros((320, 160, 6), dtype=np.float32)
+    pick = ((0.5, 0.0, 0.04), (0, 0, 0, 1))
+    places = [((0.5, 0.0, 0.08), (0, 0, 0, 1)),
+              ((0.51, 0.0, 0.08), (0, 0, 0, 1)),
+              ((0.49, 0.0, 0.08), (0, 0, 0, 1))]
+    self.assertEqual(scorer.rerank(
+        pick, places, [0.3, 0.29, 0.28], min_probability=0.65), 2)
+    self.assertEqual(scorer.rerank_changes, 1)
 
 
 class GraspQInputTest(absltest.TestCase):

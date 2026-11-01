@@ -45,6 +45,8 @@ class CEMAgent:
                action_rerank_k=0,
                action_max_uncertainty=0.05,
                action_min_margin=0.05,
+               action_pair_scorer=None,
+               action_pair_min_probability=0.65,
                record_candidates=0,
                seed=0,
                verbose=True):
@@ -74,6 +76,8 @@ class CEMAgent:
     self.action_rerank_k = action_rerank_k
     self.action_max_uncertainty = action_max_uncertainty
     self.action_min_margin = action_min_margin
+    self.action_pair_scorer = action_pair_scorer
+    self.action_pair_min_probability = action_pair_min_probability
     self.record_candidates = int(record_candidates)
     self.last_candidates = []
     self.rng = np.random.RandomState(seed)
@@ -107,6 +111,8 @@ class CEMAgent:
       self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
     if self.action_scorer is not None:
       self.action_scorer.prepare(obs)
+    if self.action_pair_scorer is not None:
+      self.action_pair_scorer.prepare(obs)
     obj_id = self._next_object()
     if obj_id is None:
       self.last_object_id = None
@@ -177,15 +183,23 @@ class CEMAgent:
       return None
     best_a = tried[0][1]
 
-    if self.action_scorer is not None and self.action_rerank_k > 0:
+    has_action_reranker = (
+        self.action_rerank_k > 0 and
+        (self.action_scorer is not None or self.action_pair_scorer is not None))
+    if has_action_reranker:
       top = tried[:self.action_rerank_k]
       actions = [item[1] for item in top]
       scores = [item[0] for item in top]
       places = [self._place_pose(obj_id, action) for action in actions]
-      selected = self.action_scorer.rerank(
-          pick_pose, places, scores, weight=self.action_weight,
-          max_uncertainty=self.action_max_uncertainty,
-          min_margin=self.action_min_margin)
+      if self.action_pair_scorer is not None:
+        selected = self.action_pair_scorer.rerank(
+            pick_pose, places, scores,
+            min_probability=self.action_pair_min_probability)
+      else:
+        selected = self.action_scorer.rerank(
+            pick_pose, places, scores, weight=self.action_weight,
+            max_uncertainty=self.action_max_uncertainty,
+            min_margin=self.action_min_margin)
       best_a = actions[selected]
       if self.rollout == 'teleport' and self.verify_k > 0:
         verify_actions = [item[1] for item in tried[:self.verify_k]]
@@ -200,14 +214,14 @@ class CEMAgent:
           return None
         best_a = verify_actions[int(np.argmax(real))]
       if self.verbose:
-        print(f'  action-Q rerank top {len(actions)}: selected={selected} '
+        print(f'  action rerank top {len(actions)}: selected={selected} '
               f'scores={np.round(scores, 3)}')
 
     # Teleport scoring ignores how the arm actually carries and lowers the
     # block (errors of 4-10 mm, against a 10 mm tolerance). Re-score the top
     # few candidates with the real arm motion and pick the best of those.
     if (self.rollout == 'teleport' and self.verify_k > 0 and
-        not (self.action_scorer is not None and self.action_rerank_k > 0)):
+        not has_action_reranker):
       top = [a for _, a in tried[:self.verify_k]]
       real = [self._evaluate(obj_id, pick_pose, a, rollout='full')
               for a in top]

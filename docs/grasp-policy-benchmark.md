@@ -256,6 +256,22 @@ architecture is not yet accurate enough to control CEM. The next model should
 compare candidates directly using relative placement deltas and physics-score
 deltas; forcing changes by weakening the gate would not be evidence-based.
 
+A candidate-relative model was subsequently implemented with a shared RGB-D
+crop encoder and explicit first/second action features, scaled placement
+deltas, yaw delta, and physics-score delta. It trains on both pair directions
+and integrates through a calibrated challenger-vs-CEM-winner probability gate.
+The scratch model reached 0.656 training accuracy but only 0.500 on held-out
+decision groups. Initializing its RGB-D backbone from scalar Q increased
+training accuracy to 0.693 while validation fell to 0.483. At a conservative
+0.80 gate, the standard one-seed planner diagnostic exactly preserved native
+CEM and made no changes.
+
+The relative representation and planner integration are working, but 20
+episodes do not provide enough scene diversity to learn a general comparison
+rule. The ranker remains disabled. A future run should expand hard-pair
+collection substantially and retain decision-group or scene-level holdout
+evaluation before any planner benchmark.
+
 ```bash
 python -m ravens.collect_cem_pair_replay \
   --episodes=20 --candidates=5 --output_dir=./data/cem-pair-replay
@@ -264,6 +280,11 @@ python -m ravens.train_stack_action_rank \
   --replay_dir=./data/cem-pair-replay \
   --init_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5 \
   --root_dir=./runs/stack-action-rank --steps=1000
+
+python -m ravens.train_stack_pair_rank \
+  --pair_replay_dir=./data/cem-pair-replay \
+  --pair_init_checkpoint=./runs/stack-action-q/checkpoints/stack-action-q-1500.h5 \
+  --root_dir=./runs/stack-pair-rank --steps=1000
 ```
 
 ```bash

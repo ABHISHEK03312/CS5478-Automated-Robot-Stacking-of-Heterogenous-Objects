@@ -266,6 +266,11 @@ in the current Windows simulator environment.
   298 preference pairs. Pairwise fine-tuning improved held-out ranking accuracy
   from 0.517 to 0.550, which is not yet reliable enough to control CEM; a
   candidate-relative ranker is the next model step.
+- The candidate-relative ranker is now implemented and planner-integrated. Its
+  scratch and pretrained variants reached only 0.500 and 0.483 held-out
+  accuracy respectively despite higher training accuracy. A high-confidence
+  one-seed diagnostic safely fell back to native CEM. It remains disabled until
+  substantially more hard-pair scenes improve held-out ranking.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator
