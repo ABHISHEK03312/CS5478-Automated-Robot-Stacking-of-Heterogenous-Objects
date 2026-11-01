@@ -24,6 +24,8 @@ def main():
   parser.add_argument('--output-dir', type=Path,
                       default=Path('results/grasp-policy-demo'))
   parser.add_argument('--gui', action='store_true')
+  parser.add_argument('--refine-pose', action='store_true',
+                      help='Execute each policy RGB-D pick pixel and yaw.')
   args = parser.parse_args()
   if args.episodes < 1 or args.start_index < 0:
     parser.error('episodes must be positive and start-index non-negative')
@@ -56,6 +58,8 @@ def main():
                    '--grasp-backend-arg')
     if args.gui:
       command.append('--gui')
+    if args.refine_pose:
+      command.append('--grasp-refine-pose')
     print(f'\nRunning {policy}:', ' '.join(command), flush=True)
     subprocess.run(command, check=True)
     with summary.open(newline='', encoding='utf-8') as stream:

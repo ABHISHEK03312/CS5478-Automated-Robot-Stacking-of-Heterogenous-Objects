@@ -292,10 +292,29 @@ python tools/run_grasp_policy_demo.py --episodes 1
 ```
 
 Add `--gui` to watch the robot. Increase `--episodes` for a comparison rather
-than a visual smoke test. The underlying `cem_hetero_towers.py` CLI also accepts
+than a visual smoke test. Add `--refine-pose` when the policies should execute
+their proposed RGB-D pick pixel and yaw instead of only ranking objects. The
+underlying `cem_hetero_towers.py` CLI also accepts
 `candidate_q`, `gpd`, and `contact_graspnet`; learned policies require
 `--grasp-checkpoint`, while point-cloud policies require repeated
 `--grasp-backend-arg` values for their external inference command.
+
+Generate a harder comparison set with 6–8 objects, tighter clutter, randomized
+initial yaw, narrower support margins, and more cylinders/triangular prisms:
+
+```bash
+python generate_stacking_ravens.py --episodes 100 --difficulty hard \
+  --seed 5478 --out mixed-stacking-hard-test
+python tools/run_grasp_policy_demo.py --data mixed-stacking-hard-test \
+  --episodes 100 --refine-pose
+```
+
+A ten-scene pilot (`seed=5478`) contained 75 objects. Geometry, analytic, and
+QT-Opt each scored 0.900 (9 full stacks and 1 zero). With pose refinement,
+analytic and QT-Opt issued different RGB-D grasp yaws but retained the same
+outcomes. The remaining limitation is the constraint-assisted gripper: every
+centered width-feasible proposal attaches rigidly, so a contact/slip or grasp
+perturbation model is needed for complex scenes to discriminate grasp quality.
 
 See the [`RGB-D grasp learning guide`](docs/rgbd-grasp-learning.md) for the
 dataset format, training options, selection benchmark, and simulator

@@ -28,6 +28,7 @@ runs/
 checkpoints/
 logs/
 results/
+mixed-stacking-hard-demo/
 *-train/
 *-test/
 *.pkl

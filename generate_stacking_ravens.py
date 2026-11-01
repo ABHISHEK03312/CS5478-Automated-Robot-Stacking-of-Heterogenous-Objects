@@ -69,16 +69,18 @@ def random_shape(rng):
                 float(rng.uniform(0.030, 0.060))]
     return kind, dims
 
-def sample_table_positions(rng, objects):
+def sample_table_positions(rng, objects, difficulty='standard'):
     """Choose non-overlapping initial XY locations; avoid the stacking target."""
+    object_clearance = 0.006 if difficulty == 'hard' else 0.020
+    target_clearance = 0.070 if difficulty == 'hard' else 0.10
     for obj in objects:
         radius = 0.5 * math.hypot(*obj['dims'][:2])
         for _ in range(2000):
             xy = np.array([rng.uniform(0.30, 0.70), rng.uniform(-0.35, 0.35)])
-            if np.linalg.norm(xy - np.array(STACK_XY)) < radius + 0.10:
+            if np.linalg.norm(xy - np.array(STACK_XY)) < radius + target_clearance:
                 continue
             if all(np.linalg.norm(xy - np.array(old['start_xy'])) >
-                   radius + 0.5*math.hypot(*old['dims'][:2]) + 0.020
+                   radius + 0.5*math.hypot(*old['dims'][:2]) + object_clearance
                    for old in objects if 'start_xy' in old):
                 obj['start_xy'] = xy.tolist()
                 break
@@ -106,34 +108,46 @@ def fits(top, below, margin=0.004):
         return tx/2 + margin <= bx and ty/2 + margin <= by
     return tx/2 + margin <= bx and ty/2 + margin <= by
 
-def generate_full_stack_objects(rng, n):
+def generate_full_stack_objects(rng, n, difficulty='standard'):
     """Construct a heterogeneous, support-compatible stack containing ALL n objects.
 
     Work from the top downward, making each support larger than the item above.
     A triangle can only be the top item because its upper face is sloping.
     """
     for _ in range(2000):
-        top_shape = str(rng.choice(['cube', 'rectangle', 'triangle', 'cylinder']))
-        width = float(rng.uniform(0.019, 0.026))
+        shapes = ['cube', 'rectangle', 'triangle', 'cylinder']
+        probabilities = ([0.10, 0.25, 0.30, 0.35]
+                         if difficulty == 'hard' else None)
+        top_shape = str(rng.choice(shapes, p=probabilities))
+        width_range = (0.018, 0.024) if difficulty == 'hard' else (0.019, 0.026)
+        height_range = (0.015, 0.028) if difficulty == 'hard' else (0.018, 0.035)
+        width = float(rng.uniform(*width_range))
         top = {'shape': top_shape,
-               'dims': [width, width, float(rng.uniform(0.018, 0.035))]}
+               'dims': [width, width, float(rng.uniform(*height_range))]}
         from_top = [top]
         for level in range(1, n):
             above = from_top[-1]
-            parent_shape = str(rng.choice(['cube', 'rectangle', 'cylinder']))
+            parent_shapes = ['cube', 'rectangle', 'cylinder']
+            parent_probabilities = ([0.10, 0.35, 0.55]
+                                    if difficulty == 'hard' else None)
+            parent_shape = str(rng.choice(
+                parent_shapes, p=parent_probabilities))
             aw, ah = above['dims'][:2]
             #cylinder's circular upper surface needs a larger diameter
             #for the bounding footprint of the next object to fit.
-            multiplier = float(rng.uniform(1.13, 1.25))
+            multiplier_range = ((1.07, 1.15) if difficulty == 'hard'
+                                else (1.13, 1.25))
+            multiplier = float(rng.uniform(*multiplier_range))
             if parent_shape == 'cylinder':
                 side = math.sqrt(2) * max(aw, ah) * multiplier
-                dims = [side, side, float(rng.uniform(0.022, 0.045))]
+                height = rng.uniform(0.018, 0.036) if difficulty == 'hard' else rng.uniform(0.022, 0.045)
+                dims = [side, side, float(height)]
             elif parent_shape == 'cube':
                 side = max(aw, ah) * multiplier
                 dims = [side, side, side]
             else:
-                dims = [aw * multiplier, ah * multiplier,
-                        float(rng.uniform(0.022, 0.05))]
+                height = rng.uniform(0.018, 0.038) if difficulty == 'hard' else rng.uniform(0.022, 0.05)
+                dims = [aw * multiplier, ah * multiplier, float(height)]
             from_top.append({'shape': parent_shape, 'dims': dims})
         stack = list(reversed(from_top))  # base -> top
         if (sum(obj['dims'][2] for obj in stack) <= MAX_STACK_HEIGHT and
@@ -213,20 +227,21 @@ def valid_object_states(objects, require_on_table=False):
 
 
 #executes a single episode of stacking n objects, saving RGB-D images
-def generate_episode(rng, episode, out):
+def generate_episode(rng, episode, out, difficulty='standard'):
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
     p.setTimeStep(1/240)
     p.createMultiBody(0, p.createCollisionShape(p.GEOM_PLANE))
-    n = int(rng.integers(3, 8))
-    objects, stack_ids = generate_full_stack_objects(rng, n)
+    n = int(rng.integers(6, 9) if difficulty == 'hard' else rng.integers(3, 8))
+    objects, stack_ids = generate_full_stack_objects(rng, n, difficulty)
     if objects is None:
         return 0
-    if not sample_table_positions(rng, objects):
+    if not sample_table_positions(rng, objects, difficulty):
         return 0
     for obj in objects:
         obj['body'] = make_body(obj['shape'], obj['dims'], COLORS[obj['id'] % len(COLORS)])
-        yaw = 0.0  # align objects with their labeled grasps in v1
+        yaw = float(rng.uniform(-math.pi, math.pi)) if difficulty == 'hard' else 0.0
+        obj['start_yaw'] = yaw
         pos = [*obj['start_xy'], obj['dims'][2]/2 + 0.001]
         p.resetBasePositionAndOrientation(obj['body'], pos,
                                            p.getQuaternionFromEuler([0, 0, yaw]))
@@ -296,6 +311,7 @@ def generate_episode(rng, episode, out):
         pos, quat = p.getBasePositionAndOrientation(obj['body'])
         final[str(obj['id'])] = {'position': pos, 'orientation_xyzw': quat}
     meta = {'episode': episode, 'num_objects': n, 'stack_type': 'tower',
+            'difficulty': difficulty,
             'workspace_bounds': RAVENS_BOUNDS, 'stack_xy': STACK_XY,
             'max_gripper_opening_m': MAX_GRIPPER_OPENING,
             'max_stack_height_m': MAX_STACK_HEIGHT,
@@ -313,6 +329,8 @@ def main():
     parser.add_argument('--episodes', type=int, default=1000)
     parser.add_argument('--out', type=Path, default=Path('stacking_data'))
     parser.add_argument('--seed', type=int, default=7)
+    parser.add_argument('--difficulty', choices=('standard', 'hard'),
+                        default='standard')
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(args.seed)
@@ -320,10 +338,11 @@ def main():
     try:
         count, actions = 0, 0
         # Retry when the full stack fails generation or settling checks.
-        for attempt in range(args.episodes * 50):
+        attempts_per_episode = 200 if args.difficulty == 'hard' else 50
+        for attempt in range(args.episodes * attempts_per_episode):
             if count >= args.episodes:
                 break
-            steps = generate_episode(rng, count, args.out)
+            steps = generate_episode(rng, count, args.out, args.difficulty)
             if steps:
                 count += 1
                 actions += steps

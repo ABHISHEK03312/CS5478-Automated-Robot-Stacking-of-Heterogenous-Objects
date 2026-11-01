@@ -297,6 +297,19 @@ class JointCEM:
         if grasp is None:
             return None
         pick_pose, jaw_width = grasp
+        if self.grasp_scorer is not None:
+            body = self.task.bodies[best_oid]
+            refined_pose = self.grasp_scorer.pick_pose(body, pick_pose)
+            refined_position, refined_rotation = refined_pose
+            body_position = p.getBasePositionAndOrientation(body)[0]
+            refined_x = best_x.copy()
+            refined_x[0] = float(refined_position[0] - body_position[0])
+            refined_x[1] = float(refined_position[1] - body_position[1])
+            refined_x[2] = float(p.getEulerFromQuaternion(refined_rotation)[2])
+            refined_grasp = self._grasp(best_oid, 0, refined_x)
+            if refined_grasp is not None:
+                pick_pose, jaw_width = refined_grasp
+                best_x = refined_x
         if self.structure == 'pyramid':
             goal = PYRAMID_SLOTS[len(placed)]
             place_xy = goal[:2]

@@ -119,7 +119,9 @@ class DatasetSceneTask:
             body = make_body(obj['shape'], obj['dims'], COLORS[oid % len(COLORS)])
             start = [float(obj['start_xy'][0]),
                      float(obj['start_xy'][1]), float(obj['dims'][2]) / 2 + 0.001]
-            p.resetBasePositionAndOrientation(body, start, [0, 0, 0, 1])
+            start_yaw = float(obj.get('start_yaw', 0.0))
+            p.resetBasePositionAndOrientation(
+                body, start, p.getQuaternionFromEuler([0, 0, start_yaw]))
             env.obj_ids['rigid'].append(body)
             self.bodies[oid] = body
             geom[body] = obj
