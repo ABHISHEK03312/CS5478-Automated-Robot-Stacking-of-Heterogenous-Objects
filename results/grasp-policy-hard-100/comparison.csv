@@ -1,0 +1,4 @@
+policy,episodes,avg_trials,mean_reward,ci95,full_stacks,partial_stacks,zero_reward,errors,wins_vs_geometry,ties_vs_geometry,losses_vs_geometry,mean_delta,paired_ci_lower,paired_ci_upper
+geometry,100,6.69,0.963,"[0.934, 0.992]",88,10,2,0,0,100,0,0.0,0.0,0.0
+analytic_refine,100,6.71,0.975,"[0.948, 1.000]",95,3,2,0,10,87,3,0.01244,0.000893,0.025298
+qt_opt_refine,100,6.71,0.975,"[0.948, 1.000]",95,3,2,0,10,87,3,0.01244,0.000893,0.025298
