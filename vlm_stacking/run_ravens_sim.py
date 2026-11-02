@@ -30,6 +30,8 @@ def main():
                       default="stack-block-pyramid-parallel-jaw-transporter-100-0")
   parser.add_argument("--checkpoint-step", type=int, default=40000)
   parser.add_argument("--seed", type=int, default=11)
+  parser.add_argument("--move-timeout", type=float, default=10.0,
+                      help="Wall-clock timeout in seconds for each robot move")
   parser.add_argument("--disp", action="store_true",
                       help="Open the PyBullet viewer while running")
   parser.add_argument("--model", default=None,
@@ -56,7 +58,8 @@ def main():
 
   task_name = "stack-block-pyramid-parallel-jaw"
   task = tasks.names[task_name]()
-  env = Environment(args.assets_root, task=task, disp=args.disp, hz=480)
+  env = Environment(args.assets_root, task=task, disp=args.disp, hz=480,
+                    movej_timeout=args.move_timeout)
   try:
     env.seed(args.seed)
     env.reset()

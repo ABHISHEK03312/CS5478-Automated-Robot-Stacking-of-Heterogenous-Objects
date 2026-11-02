@@ -20,8 +20,11 @@ from ravens.agents.cem import CEMAgent
 from ravens.agents.transporter import OriginalTransporterAgent
 from ravens.dataset import Dataset
 from ravens.environments.environment import Environment
+from ravens.tasks.grippers import VLMParallelJaw
 from vlm_stacking.planner import OllamaStackPlanner
+from vlm_stacking.planner import OllamaGraspPlanner
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
+from vlm_stacking.ravens_policy import OllamaVLMGraspPolicy
 from vlm_stacking.ravens_sim import RavensSimulationExecutor
 from vlm_stacking.ravens_sim import RavensSimulationMaskProvider
 from vlm_stacking.ravens_sim import RavensSimulationSceneProvider
@@ -49,6 +52,9 @@ def parse_args():
       "Build a stable pyramid using all the blocks."))
   parser.add_argument("--model", default=None,
                       help="Ollama model; defaults to OLLAMA_VLM_MODEL")
+  parser.add_argument("--gripper", choices=("parallel-jaw", "vlm"),
+                      default="parallel-jaw",
+                      help="Grasp selection: Transporter parallel-jaw or Ollama VLM")
   parser.add_argument("--techniques", nargs="+",
                       choices=("zero-shot", "beam", "cem", "all"),
                       default=["all"])
@@ -69,6 +75,8 @@ def parse_args():
   parser.add_argument("--seed", type=int, default=11,
                       help="Search-agent sampling seed offset")
   parser.add_argument("--disp", action="store_true")
+  parser.add_argument("--move-timeout", type=float, default=10.0,
+                      help="Wall-clock timeout in seconds for each robot move")
   parser.add_argument("--output", default="vlm_stacking_eval.json",
                       help="JSON file for per-episode results and summaries")
   parser.add_argument("--diagnostics-dir", default="vlm_stacking_diagnostics",
@@ -198,6 +206,7 @@ class CountingExecutor:
         "done": bool(result["done"]),
         "selected_object_moved": result.get("moved"),
         "object_moved": result.get("moved"),
+        "grasp_succeeded": result.get("grasp_succeeded"),
         "placement_verified": result.get("placement_verified"),
         "placement_error_xy_m": result.get("position_error_xy_m"),
         "placement_error_z_m": result.get("position_error_z_m"),
@@ -247,6 +256,7 @@ def run_episode(technique, env, task, seed, planner, policy, args):
   scene = RavensSimulationSceneProvider(
       env, task, debug_image_path=None)
   record = {"seed": int(seed), "technique": technique,
+            "gripper": args.gripper,
             "instruction": args.instruction, "trials": 0,
             "reward": 0.0, "plan": None, "error": None,
             "failure_stage": None, "object_catalog": None,
@@ -267,6 +277,9 @@ def run_episode(technique, env, task, seed, planner, policy, args):
     plan = planner.plan(args.instruction, image, objects_for_prompt, slots)
     record["plan"] = plan
     placements = plan["placements"]
+    if args.gripper == "vlm":
+      current_stage = "batch VLM grasp planning"
+      policy.prepare_grasps(args.instruction, state)
 
     search_agent = make_search_agent(technique, env, task, args, seed)
     if search_agent is not None:
@@ -295,10 +308,16 @@ def run_episode(technique, env, task, seed, planner, policy, args):
             raise RuntimeError("Search agent selected %s; plan requires %s." %
                                (object_id, expected_id))
           current_stage = "search action execution"
+          if args.gripper == "vlm":
+            action = policy.make_action(
+                expected_id, slot_id, state, base_action=action,
+                instruction=args.instruction)
           result = executor(
               action, object_id=object_id, support_id=slot_id,
               target_pose=slot["pose"],
               support_ids=slot["support_object_ids"])
+          if args.gripper == "vlm":
+            record["steps"][-1]["grasp_command"] = policy.last_command
           if result.get("done") or result.get("success"):
             break
           if attempt == 2:
@@ -306,6 +325,10 @@ def run_episode(technique, env, task, seed, planner, policy, args):
                 "Object %s missed slot %s after 3 placement attempts." %
                 (object_id, slot_id))
           _, _, _, state = scene()
+          if (args.gripper == "vlm" and
+              result.get("grasp_succeeded") is False):
+            current_stage = "VLM grasp recovery"
+            policy.refresh_grasp(expected_id, args.instruction, state)
           obs, info = state["obs"], state.get("info")
           slot = state["target_slots"][slot_id]
         if result.get("done"):
@@ -313,24 +336,33 @@ def run_episode(technique, env, task, seed, planner, policy, args):
         _, _, _, state = scene()
         obs, info = state["obs"], state.get("info")
     else:
-      mask_provider = RavensSimulationMaskProvider()
-      target_provider = RavensSimulationTargetProvider()
-      policy = RavensTransporterPolicy(
-          policy.transporter, mask_provider, target_provider)
+      if args.gripper == "parallel-jaw":
+        mask_provider = RavensSimulationMaskProvider()
+        target_provider = RavensSimulationTargetProvider()
+        policy = RavensTransporterPolicy(
+            policy.transporter, mask_provider, target_provider)
       for placement in placements:
         object_id = str(placement["object_id"])
         slot_id = placement["slot_id"]
         result = None
         for attempt in range(3):
           slot = state["target_slots"][slot_id]
-          current_stage = "Transporter action selection"
-          action = policy.make_action(
-              object_id=object_id, support_id=slot_id, state=state)
+          current_stage = ("VLM grasp selection" if args.gripper == "vlm"
+                           else "Transporter action selection")
+          if args.gripper == "vlm":
+            action = policy.make_action(
+                object_id=object_id, support_id=slot_id, state=state,
+                instruction=args.instruction)
+          else:
+            action = policy.make_action(
+                object_id=object_id, support_id=slot_id, state=state)
           current_stage = "Transporter action execution"
           result = executor(
               action, object_id=object_id, support_id=slot_id,
               target_pose=slot["pose"],
               support_ids=slot["support_object_ids"])
+          if args.gripper == "vlm":
+            record["steps"][-1]["grasp_command"] = policy.last_command
           if result.get("done") or result.get("success"):
             break
           if attempt == 2:
@@ -338,6 +370,10 @@ def run_episode(technique, env, task, seed, planner, policy, args):
                 "Object %s missed slot %s after 3 placement attempts." %
                 (object_id, slot_id))
           _, _, _, state = scene()
+          if (args.gripper == "vlm" and
+              result.get("grasp_succeeded") is False):
+            current_stage = "VLM grasp recovery"
+            policy.refresh_grasp(object_id, args.instruction, state)
         if result.get("done"):
           break
         _, objects, _, state = scene()
@@ -391,11 +427,18 @@ def main():
   techniques = ["zero-shot", "beam", "cem"] if "all" in args.techniques else args.techniques
   seeds = dataset_seeds(args.seed_dataset, args.max_episodes, args.seed_offset)
   task = tasks.names[TASK_NAME]()
+  if args.gripper == "vlm":
+    task.ee = VLMParallelJaw
   task.mode = "test"
-  env = Environment(args.assets_root, disp=args.disp, hz=480)
+  env = Environment(args.assets_root, disp=args.disp, hz=480,
+                    movej_timeout=args.move_timeout)
   try:
     policy = None
-    if "zero-shot" in techniques:
+    if args.gripper == "vlm":
+      policy = OllamaVLMGraspPolicy(
+          OllamaGraspPlanner(model=args.model),
+          RavensSimulationTargetProvider())
+    elif "zero-shot" in techniques:
       agent = OriginalTransporterAgent(args.checkpoint, TASK_NAME, args.models_root)
       agent.models_dir = os.path.join(args.models_root, "checkpoints", args.checkpoint)
       agent.load(args.checkpoint_step)
@@ -423,6 +466,8 @@ def main():
             "source_seed_dataset": os.path.abspath(args.seed_dataset),
             "source_episode_count": len(seeds),
             "evaluated_task": TASK_NAME,
+            "gripper": args.gripper,
+            "move_timeout_seconds": args.move_timeout,
             "seed_offset": args.seed_offset,
             "instruction": args.instruction,
             "reward_definition": "Cumulative Ravens pyramid task reward, clipped to [0, 1].",

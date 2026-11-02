@@ -320,7 +320,7 @@ class OllamaStackPlanner:
         response = self._call_llm(prompt, tmp_path)
         try:
             text = response["message"]["content"]
-            text = self._extract_json(text)
+            text = _extract_json(text)
             return json.loads(text)
         except (AttributeError, KeyError, TypeError, ValueError) as error:
             raw_output = (response.get("message", {}).get("content", "")
@@ -329,38 +329,209 @@ class OllamaStackPlanner:
                 "VLM response was not a parseable plan JSON object: %s\n"
                 "Raw output: %s" % (error, raw_output))
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+
+class OllamaGraspPlanner:
+    """Ask a local vision-language model for a bounded top-down grasp command."""
+
+    def __init__(self, model=None, max_retries=2):
+        self.model = model or os.environ.get("OLLAMA_VLM_MODEL", "qwen2.5vl:7b")
+        self.max_retries = max(0, int(max_retries))
+
+    def plan(self, instruction, image_bytes, object_state, object_catalog):
+        if not image_bytes:
+            raise ValueError("A non-empty scene image is required for grasping.")
+        if object_state is None:
+            raise StackPlanError("The selected object has no measured state.")
+
+        previous_error = None
+        for attempt in range(self.max_retries + 1):
+            prompt = self._build_prompt(
+                instruction, object_state, object_catalog, previous_error)
+            suffix = ".jpg" if image_bytes[:3] == b"\xff\xd8\xff" else ".png"
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(image_bytes)
+                tmp_path = tmp.name
+            try:
+                response = ollama.chat(
+                    model=self.model,
+                    messages=[{"role": "user", "content": prompt,
+                               "images": [tmp_path]}])
+            except Exception as error:
+                raise RuntimeError(
+                    "Ollama grasp request failed (is the server running and "
+                    "'%s' pulled?): %s" % (self.model, error))
+            finally:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+
+            try:
+                content = response["message"]["content"]
+                command = json.loads(_extract_json(content))
+                return self._validate(command)
+            except (AttributeError, KeyError, TypeError, ValueError,
+                    StackPlanError) as error:
+                previous_error = str(error)
+                if attempt == self.max_retries:
+                    raise StackPlanError(
+                        "Could not produce a valid grasp command after %d "
+                        "attempts: %s" % (self.max_retries + 1, error))
+
+    def plan_all(self, instruction, image_bytes, object_catalog):
+        """Plan one grasp per visible object in a single VLM request."""
+        if not image_bytes:
+            raise ValueError("A non-empty scene image is required for grasping.")
+        if not object_catalog:
+            raise StackPlanError("No visible objects were provided for grasping.")
+
+        previous_error = None
+        required_ids = [str(item["object_id"]) for item in object_catalog]
+        for attempt in range(self.max_retries + 1):
+            prompt = self._build_batch_prompt(
+                instruction, object_catalog, previous_error)
+            try:
+                response = self._generate_json(prompt, image_bytes)
+                if not isinstance(response, dict) or not isinstance(
+                        response.get("grasps"), list):
+                    raise StackPlanError("Batch grasp response must contain a grasps list.")
+                commands = {}
+                for row in response["grasps"]:
+                    if not isinstance(row, dict) or "object_id" not in row:
+                        raise StackPlanError("Every grasp must include an object_id.")
+                    object_id = str(row["object_id"])
+                    if object_id not in required_ids or object_id in commands:
+                        raise StackPlanError(
+                            "Grasp response has an unknown or repeated object_id: %s" %
+                            object_id)
+                    commands[object_id] = {
+                        "object_id": object_id,
+                        **self._validate(row),
+                    }
+                if set(commands) != set(required_ids):
+                    raise StackPlanError(
+                        "Batch grasp response must include every visible object exactly once.")
+                return commands
+            except StackPlanError as error:
+                previous_error = str(error)
+                if attempt == self.max_retries:
+                    raise StackPlanError(
+                        "Could not produce valid grasps for all objects after "
+                        "%d attempts: %s" % (self.max_retries + 1, error))
+
+    def _generate_json(self, prompt, image_bytes):
+        suffix = ".jpg" if image_bytes[:3] == b"\xff\xd8\xff" else ".png"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+        try:
+            response = ollama.chat(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt,
+                           "images": [tmp_path]}])
+        except Exception as error:
+            raise RuntimeError(
+                "Ollama grasp request failed (is the server running and "
+                "'%s' pulled?): %s" % (self.model, error))
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+        try:
+            content = response["message"]["content"]
+            return json.loads(_extract_json(content))
+        except (AttributeError, KeyError, TypeError, ValueError) as error:
+            raise StackPlanError("Grasp response was not valid JSON: %s" % error)
 
     @staticmethod
-    def _extract_json(text):
-        """Strip markdown code fences and leading prose to isolate JSON."""
-        # Remove ```json ... ``` or ``` ... ``` wrappers.
-        stripped = text.strip()
-        if stripped.startswith("```"):
-            # Drop the opening fence (with optional language tag).
-            first_newline = stripped.index("\n")
-            stripped = stripped[first_newline + 1 :]
-            # Drop the closing fence.
-            if stripped.rstrip().endswith("```"):
-                stripped = stripped.rstrip()[:-3]
-            return stripped.strip()
+    def _build_batch_prompt(instruction, object_catalog, previous_error):
+        prompt = (
+            "Choose one stable top-down two-finger grasp for every listed "
+            "object in this scene. The robot has a parallel-jaw gripper; the "
+            "simulator handles jaw closure. Use the image and each object's "
+            "measured dynamics (dimensions, pose, mass, and velocity). Return "
+            "one command per object ID. For each command, use "
+            "grasp_yaw_degrees in [0, 180), and "
+            "local_offset_x_fraction and local_offset_y_fraction each in "
+            "[-0.15, 0.15]. Offsets are fractions of that object's local XY "
+            "dimensions. Prefer centered grasps. Return JSON only with this "
+            "shape: {\"grasps\":[{\"object_id\":\"...\","
+            "\"grasp_yaw_degrees\":0,\"local_offset_x_fraction\":0,"
+            "\"local_offset_y_fraction\":0}]}\n\n"
+            "User instruction: %s\n\nVisible object catalog:\n%s" % (
+                instruction, json.dumps(object_catalog, sort_keys=True)))
+        if previous_error:
+            prompt += "\n\nCorrect the previous invalid response: %s" % (
+                previous_error)
+        return prompt
 
-        # If the model prefixed prose before the JSON object, try to find it.
-        brace = stripped.find("{")
-        if brace != -1:
-            # Find the matching closing brace (outermost).
-            depth = 0
-            for i in range(brace, len(stripped)):
-                if stripped[i] == "{":
-                    depth += 1
-                elif stripped[i] == "}":
-                    depth -= 1
-                    if depth == 0:
-                        return stripped[brace : i + 1]
+    @staticmethod
+    def _build_prompt(instruction, object_state, object_catalog, previous_error):
+        prompt = (
+            "Choose a stable top-down two-finger grasp for the selected "
+            "object in this scene. The robot has a parallel-jaw gripper and "
+            "will use the returned yaw and small local offset to approach the "
+            "object; the simulator handles jaw closure. Use the image and "
+            "measured object dynamics (dimensions, pose, mass, and velocity). "
+            "Keep the grasp on the selected object. Return JSON only with "
+            "grasp_yaw_degrees in [0, 180), and local_offset_x_fraction and "
+            "local_offset_y_fraction each in [-0.15, 0.15]. Offsets are "
+            "fractions of the selected object's local XY dimensions. Use zero "
+            "offset for a centered grasp. Do not return prose or motor commands.\n\n"
+            "User instruction: %s\n\nSelected object state:\n%s\n\n"
+            "Visible object catalog:\n%s\n\n"
+            "Return exactly this JSON shape: {\"grasp_yaw_degrees\": 0, "
+            "\"local_offset_x_fraction\": 0, "
+            "\"local_offset_y_fraction\": 0}." % (
+                instruction, json.dumps(object_state, sort_keys=True),
+                json.dumps(object_catalog, sort_keys=True)))
+        if previous_error:
+            prompt += "\n\nThe previous response was invalid: %s. Correct it." % (
+                previous_error)
+        return prompt
 
-        return stripped
+    @staticmethod
+    def _validate(command):
+        if not isinstance(command, dict):
+            raise StackPlanError("Grasp command must be a JSON object.")
+        required = ("grasp_yaw_degrees", "local_offset_x_fraction",
+                    "local_offset_y_fraction")
+        if any(key not in command for key in required):
+            raise StackPlanError("Grasp command is missing required fields.")
+        try:
+            yaw, offset_x, offset_y = (float(command[key]) for key in required)
+        except (TypeError, ValueError) as error:
+            raise StackPlanError("Grasp parameters must be numeric: %s" % error)
+        if not 0.0 <= yaw < 180.0:
+            raise StackPlanError("grasp_yaw_degrees must be in [0, 180).")
+        if not -0.15 <= offset_x <= 0.15 or not -0.15 <= offset_y <= 0.15:
+            raise StackPlanError("Local grasp offsets must be in [-0.15, 0.15].")
+        return {"grasp_yaw_degrees": yaw,
+                "local_offset_x_fraction": offset_x,
+                "local_offset_y_fraction": offset_y}
+
+def _extract_json(text):
+  """Strip markdown code fences and leading prose to isolate JSON."""
+  stripped = text.strip()
+  if stripped.startswith("```"):
+    first_newline = stripped.index("\n")
+    stripped = stripped[first_newline + 1 :]
+    if stripped.rstrip().endswith("```"):
+      stripped = stripped.rstrip()[:-3]
+    return stripped.strip()
+
+  brace = stripped.find("{")
+  if brace != -1:
+    depth = 0
+    for i in range(brace, len(stripped)):
+      if stripped[i] == "{":
+        depth += 1
+      elif stripped[i] == "}":
+        depth -= 1
+        if depth == 0:
+          return stripped[brace : i + 1]
+  return stripped
 
 def _response_output_text(response):
   """Extract output text from a Responses API response object."""

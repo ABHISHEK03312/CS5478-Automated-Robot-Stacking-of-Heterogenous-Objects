@@ -195,6 +195,46 @@ class ParallelJaw(Gripper):
     return self.contact_constraint is not None
 
 
+class VLMParallelJaw(ParallelJaw):
+  """Parallel-jaw gripper that grasps only the object selected by a VLM."""
+
+  def __init__(self, assets_root, robot, ee, obj_ids):
+    super().__init__(assets_root, robot, ee, obj_ids)
+    self.grasp_command = None
+    self.last_grasp_command = None
+    self.last_grasp_succeeded = None
+
+  def set_grasp_command(self, command):
+    """Queue a validated VLM object selection for the next activation."""
+    if not isinstance(command, dict) or "object_id" not in command:
+      raise ValueError("A VLM grasp command must include an object_id.")
+    self.grasp_command = dict(command)
+
+  def activate(self):
+    """Close around the commanded object using the normal jaw mechanics."""
+    command = self.grasp_command
+    self.grasp_command = None
+    self.last_grasp_command = command
+    if command is None:
+      self.activated = False
+      self.last_grasp_succeeded = False
+      return
+
+    object_id = int(command["object_id"])
+    if object_id not in self.obj_ids["rigid"]:
+      self.activated = False
+      self.last_grasp_succeeded = False
+      return
+
+    all_objects = self.obj_ids
+    self.obj_ids = {"rigid": [object_id]}
+    try:
+      super().activate()
+      self.last_grasp_succeeded = bool(self.activated)
+    finally:
+      self.obj_ids = all_objects
+
+
 class Suction(Gripper):
   """Simulate simple suction dynamics."""
 

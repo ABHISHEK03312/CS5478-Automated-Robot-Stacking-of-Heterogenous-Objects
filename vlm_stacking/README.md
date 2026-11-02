@@ -29,7 +29,8 @@ localization. A VLM label or bounding box alone is not a metric grasp pose.
 - `planner.py`: Ollama vision request, JSON parsing, and plan validation.
 - `pipeline.py`: re-observe / plan / execute loop with explicit adapters.
 - `ravens_policy.py`: applies object masks to Transporter pick scores and
-  constrains placement to the assigned target slot.
+  constrains placement to the assigned target slot; it also contains the
+  Ollama VLM grasp controller.
 
 ## Configure the VLM
 
@@ -99,8 +100,13 @@ result = pipeline.run("Build a stable pyramid following the block colors.")
   detect collisions, or replace a motion planner.
 - Every planned object must be individually visible and pickable at its turn.
   Stacked source piles need a task-specific staging/rearrangement planner.
-- The Transporter checkpoint still determines the grasp pixel and local
-  orientation. The VLM does not output motor commands.
+- The default parallel-jaw controller uses the Transporter checkpoint to
+  choose the grasp. The optional VLM controller receives the labeled scene and
+  measured object properties (dimensions, pose, mass, and velocity), then
+  returns a bounded grasp yaw and local offset. Ravens converts that command
+  to a pick pose; the existing parallel-jaw actuator closes on the block and
+  the usual pick/place primitive handles transport and release. The VLM does
+  not output motor commands.
 - The supplied data and checkpoints do not include an arbitrary-object stack
   task or a hardware camera/gripper driver. This folder provides the planner
   and policy bridge; implement the scene and robot adapters for your hardware.
@@ -172,6 +178,37 @@ The evaluator also writes `partial_towers.json`, `error_cases.json`, and
 catalog, initial and final block poses, action pick/place poses, per-step reward,
 and per-goal target-match details. A case with an error can also appear in the
 partial or zero-reward file if it accumulated reward before failing.
+
+The evaluator can switch the grasp controller while keeping the seed set, VLM
+stacking planner, execution primitive, and scoring the same. The default
+`--gripper parallel-jaw` uses the trained Transporter for zero-shot grasp
+selection. Use `--gripper vlm` to ask Ollama for grasp commands for all visible
+objects in one request, using the scene image and object dynamics. These
+commands are cached for the episode; a new request for one object is made only
+when its grasp attempt fails. A placement miss after a successful grasp reuses
+the cached command. Each execution record includes the selected VLM grasp
+command. Save the modes to separate files for direct comparison:
+
+```bash
+python -m vlm_stacking.evaluate \
+  --techniques zero-shot --gripper parallel-jaw \
+  --output ./vlm_stacking_eval_parallel_jaw.json
+
+python -m vlm_stacking.evaluate \
+  --techniques zero-shot --gripper vlm \
+  --output ./vlm_stacking_eval_vlm_gripper.json
+```
+
+The VLM grasp mode does not load a Transporter checkpoint. Its `VLMParallelJaw`
+gripper reuses the existing jaw geometry and closure behavior, and restricts
+activation to the object selected by the VLM. For `beam` and `cem`, it applies
+the VLM grasp command to each selected pick while preserving the search agent's
+resulting object placement pose.
+
+Each joint-space move now allows 10 seconds by default. Increase or lower the
+wall-clock limit with `--move-timeout`, for example `--move-timeout 15`. This
+can accommodate slower simulation under CPU load; it does not change the
+separate time needed for Ollama requests.
 
 ## Results
 ### Simple block stacks

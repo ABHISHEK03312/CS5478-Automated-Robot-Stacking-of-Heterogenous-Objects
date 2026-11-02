@@ -48,7 +48,8 @@ class Environment(gym.Env):
                disp=False,
                shared_memory=False,
                hz=240,
-               use_egl=False):
+               use_egl=False,
+               movej_timeout=10.0):
     """Creates OpenAI Gym-style environment with PyBullet.
 
     Args:
@@ -60,6 +61,7 @@ class Environment(gym.Env):
       hz: PyBullet physics simulation step speed. Set to 480 for deformables.
       use_egl: Whether to use EGL rendering. Only supported on Linux. Should get
         a significant speedup in rendering when using.
+      movej_timeout: Wall-clock timeout in seconds for one joint-space move.
 
     Raises:
       RuntimeError: if pybullet cannot load fileIOPlugin.
@@ -73,6 +75,7 @@ class Environment(gym.Env):
     self.agent_cams = cameras.RealSenseD415.CONFIG
 
     self.assets_root = assets_root
+    self.movej_timeout = float(movej_timeout)
 
     color_tuple = [
         gym.spaces.Box(0, 255, config['image_size'] + (3,), dtype=np.uint8)
@@ -350,8 +353,9 @@ class Environment(gym.Env):
   # Robot Movement Functions
   #---------------------------------------------------------------------------
 
-  def movej(self, targj, speed=0.01, timeout=5):
+  def movej(self, targj, speed=0.01, timeout=None):
     """Move UR5 to target joint configuration."""
+    timeout = self.movej_timeout if timeout is None else float(timeout)
     t0 = time.time()
     while (time.time() - t0) < timeout:
       currj = [p.getJointState(self.ur5, i)[0] for i in self.joints]

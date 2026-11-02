@@ -65,6 +65,8 @@ class RavensSimulationSceneProvider:
       if state is None:
         continue
       position, rotation, dimensions = state
+      linear_velocity, angular_velocity = p.getBaseVelocity(object_id)
+      dynamics = p.getDynamicsInfo(object_id, -1)
       shape = p.getVisualShapeData(object_id)
       ys, xs = np.where(mask)
       center = (int(np.mean(xs)), int(np.mean(ys)))
@@ -85,6 +87,9 @@ class RavensSimulationSceneProvider:
           "dimensions": [float(v) for v in dimensions],
           "position_m": [float(v) for v in position],
           "quaternion_xyzw": [float(v) for v in rotation],
+          "linear_velocity_m_s": [float(v) for v in linear_velocity],
+          "angular_velocity_rad_s": [float(v) for v in angular_velocity],
+          "mass_kg": float(dynamics[0]),
           "visual_rgba": visual_rgba,
           "visible_pixel_count": int(np.count_nonzero(mask)),
       })
@@ -92,6 +97,11 @@ class RavensSimulationSceneProvider:
           "object_id": str(object_id),
           "color": _color_name_from_rgba(visual_rgba),
           "dimensions": [float(v) for v in dimensions],
+          "position_m": [float(v) for v in position],
+          "quaternion_xyzw": [float(v) for v in rotation],
+          "linear_velocity_m_s": [float(v) for v in linear_velocity],
+          "angular_velocity_rad_s": [float(v) for v in angular_velocity],
+          "mass_kg": float(dynamics[0]),
       })
 
     # Put symbolic target labels in the same image coordinate frame as the
@@ -120,6 +130,7 @@ class RavensSimulationSceneProvider:
         "heightmap": hmap,
         "objects": objects,
         "objects_for_prompt": objects_for_prompt,
+        "image_bytes": encoded.tobytes(),
         "target_slots": self._target_slots,
         "env": self.env,
         "task": self.task
@@ -236,7 +247,11 @@ class RavensSimulationExecutor:
             break
     if object_id is not None:
       before = np.asarray(p.getBasePositionAndOrientation(object_id)[0])
+    gripper = getattr(self.env, "ee", None)
+    if hasattr(gripper, "last_grasp_succeeded"):
+      gripper.last_grasp_succeeded = None
     obs, reward, done, info = self.env.step(action)
+    grasp_succeeded = getattr(gripper, "last_grasp_succeeded", None)
     moved = None
     placement_verified = None
     position_error = None
@@ -266,6 +281,7 @@ class RavensSimulationExecutor:
         "reward": float(reward),
         "done": bool(done),
         "success": (placement_verified if placement_verified is not None else moved),
+        "grasp_succeeded": grasp_succeeded,
         "moved": moved,
         "placement_verified": placement_verified,
         "position_error_xy_m": position_error,
