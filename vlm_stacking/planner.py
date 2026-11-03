@@ -153,9 +153,10 @@ class OllamaStackPlanner:
     (e.g., `ollama pull qwen2.5vl`). No API key needed.
     """
 
-    def __init__(self, model=None, max_retries=3):
+    def __init__(self, model=None, max_retries=3, temperature=0.0001):
         self.model = model or os.environ.get("OLLAMA_VLM_MODEL", "qwen2.5vl:7b")
         self.max_retries = max(0, int(max_retries))
+        self.temperature = float(temperature)
 
     def _call_llm(self, prompt, tmp_path):
       try:
@@ -168,6 +169,7 @@ class OllamaStackPlanner:
                       "images": [tmp_path],
                   }
               ],
+              options={'temperature': self.temperature},
           )
       except Exception as error:
           raise RuntimeError(
