@@ -37,6 +37,31 @@ STACK_PLAN_SCHEMA = {
 }
 
 
+def pyramid_layer_sizes(object_count):
+  """Return the supported row sizes for a full 2–4 layer pyramid."""
+  for layer_count in range(2, 5):
+    if object_count == layer_count * (layer_count + 1) // 2:
+      return tuple(range(layer_count, 0, -1))
+  raise StackPlanError(
+      "A 2–4 layer triangular pyramid requires 3, 6, or 10 objects; "
+      "the scene contains %d." % object_count)
+
+
+def _pyramid_layer_rule(object_count):
+  row_sizes = pyramid_layer_sizes(object_count)
+  layer_count = len(row_sizes)
+  return (
+      "Choose the pyramid layer count from the number of visible objects. "
+      "Use a full triangular pyramid with 2–4 layers: 3 objects means 2 "
+      "layers with rows 2+1; 6 objects means 3 layers with rows 3+2+1; "
+      "10 objects means 4 layers with rows 4+3+2+1. This scene has %d "
+      "objects, so use exactly %d layers with row sizes %s. Use every object "
+      "once, fill the bottom row first, and build upward. The available target "
+      "slots must match this layer structure; do not invent or omit slots." % (
+          object_count, layer_count,
+          "+".join(str(size) for size in row_sizes)))
+
+
 class OpenAIResponsesStackPlanner:
   """Ask a vision-capable Responses API model for an object ordering.
 
@@ -127,8 +152,10 @@ class OpenAIResponsesStackPlanner:
                     repair_error=None, repair_kind=None):
     if target_slots is None:
       target_slots = []
+    layer_rule = _pyramid_layer_rule(len(objects))
     return (
-        "Plan a stable pyramid matching the user's instruction. Assign each "
+        "Plan a stable pyramid matching the user's instruction. " + layer_rule + " "
+        "Assign each "
         "catalog object to exactly one available target slot. Use the readable "
         "color field as the authoritative object color. Respect the slot's "
         "layer and support requirements. Build in dependency order: base slots, "
@@ -254,6 +281,7 @@ class OllamaStackPlanner:
     @staticmethod
     def _build_prompt(instruction, objects, target_slots=None, previous_output=None,
                       repair_error=None, repair_kind=None):
+        layer_rule = _pyramid_layer_rule(len(objects))
         layer_names = {0: "base", 1: "middle", 2: "apex"}
         grouped_rules = {}
         for slot in target_slots or []:
@@ -271,7 +299,9 @@ class OllamaStackPlanner:
                 ", ".join(sorted(group["colors"])))
             for _, group in sorted(grouped_rules.items()))
         prompt = (
-              "Plan a stable pyramid matching the user's instruction. Assign "
+              "Plan a stable pyramid matching the user's instruction. "
+              + layer_rule + " "
+              "Assign "
               "each catalog object to exactly one target slot. Each catalog entry may include "
               "a human-readable color field; use it to identify colors and treat "
               "it as authoritative; numerical RGB is secondary. Follow each "
@@ -387,6 +417,7 @@ def validate_plan(plan, objects, target_slots=None):
   if not isinstance(plan, dict) or not isinstance(plan.get("placements"), list):
     raise StackPlanError("Plan must contain a placements list.")
   ids = [str(obj["object_id"]) for obj in objects]
+  expected_layer_sizes = pyramid_layer_sizes(len(ids))
   placements = plan["placements"]
   order = [str(row.get("object_id")) for row in placements
            if isinstance(row, dict)]
@@ -406,6 +437,17 @@ def validate_plan(plan, objects, target_slots=None):
     raise StackPlanError("Plan target slots must match available slots exactly. Output %s, expected %s" % (slot_order, expected_slots))
   slot_layers = {str(slot["slot_id"]): int(slot.get("layer_index", 0))
                  for slot in (target_slots or [])}
+  if target_slots is not None:
+    layer_counts = {}
+    for layer_index in slot_layers.values():
+      layer_counts[layer_index] = layer_counts.get(layer_index, 0) + 1
+    actual_layer_sizes = tuple(
+        count for _, count in sorted(layer_counts.items()))
+    if actual_layer_sizes != expected_layer_sizes:
+      raise StackPlanError(
+          "Available target slots have layer sizes %s; %d objects require "
+          "the %s pyramid." % (
+              actual_layer_sizes, len(ids), expected_layer_sizes))
   if slot_layers and [slot_layers[s] for s in slot_order] != sorted(
       slot_layers[s] for s in slot_order):
     raise StackPlanError("Placements must be ordered base-to-apex by layer.")
