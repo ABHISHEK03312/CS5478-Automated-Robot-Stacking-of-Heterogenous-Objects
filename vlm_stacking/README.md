@@ -181,14 +181,14 @@ partial or zero-reward file if it accumulated reward before failing.
 | VLM + Beam | 100 | 5.79 | 0.850 | [0.784, 0.916] | 81 | 9 | 10 | 19 |
 | VLM + CEM | 100 | 5.82 | 0.852 | [0.788, 0.915] | 80 | 12 | 8 | 20 |
 
-### Mixed shape stacks (constant stacking level, without VLM stacking)
+### Mixed shape stacks (constant stacking level, without VLM sampling)
 | Method | Episodes | Avg. Trials | Mean Reward | 95% CI | Full Pyramids | Partial Pyramids | Zero Reward | Errors |
 |-----------|:--------:|:-----------:|:-----------:|:------------------:|:-------------:|:----------------:|:-----------:|:------:|
 | Zero-shot VLM | 102 | 3.74 | 0.359 | [0.273, 0.446] | 29 | 20 | 53 | 0 |
 | VLM + Beam | 102 | 4.70 | 0.484 | [0.392, 0.575] | 42 | 18 | 42 | 60 |
 | VLM + CEM | 102 | 5.09 | 0.539 | [0.449, 0.630] | 49 | 19 | 34 | 53 |
 
-### Mixed shape stacks (different stacking levels, without VLM stacking)
+### Mixed shape stacks (different stacking levels, without VLM sampling)
 | Method | Episodes | Avg. Trials | Mean Reward | 95% CI | Full Pyramids | Partial Pyramids | Zero Reward | Errors |
 |-----------|:--------:|:-----------:|:-----------:|:------------------:|:-------------:|:----------------:|:-----------:|:------:|
 | Zero-shot | 100 | 4.18 | 0.358 | [0.271, 0.446] | 28 | 19 | 53 | 68 |
