@@ -10,11 +10,15 @@ import json
 import os
 import time
 
+import numpy as np
+import pybullet as p
+
 from ravens import tasks
 from ravens.agents.transporter import OriginalTransporterAgent
 from ravens.environments.environment import Environment
 
 from vlm_stacking import evaluate
+from vlm_stacking.hetero_task import load_hetero_episode_info, make_hetero_episode_task
 from vlm_stacking.planner import OllamaStackPlanner
 from vlm_stacking.ravens_policy import RavensTransporterPolicy
 
@@ -23,12 +27,22 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TASK_NAME = "stack-block-pyramid-parallel-jaw"
 DEFAULT_ASSETS_ROOT = os.path.join(REPO_ROOT, "ravens", "environments", "assets")
 DEFAULT_MODELS_ROOT = os.path.join(REPO_ROOT, "models", "parallel-jaw-v2")
+DEFAULT_SEED_DATASET = os.path.join(
+    REPO_ROOT, "data", "parallel-jaw-v2", TASK_NAME + "-test")
 
 
 def parse_args():
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument("--seed", type=int, required=True,
-                      help="Exact PyBullet scene seed to demonstrate")
+  parser.add_argument("--seed", type=int, default=None,
+                      help="Exact PyBullet scene seed; if omitted, derived from "
+                           "--seed-dataset at --seed-index")
+  parser.add_argument("--seed-dataset", default=DEFAULT_SEED_DATASET,
+                      help="Ravens test dataset folder used to look up episode seeds "
+                           "(same source as evaluate.py; default: %(default)s)")
+  parser.add_argument("--seed-index", type=int, default=0,
+                      help="0-based episode index within --seed-dataset (default: 0)")
+  parser.add_argument("--seed-offset", type=int, default=0,
+                      help="Offset added to the dataset seed (default: 0)")
   parser.add_argument("--technique", choices=("zero-shot", "beam", "cem"),
                       default="beam",
                       help="VLM plan execution configuration (default: beam)")
@@ -61,6 +75,12 @@ def parse_args():
                       help="Close the GUI immediately after replay finishes")
   parser.add_argument("--output", default=None,
                       help="JSON result path (default: vlm_demo_seed_<seed>.json)")
+  parser.add_argument("--video", default=None,
+                      help="MP4 path to save GUI recording (default: vlm_demo_seed_<seed>.mp4); "
+                           "pass empty string to disable")
+  parser.add_argument("--video-teleport", action="store_true",
+                      help="In the GUI recording, teleport each object directly to its goal "
+                           "position instead of re-running the search agent")
   args = parser.parse_args()
   if args.temperature < 0:
     parser.error("--temperature must be non-negative")
@@ -99,11 +119,74 @@ def load_policy(args):
   return RavensTransporterPolicy(agent, None, None)
 
 
+def _teleport_replay(gui_env, gui_task, scene_seed, plan):
+  """Reset scene and execute one pick-place per object (arm animation, no search)."""
+  from vlm_stacking.ravens_sim import target_slot_poses
+  np.random.seed(scene_seed)
+  gui_env.seed(scene_seed)
+  gui_env.set_task(gui_task)
+  gui_env.reset()
+  slots = target_slot_poses(gui_task, gui_env)
+  for placement in plan.get("placements", []):
+    object_id = int(placement["object_id"])
+    slot_id = placement["slot_id"]
+    if slot_id not in slots:
+      continue
+    pick_pos, pick_orn = p.getBasePositionAndOrientation(object_id)
+    place_pos, place_orn = slots[slot_id]["pose"]
+    action = {"pose0": (pick_pos, pick_orn), "pose1": (place_pos, place_orn)}
+    _, _, done, _ = gui_env.step(action)
+    if done:
+      break
+
+
 def main():
   args = parse_args()
+
+  if args.seed is not None:
+    scene_seed = args.seed
+  else:
+    seeds = evaluate.dataset_seeds(args.seed_dataset, seed_offset=args.seed_offset)
+    if args.seed_index >= len(seeds):
+      raise SystemExit(
+          "--seed-index %d out of range: dataset '%s' has %d episode(s)" %
+          (args.seed_index, args.seed_dataset, len(seeds)))
+    scene_seed = seeds[args.seed_index]
+    print("Using seed %d (dataset episode %d of %d)" %
+          (scene_seed, args.seed_index, len(seeds)))
+
   eval_args = make_eval_args(args)
-  task = tasks.names[TASK_NAME]()
-  task.mode = "test"
+
+  # Detect hetero episodes by reading the info file content, not the path name.
+  # Any dataset whose episode info contains per-object 'shape' keys triggers the
+  # hetero task; standard pyramid datasets do not have that field.
+  hetero_info = None
+  if args.seed is None:
+    try:
+      candidate_info, _ = load_hetero_episode_info(
+          args.seed_dataset, args.seed_index)
+      step0 = next(
+          (s for s in candidate_info
+           if isinstance(s, dict) and "objects" in s and
+           s["objects"] and "shape" in s["objects"][0]),
+          None)
+      if step0 is not None:
+        hetero_info = candidate_info
+        print("Hetero episode detected: %d object(s), shapes=%s" % (
+            len(step0["objects"]),
+            sorted({o["shape"] for o in step0["objects"]})))
+    except Exception:
+      pass  # Not a hetero-format dataset; fall through to standard task.
+
+  def make_task():
+    if hetero_info is not None:
+      t = make_hetero_episode_task(hetero_info)()
+    else:
+      t = tasks.names[TASK_NAME]()
+    t.mode = "test"
+    return t
+
+  task = make_task()
   planner = OllamaStackPlanner(model=args.model, temperature=args.temperature)
   policy = load_policy(args)
 
@@ -111,11 +194,11 @@ def main():
   headless_env = Environment(args.assets_root, disp=False, hz=480)
   try:
     plans, sampling_errors, sampling_seconds = evaluate.sample_plan_candidates(
-        headless_env, task, args.seed, planner, eval_args)
+        headless_env, task, scene_seed, planner, eval_args)
     if not plans:
       raise RuntimeError("No valid VLM plans were produced: %s" % sampling_errors)
     selected = evaluate.run_episode(
-        args.technique, headless_env, task, args.seed, planner, policy,
+        args.technique, headless_env, task, scene_seed, planner, policy,
         eval_args, sampled_plans=plans, sampling_errors=sampling_errors,
         sampling_seconds=sampling_seconds)
   finally:
@@ -123,7 +206,7 @@ def main():
 
   print("Headless candidate selection:")
   print(json.dumps({
-      "seed": args.seed,
+      "seed": scene_seed,
       "technique": args.technique,
       "model": planner.model,
       "temperature": args.temperature,
@@ -143,15 +226,29 @@ def main():
         "pass --allow-partial to replay the best partial result.")
 
   # Reuse the selected plan; do not make another VLM request for the recording.
-  gui_task = tasks.names[TASK_NAME]()
+  gui_task = make_task()
   gui_task.mode = "test"
   gui_env = Environment(args.assets_root, task=gui_task, disp=True, hz=480)
   try:
-    replay = evaluate._run_episode_with_plan(
-        args.technique, gui_env, gui_task, args.seed, planner, policy,
-        eval_args, selected["plan"], selected.get("selected_plan_index", 0))
+    video_path = args.video
+    if video_path is None:
+      video_path = "vlm_demo_seed_%d.mp4" % scene_seed
+    video_log_id = None
+    if video_path:
+      video_path = os.path.abspath(video_path)
+      os.makedirs(os.path.dirname(video_path), exist_ok=True)
+      video_log_id = p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, video_path)
+      print("Recording GUI to %s" % video_path)
+    if args.video_teleport:
+      _teleport_replay(gui_env, gui_task, scene_seed, selected["plan"])
+      replay = dict(selected)
+      replay.setdefault("steps", [])
+    else:
+      replay = evaluate._run_episode_with_plan(
+          args.technique, gui_env, gui_task, scene_seed, planner, policy,
+          eval_args, selected["plan"], selected.get("selected_plan_index", 0))
     replay["demo_config"] = {
-        "seed": args.seed,
+        "seed": scene_seed,
         "technique": args.technique,
         "vlm_model": planner.model,
         "temperature": args.temperature,
@@ -164,16 +261,20 @@ def main():
     }
     print("\nVisible replay result:")
     print(json.dumps(replay, indent=2, default=str))
-    output_path = args.output or "vlm_demo_seed_%d.json" % args.seed
+    output_path = args.output or "vlm_demo_seed_%d.json" % scene_seed
     output_path = os.path.abspath(output_path)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as output_file:
       json.dump(replay, output_file, indent=2, default=str)
     print("\nSaved demo record to %s" % output_path)
+    if video_log_id is not None:
+      p.stopStateLogging(video_log_id)
+      print("Saved video to %s" % video_path)
     if not args.no_pause:
       input("Demo complete. Leave the final scene visible; press Enter to close PyBullet. ")
   finally:
     gui_env.close()
+  print("dataset path:", args.seed_dataset)
 
 
 if __name__ == "__main__":
