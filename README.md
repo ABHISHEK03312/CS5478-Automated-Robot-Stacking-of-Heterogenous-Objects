@@ -164,6 +164,71 @@ The MDP formulation for each task uses transitions with the following structure:
 
 **Info:** 6D poses, sizes, and colors of objects.
 
+## Data Generation, CEM and Beam Search
+
+CEM/Beam can directly use generated **original `episode.json` folders**. Conversion to Ravens format is required for VLM.
+
+### 1. Data generation
+
+**Heterogeneous towers** — generate episodes for tower stacking scenarios comprised of cubes, rectangles, cylinders and prisms.
+
+```powershell
+#Generated 100 train and test cases each for this project
+python generate_stacking_ravens.py --episodes 100 --out mixed-stacking-validated
+#Convert data to Ravens format
+python replay_stacking_to_ravens.py --data mixed-stacking-validated --out data/mixed-stacking-validated-train
+```
+
+**Heterogeneous pyramids** — generate mixed 2–4-layer episodes for stacking scenarios comprised of cubes, rectangles, cylinders and prisms.
+
+```powershell
+python generate_hetero_pyramids.py --episodes 100 --out hetero-pyramid-episodes --strict
+python convert_hetero_pyramids_to_ravens.py --data hetero-pyramid-episodes --preflight
+python convert_hetero_pyramids_to_ravens.py --data hetero-pyramid-episodes --out data/hetero-pyramid-train
+```
+
+Conversion is needed for Ravens-format datasets, **not** for the standalone CEM/Beam planners. The generators use simulated teleport placements, not verified robot grasps.
+
+### 2. Standard Ravens pyramid
+
+**Generate demonstrations:**
+
+```powershell
+python -m ravens.demos --assets_root=./ravens/environments/assets/ --task=stack-block-pyramid-parallel-jaw --mode=train --n=100
+```
+
+**CEM** (older script; verify it exists in your checkout):
+
+```powershell
+python cem_ravens_hetero.py --structure pyramid --ravens-data data/stack-block-pyramid-parallel-jaw-train --episodes 1 --gui
+```
+
+A standalone standard-Ravens **Beam** script was not supplied; `beam_hetero.py` is for heterogeneous towers.
+
+### 3. Heterogeneous towers — CEM and Beam
+
+```powershell
+python cem_hetero_towers.py --data mixed-stacking-validated --episodes 1 --samples 24 --iters 3 --elites 4 --gui
+python beam_hetero.py --data mixed-stacking-validated --episodes 1 --beam-width 4 --gui
+```
+
+**Optional tuning** (compares CEM and Beam configurations):
+
+```powershell
+python tune_cem_beam_hetero.py --data mixed-stacking-validated --episodes 10
+```
+
+### 4. Heterogeneous pyramids — height-aware CEM and Beam
+
+```powershell
+python cem_hetero_pyramid_height.py --data hetero-pyramid-episodes --layers 3 --episodes 1 --gui
+python beam_hetero_pyramid_height.py --data hetero-pyramid-episodes --layers 3 --episodes 1 --beam-width 4 --gui
+```
+
+Set `--layers` to `2`, `3` or `4` (or omit it to infer from object count). Both pyramid planners require `hetero_pyramid_support_height.py`; all four heterogeneous planners depend on `cem_grasp_beam.py` and `generate_stacking_ravens.py`. Remove `--gui` and increase `--episodes` for batch evaluation.
+
+---
+
 ## VLM Stacking
 
 
