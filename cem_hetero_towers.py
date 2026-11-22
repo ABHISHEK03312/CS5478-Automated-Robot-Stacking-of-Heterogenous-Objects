@@ -18,6 +18,10 @@ import pybullet as p
 from generate_stacking_ravens import fits, support_halfwidths
 from cem_grasp_beam import DatasetSceneTask, settle
 from ravens.environments.environment import Environment
+from ravens.grasping.policies import POLICIES
+from ravens.grasping.policies import create_grasp_planner
+from ravens.grasping.robustness import parallel_jaw_quality
+from ravens.grasping.robustness import is_modelled_grasp_failure
 
 CENTER = np.array([0.5, 0.18], dtype=float)
 
@@ -104,12 +108,17 @@ class JointCEM:
     """
 
     def __init__(self, env, task, rng, samples=48, iters=4, elites=8, settle_steps=90,
-                 debug=False, structure="tower"):
+                 debug=False, structure="tower", grasp_scorer=None,
+                 grasp_cem_weight=0.0, grasp_orthogonal_yaw_search=False):
         self.structure = structure
         self.env, self.task, self.rng = env, task, rng
         self.samples, self.iters, self.elites = samples, iters, elites
         self.settle_steps = settle_steps
         self.debug = debug
+        self.grasp_scorer = grasp_scorer
+        self.grasp_cem_weight = float(grasp_cem_weight)
+        self.grasp_orthogonal_yaw_search = bool(
+            grasp_orthogonal_yaw_search)
         self.geometry = {int(o['id']): o for o in task.meta['objects']}
         self.rollouts = 0
 
@@ -146,6 +155,15 @@ class JointCEM:
         if grasp is None:
             return -1e5
         pick, jaw_width = grasp
+        pose_quality = parallel_jaw_quality(
+            math.hypot(float(x[0]), float(x[1])), jaw_width, obj['shape'],
+            self.env.ee.OPEN_INNER_WIDTH)
+        if self.grasp_scorer is None:
+            grasp_quality = pose_quality
+        else:
+            policy_quality = float(np.clip(self.grasp_scorer.quality(
+                self.task.bodies[oid]), 0.0, 1.0))
+            grasp_quality = 0.55 * pose_quality + 0.45 * policy_quality
         target_xy = (PYRAMID_SLOTS[len(placed), :2] if self.structure == 'pyramid'
                      else np.asarray(p.getBasePositionAndOrientation(self.task.bodies[placed[-1]])[0][:2])
                      if placed else CENTER)
@@ -202,7 +220,8 @@ class JointCEM:
             score = (10.0 + 8.0 * min(margin, 0.03)
                      - 65.0 * np.linalg.norm(x[3:5])
                      - 35.0 * disturbance - 0.3 * travel
-                     - 2.0 * np.linalg.norm(x[:2]))
+                     - 2.0 * np.linalg.norm(x[:2])
+                     + self.grasp_cem_weight * grasp_quality)
             return float(score)
         finally:
             p.restoreState(snapshot)
@@ -227,8 +246,28 @@ class JointCEM:
             # Two possible initial closing directions; let CEM choose and refine.
             seed_yaw = 0.0 if l <= w else math.pi / 2
             means[int(oid)] = np.array([0., 0., seed_yaw, 0., 0., seed_yaw])
+            if self.grasp_scorer is not None and self.grasp_cem_weight > 0:
+                body = self.task.bodies[int(oid)]
+                body_position = p.getBasePositionAndOrientation(body)[0]
+                fallback = (
+                    (float(body_position[0]), float(body_position[1]),
+                     float(p.getAABB(body)[1][2])),
+                    p.getQuaternionFromEuler((0., 0., seed_yaw)))
+                proposed_position, proposed_rotation = (
+                    self.grasp_scorer.pick_pose(body, fallback))
+                proposed_yaw = float(
+                    p.getEulerFromQuaternion(proposed_rotation)[2])
+                yaw_shift = angle_delta(proposed_yaw, seed_yaw)
+                means[int(oid)][0] = float(
+                    proposed_position[0] - body_position[0])
+                means[int(oid)][1] = float(
+                    proposed_position[1] - body_position[1])
+                means[int(oid)][2] = proposed_yaw
+                # Preserve the seed's relative pick/place orientation.
+                means[int(oid)][5] += yaw_shift
             stds[int(oid)] = np.array([0.008, 0.008, 0.65, 0.010, 0.010, 0.65])
         best_score, best_oid, best_x = -float('inf'), None, None
+        best_by_oid = {}
         min_std = np.array([0.002, 0.002, 0.07, 0.002, 0.002, 0.07])
         for iteration in range(self.iters):
             batch = []
@@ -247,6 +286,9 @@ class JointCEM:
                         x = means[oid].copy()
                 score = self._candidate_score(oid, x, placed, remaining)
                 batch.append((score, oid, x.copy()))
+                if score > -1e4 and (oid not in best_by_oid or
+                                     score > best_by_oid[oid][0]):
+                    best_by_oid[oid] = (score, x.copy())
                 if score > best_score:
                     best_score, best_oid, best_x = score, oid, x.copy()
             batch.sort(key=lambda item: item[0], reverse=True)
@@ -278,10 +320,60 @@ class JointCEM:
                       f'object_probs={dict(zip(ids.tolist(), np.round(probs, 2).tolist()))}', flush=True)
         if best_oid is None or best_score <= -1e4:
             return None
+        if (self.grasp_scorer is not None and best_by_oid and
+                self.grasp_cem_weight <= 0):
+            body_to_oid = {self.task.bodies[oid]: oid for oid in best_by_oid}
+            fallback_body = self.task.bodies[best_oid]
+            selected_body = self.grasp_scorer.select_object(
+                body_to_oid, fallback=fallback_body)
+            selected_oid = body_to_oid.get(selected_body, best_oid)
+            best_oid = selected_oid
+            best_score, best_x = best_by_oid[selected_oid]
         grasp = self._grasp(best_oid, 0, best_x)
         if grasp is None:
             return None
         pick_pose, jaw_width = grasp
+        if self.grasp_scorer is not None:
+            body = self.task.bodies[best_oid]
+            refined_pose = self.grasp_scorer.pick_pose(body, pick_pose)
+            refined_position, refined_rotation = refined_pose
+            body_position = p.getBasePositionAndOrientation(body)[0]
+            proposed_yaw = float(p.getEulerFromQuaternion(refined_rotation)[2])
+            yaws = [proposed_yaw]
+            if (self.grasp_orthogonal_yaw_search and
+                    self.geometry[best_oid]['shape'] != 'cylinder'):
+                yaws.append(proposed_yaw + math.pi / 2)
+            refined_candidates = []
+            for candidate_yaw in yaws:
+                refined_x = best_x.copy()
+                previous_pick_yaw = float(refined_x[2])
+                refined_x[0] = float(
+                    refined_position[0] - body_position[0])
+                refined_x[1] = float(
+                    refined_position[1] - body_position[1])
+                refined_x[2] = candidate_yaw
+                refined_x[5] += angle_delta(candidate_yaw, previous_pick_yaw)
+                refined_grasp = self._grasp(best_oid, 0, refined_x)
+                if refined_grasp is None:
+                    continue
+                candidate_pose, candidate_width = refined_grasp
+                quality = parallel_jaw_quality(
+                    math.hypot(float(refined_x[0]), float(refined_x[1])),
+                    candidate_width, self.geometry[best_oid]['shape'],
+                    self.env.ee.OPEN_INNER_WIDTH)
+                refined_candidates.append((
+                    quality, candidate_pose, candidate_width, refined_x))
+            if refined_candidates:
+                _, pick_pose, jaw_width, best_x = max(
+                    refined_candidates, key=lambda item: item[0])
+        pose_quality = parallel_jaw_quality(
+            math.hypot(float(best_x[0]), float(best_x[1])), jaw_width,
+            self.geometry[best_oid]['shape'], self.env.ee.OPEN_INNER_WIDTH)
+        policy_quality = (float(np.clip(self.grasp_scorer.quality(
+            self.task.bodies[best_oid]), 0.0, 1.0))
+                          if self.grasp_scorer is not None else pose_quality)
+        grasp_quality = (0.55 * pose_quality + 0.45 * policy_quality
+                         if self.grasp_scorer is not None else pose_quality)
         if self.structure == 'pyramid':
             goal = PYRAMID_SLOTS[len(placed)]
             place_xy = goal[:2]
@@ -295,14 +387,18 @@ class JointCEM:
                       p.getQuaternionFromEuler((0., 0., float(best_x[5]))))
         return {'object_id': int(best_oid), 'pick': pick_pose, 'place': place_pose,
                 'jaw_width': float(jaw_width), 'score': float(best_score),
+                'grasp_quality': float(grasp_quality),
                 'grasp_yaw': float(best_x[2]), 'place_yaw': float(best_x[5])}
 
 
 def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, debug,
-                structure='tower'):
+                structure='tower', grasp_scorer=None, grasp_robustness=None,
+                grasp_cem_weight=0.0, grasp_orthogonal_yaw_search=False,
+                grasp_retries=0):
     meta = (pyramid_meta(seed) if structure == 'pyramid'
             else json.loads(Path(path).read_text()))
-    task = DatasetSceneTask(meta)
+    task = DatasetSceneTask(meta, grasp_robustness=grasp_robustness,
+                            grasp_seed=seed)
     env = Environment(str(assets), task=task, disp=gui, hz=240)
     placed, actions = [], []
     try:
@@ -315,9 +411,19 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
               p.getBasePositionAndOrientation(body)[0]))
               for oid, body in task.bodies.items()], flush=True)
         planner = JointCEM(env, task, np.random.default_rng(seed), samples,
-                           iters, elites, settle_steps, debug, structure=structure)
+                           iters, elites, settle_steps, debug, structure=structure,
+                           grasp_scorer=grasp_scorer,
+                           grasp_cem_weight=grasp_cem_weight,
+                           grasp_orthogonal_yaw_search=(
+                               grasp_orthogonal_yaw_search))
+        gate_before = ((grasp_scorer.selection_calls,
+                        grasp_scorer.selection_changes,
+                        grasp_scorer.selection_abstentions)
+                       if grasp_scorer is not None else (0, 0, 0))
         print(f'{structure}: {len(meta["objects"])} objects', flush=True)
         for step in range(len(meta['objects'])):
+            if grasp_scorer is not None:
+                grasp_scorer.prepare(env._get_obs(), task.bodies.values())
             a = planner.plan(placed)
             if a is None:
                 print(f'  step {step}: CEM found no feasible full-stack action', flush=True)
@@ -330,6 +436,7 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
             # Existing primitive implements geometry-gated, constraint-assisted grip.
             timeout = task.primitive(env.movej, env.movep, env.ee,
                                      a['pick'], a['place'])
+            initial_robustness = getattr(env.ee, 'last_robustness', None)
             print("STARTING UR5 MOVEMENT", flush=True)
             settle(180)
             # Recheck executed placement and remaining support after settling.
@@ -338,10 +445,73 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
             else:
                 stable = stable_tower(task, planner.geometry, placed + [oid], debug=debug)
             ok = bool(not timeout and task.primitive.last_grasp and stable)
+            recovery = None
+            robust_grasp_failure = is_modelled_grasp_failure(
+                initial_robustness)
+            if (not ok and not task.primitive.last_grasp and
+                    (not timeout or robust_grasp_failure) and
+                    grasp_retries > 0):
+                body = task.bodies[oid]
+                body_position, body_rotation = p.getBasePositionAndOrientation(body)
+                object_yaw = float(p.getEulerFromQuaternion(body_rotation)[2])
+                recovery_candidates = []
+                for recovery_yaw in (object_yaw, object_yaw + math.pi / 2):
+                    recovery_x = np.zeros(6, dtype=float)
+                    recovery_x[2] = recovery_yaw
+                    recovery_grasp = planner._grasp(oid, 0, recovery_x)
+                    if recovery_grasp is None:
+                        continue
+                    recovery_pick, recovery_width = recovery_grasp
+                    recovery_quality = parallel_jaw_quality(
+                        0.0, recovery_width, planner.geometry[oid]['shape'],
+                        env.ee.OPEN_INNER_WIDTH)
+                    recovery_candidates.append((
+                        recovery_quality, recovery_pick, recovery_width,
+                        recovery_yaw))
+                if recovery_candidates:
+                    recovery_quality, recovery_pick, recovery_width, recovery_yaw = max(
+                        recovery_candidates, key=lambda item: item[0])
+                    old_pick_yaw = float(
+                        p.getEulerFromQuaternion(a['pick'][1])[2])
+                    old_place_yaw = float(
+                        p.getEulerFromQuaternion(a['place'][1])[2])
+                    recovery_place = (
+                        a['place'][0],
+                        p.getQuaternionFromEuler((0., 0., old_place_yaw +
+                                                  angle_delta(recovery_yaw,
+                                                              old_pick_yaw))))
+                    retry_timeout = task.primitive(
+                        env.movej, env.movep, env.ee, recovery_pick,
+                        recovery_place)
+                    settle(180)
+                    stable = (pyramid_stable(task, placed + [oid])
+                              if structure == 'pyramid' else
+                              stable_tower(task, planner.geometry,
+                                           placed + [oid], debug=debug))
+                    timeout = bool(retry_timeout if robust_grasp_failure else
+                                   timeout or retry_timeout)
+                    ok = bool(not retry_timeout and
+                              task.primitive.last_grasp and stable)
+                    recovery = {
+                        'pick': [list(recovery_pick[0]),
+                                 list(recovery_pick[1])],
+                        'place': [list(recovery_place[0]),
+                                  list(recovery_place[1])],
+                        'jaw_width': float(recovery_width),
+                        'predicted_quality': float(recovery_quality),
+                        'grasp_robustness': getattr(
+                            env.ee, 'last_robustness', None),
+                        'grasp_attached': bool(task.primitive.last_grasp),
+                        'stack_stable': bool(stable),
+                        'success': bool(ok),
+                    }
             actions.append({'object_id': oid, 'pick': [list(a['pick'][0]), list(a['pick'][1])],
                             'place': [list(a['place'][0]), list(a['place'][1])],
                             'jaw_width': a['jaw_width'], 'cem_score': a['score'],
+                            'cem_grasp_quality': a['grasp_quality'],
                             'grasp_attached': bool(task.primitive.last_grasp),
+                            'grasp_robustness': initial_robustness,
+                            'grasp_recovery': recovery,
                             'timeout': bool(timeout), 'stack_stable': bool(stable),
                             'success': ok})
             print(f'    executed: grasp={task.primitive.last_grasp}, '
@@ -351,9 +521,16 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
             placed.append(oid)
             if gui:
                 time.sleep(0.3)
+        gate_after = ((grasp_scorer.selection_calls,
+                       grasp_scorer.selection_changes,
+                       grasp_scorer.selection_abstentions)
+                      if grasp_scorer is not None else (0, 0, 0))
         return {'episode': (Path(path).parent.name if path is not None else f'pyramid_seed_{seed}'), 'structure': structure, 'total': len(meta['objects']),
                 'stacked': len(placed), 'success': len(placed) == len(meta['objects']),
                 'order_chosen_by_cem': placed, 'rollouts': planner.rollouts,
+                'grasp_gate_calls': gate_after[0] - gate_before[0],
+                'grasp_gate_changes': gate_after[1] - gate_before[1],
+                'grasp_gate_abstentions': gate_after[2] - gate_before[2],
                 'actions': actions}
     finally:
         env.close()
@@ -361,7 +538,7 @@ def run_episode(path, assets, gui, samples, iters, elites, settle_steps, seed, d
 
 
 
-def summarize(results, structure):
+def summarize(results, structure, method='CEM'):
     """Count all requested episodes, including planning and execution failures.
 
     Tower reward is the completion fraction; pyramid uses native Ravens reward.
@@ -389,7 +566,7 @@ def summarize(results, structure):
     avg = statistics.mean(rewards) if n else 0.0
     se = (statistics.stdev(rewards) / math.sqrt(n)) if n > 1 else 0.0
     lo, hi = max(0.0, avg - 1.96 * se), min(1.0, avg + 1.96 * se)
-    return {'Method': 'CEM - ' + structure.title(), 'Episodes': n,
+    return {'Method': method + ' - ' + structure.title(), 'Episodes': n,
             'Avg. Trials': round(statistics.mean(trials), 2) if n else 0,
             'Mean Reward': round(avg, 3), '95% CI': f'[{lo:.3f}, {hi:.3f}]',
             'Full Stacks': full, 'Partial Stacks': partial,
@@ -411,6 +588,7 @@ def main():
     ap.add_argument('--data', type=Path, default=Path('mixed-data-validated'))
     ap.add_argument('--assets', type=Path, default=Path('ravens/environments/assets'))
     ap.add_argument('--episodes', type=int, default=1)
+    ap.add_argument('--start-index', type=int, default=0)
     ap.add_argument('--samples', type=int, default=48)
     ap.add_argument('--iters', type=int, default=4)
     ap.add_argument('--elites', type=int, default=8)
@@ -418,19 +596,61 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--gui', action='store_true')
     ap.add_argument('--debug', action='store_true')
+    ap.add_argument('--grasp-policy', choices=POLICIES, default='geometry')
+    ap.add_argument('--grasp-checkpoint', default='')
+    ap.add_argument('--grasp-mc-samples', type=int, default=8)
+    ap.add_argument('--grasp-min-probability', type=float, default=0.65)
+    ap.add_argument('--grasp-max-uncertainty', type=float, default=0.08)
+    ap.add_argument('--grasp-min-margin', type=float, default=0.15)
+    ap.add_argument('--grasp-refine-pose', action='store_true')
+    ap.add_argument('--grasp-cem-weight', type=float, default=0.0,
+                    help='Joint CEM weight for grasp pose and RGB-D quality.')
+    ap.add_argument('--grasp-orthogonal-yaw-search', action='store_true',
+                    help='Evaluate policy yaw and its 90-degree alternative.')
+    ap.add_argument('--grasp-retries', type=int, choices=(0, 1), default=0,
+                    help='Retry one failed grasp with robust geometry centering.')
+    ap.add_argument('--grasp-backend-arg', action='append', default=[])
+    ap.add_argument('--grasp-backend-timeout', type=float, default=120)
+    ap.add_argument('--grasp-max-tilt-degrees', type=float, default=20)
+    ap.add_argument('--grasp-position-noise-mm', type=float, default=0.0)
+    ap.add_argument('--grasp-yaw-noise-degrees', type=float, default=0.0)
+    ap.add_argument('--grasp-slip-scale', type=float, default=0.0)
     ap.add_argument('--out', type=Path, default=Path('results/cem_hetero_results.json'))
     ap.add_argument('--summary-out', type=Path, default=Path('results/cem_hetero_summary.csv'))
     args = ap.parse_args()
-    if not 1 <= args.elites <= args.samples or args.episodes < 1:
-        ap.error('Invalid samples/elites/episodes')
-    files = sorted(args.data.glob('episode_*/episode.json'))[:args.episodes]
+    if (not 1 <= args.elites <= args.samples or args.episodes < 1 or
+            args.start_index < 0 or args.grasp_position_noise_mm < 0 or
+            args.grasp_yaw_noise_degrees < 0 or
+            not 0 <= args.grasp_slip_scale <= 1 or
+            args.grasp_cem_weight < 0):
+        ap.error('Invalid samples/elites/episodes or grasp robustness setting')
+    all_files = sorted(args.data.glob('episode_*/episode.json'))
+    files = all_files[args.start_index:args.start_index + args.episodes]
     if not files:
         ap.error(f'No episode_*/episode.json found under {args.data}')
+    grasp_scorer = create_grasp_planner(
+        args.grasp_policy, checkpoint=args.grasp_checkpoint,
+        mc_samples=args.grasp_mc_samples,
+        refine_pose=args.grasp_refine_pose,
+        min_probability=args.grasp_min_probability,
+        max_uncertainty=args.grasp_max_uncertainty,
+        min_margin=args.grasp_min_margin,
+        backend_command=args.grasp_backend_arg,
+        backend_timeout=args.grasp_backend_timeout,
+        max_tilt_degrees=args.grasp_max_tilt_degrees)
+    grasp_robustness = {
+        'position_noise_mm': args.grasp_position_noise_mm,
+        'yaw_noise_degrees': args.grasp_yaw_noise_degrees,
+        'slip_scale': args.grasp_slip_scale,
+    }
     results = []
     for i, file in enumerate(files):
         try:
             results.append(run_episode(file, args.assets, args.gui, args.samples,
-                args.iters, args.elites, args.settle_steps, args.seed+i, args.debug, 'tower'))
+                args.iters, args.elites, args.settle_steps,
+                args.seed + args.start_index + i, args.debug, 'tower', grasp_scorer,
+                grasp_robustness, args.grasp_cem_weight,
+                args.grasp_orthogonal_yaw_search, args.grasp_retries))
         except Exception as exc:
             print(f'{file}: {type(exc).__name__}: {exc}', flush=True)
             results.append({'episode': file.parent.name, 'success':False,
@@ -438,7 +658,9 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.summary_out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2))
-    report = summarize(results, 'tower')
+    method = ('CEM' if grasp_scorer is None else
+              'CEM + ' + args.grasp_policy.replace('_', '-'))
+    report = summarize(results, 'tower', method)
     with args.summary_out.open('w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=list(report))
         writer.writeheader(); writer.writerow(report)

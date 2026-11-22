@@ -70,6 +70,8 @@ class BeamSearchAgent:
                place_std=(0.004, 0.004, np.pi / 16),  # spread around spots
                rollout='teleport',  # 'teleport' (fast) or 'full' (arm)
                w_target=10.0,       # weight on distance to goal spots
+               grasp_scorer=None, grasp_weight=0.1, grasp_gate=True,
+               action_scorer=None, action_weight=0.5,
                seed=0, verbose=True, preferred_order=None):
     self.env = env
     self.task = task
@@ -77,6 +79,12 @@ class BeamSearchAgent:
     self.verify_k = verify_k
     self.rollout = rollout
     self.w_target = w_target
+    self.grasp_scorer = grasp_scorer
+    self.grasp_weight = grasp_weight
+    self.grasp_gate = grasp_gate
+    self.action_scorer = action_scorer
+    self.action_weight = action_weight
+    self.grasp_preferred_object = None
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulated tries, for reporting cost
@@ -105,32 +113,53 @@ class BeamSearchAgent:
         for row in placements}
 
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
+    if self.action_scorer is not None:
+      self.action_scorer.prepare(obs)
     candidates = self._candidate_blocks()
     if not candidates:
       self.last_object_id = None
       return None
     self.last_object_id = candidates[0]
+    self.grasp_preferred_object = (
+        self.grasp_scorer.select_object(candidates, fallback=None)
+        if self.grasp_scorer is not None and self.grasp_gate else None)
 
     root = self._snapshot()
-    # Each beam entry: (value, [(block, placement), ...], snapshot)
-    beams = [(self._value(), [], root)]
+    # Each beam entry: (value, sequence, snapshot, first-action Q).
+    beams = [(self._value(), [], root, 0.0)]
 
     for depth in range(self.horizon):
       children = []
-      for value, seq, snap in beams:
+      for value, seq, snap, first_action_q in beams:
         self._restore(snap, keep=True)
         blocks = self._candidate_blocks()
         if not blocks:  # nothing left to place on this branch
-          children.append((value, seq, snap))
+          children.append((value, seq, snap, first_action_q))
           continue
         for oid in blocks:
           for a in self._candidate_places(oid):
             self._restore(snap, keep=True)
-            self._teleport(oid, self._pick_pose(oid), self._place_pose(oid, a))
+            pick_pose = self._pick_pose(oid)
+            place_pose = self._place_pose(oid, a)
+            if not seq and self.action_scorer is not None:
+              first_action_q = self.action_scorer.quality(
+                  pick_pose, place_pose)
+            self._teleport(oid, pick_pose, place_pose)
             self._settle()
             self.n_rollouts += 1
-            children.append((self._value(), seq + [(oid, a)],
-                             self._snapshot()))
+            first_oid = seq[0][0] if seq else oid
+            use_grasp = (self.grasp_scorer is not None and
+                         (not self.grasp_gate or
+                          first_oid == self.grasp_preferred_object))
+            grasp_bonus = (self.grasp_weight *
+                           self.grasp_scorer.quality(first_oid)
+                           if use_grasp else 0.0)
+            action_bonus = self.action_weight * first_action_q
+            children.append((self._value() + grasp_bonus + action_bonus,
+                             seq + [(oid, a)], self._snapshot(),
+                             first_action_q))
 
       # Keep the K best; free the memory of everything else.
       children.sort(key=lambda c: c[0], reverse=True)
@@ -139,7 +168,7 @@ class BeamSearchAgent:
       for c in children[self.beam_width:]:
         if id(c[2]) not in kept_snaps and c[2] is not root:
           p.removeState(c[2]['bullet'])
-      for _, _, snap in beams:
+      for _, _, snap, _ in beams:
         if snap is not root and id(snap) not in kept_snaps:
           p.removeState(snap['bullet'])
       beams = kept
@@ -147,14 +176,14 @@ class BeamSearchAgent:
         print(f'  beam depth {depth + 1}/{self.horizon}: '
               f'{len(children)} options, best={beams[0][0]:.3f}')
 
-    for _, _, snap in beams:
+    for _, _, snap, _ in beams:
       if snap is not root:
         p.removeState(snap['bullet'])
     self._restore(root, keep=True)
 
     # Distinct first moves of the best sequences, best first.
     firsts = []
-    for _, seq, _ in beams:
+    for _, seq, _, _ in beams:
       if seq and all(not self._same(seq[0], f) for f in firsts):
         firsts.append(seq[0])
     oid, a = firsts[0]
@@ -164,12 +193,17 @@ class BeamSearchAgent:
       checks = []
       for f_oid, f_a in firsts[:self.verify_k]:
         self._restore(root, keep=True)
+        pick_pose = self._pick_pose(f_oid)
+        place_pose = self._place_pose(f_oid, f_a)
+        action_bonus = (self.action_weight * self.action_scorer.quality(
+            pick_pose, place_pose)
+                        if self.action_scorer is not None else 0.0)
         timeout = self.task.primitive(
             self.env.movej, self.env.movep, self.env.ee,
-            self._pick_pose(f_oid), self._place_pose(f_oid, f_a))
+            pick_pose, place_pose)
         self._settle()
         self.n_rollouts += 1
-        checks.append(-1e3 if timeout else self._value())
+        checks.append(-1e3 if timeout else self._value() + action_bonus)
         self._restore(root, keep=True)
       oid, a = firsts[int(np.argmax(checks))]
       if self.verbose:
@@ -344,7 +378,10 @@ class BeamSearchAgent:
     pos, _ = p.getBasePositionAndOrientation(obj_id)
     top_z = p.getAABB(obj_id)[1][2]
     pick_pose = (np.float64([pos[0], pos[1], top_z]), np.float64([0, 0, 0, 1]))
-    return self.task.get_pick_pose(obj_id, pick_pose)
+    pick_pose = self.task.get_pick_pose(obj_id, pick_pose)
+    if self.grasp_scorer is not None:
+      pick_pose = self.grasp_scorer.pick_pose(obj_id, pick_pose)
+    return pick_pose
 
   def _place_pose(self, obj_id, a):
     """(x, y, yaw) -> gripper place pose; height = top of what is below."""

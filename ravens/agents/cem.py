@@ -38,6 +38,16 @@ class CEMAgent:
                w_target=10.0,         # weight on distance to goal positions
                w_disturb=20.0,        # weight on moving other blocks
                w_rot=0.5,             # weight on yaw error
+               grasp_scorer=None,
+               grasp_rank_objects=False,
+               action_scorer=None,
+               action_weight=0.5,
+               action_rerank_k=0,
+               action_max_uncertainty=0.05,
+               action_min_margin=0.05,
+               action_pair_scorer=None,
+               action_pair_min_probability=0.65,
+               record_candidates=0,
                seed=0,
                verbose=True):
     self.env = env
@@ -59,6 +69,17 @@ class CEMAgent:
     self.w_target = w_target
     self.w_disturb = w_disturb
     self.w_rot = w_rot
+    self.grasp_scorer = grasp_scorer
+    self.grasp_rank_objects = grasp_rank_objects
+    self.action_scorer = action_scorer
+    self.action_weight = action_weight
+    self.action_rerank_k = action_rerank_k
+    self.action_max_uncertainty = action_max_uncertainty
+    self.action_min_margin = action_min_margin
+    self.action_pair_scorer = action_pair_scorer
+    self.action_pair_min_probability = action_pair_min_probability
+    self.record_candidates = int(record_candidates)
+    self.last_candidates = []
     self.rng = np.random.RandomState(seed)
     self.verbose = verbose
     self.n_rollouts = 0  # total simulator rollouts, for reporting cost
@@ -82,9 +103,16 @@ class CEMAgent:
   # -------------------------------------------------------------------------
 
   def act(self, obs, info, goal=None):  # pylint: disable=unused-argument
+    self.last_candidates = []
     if not self._has_goals():
       return None
 
+    if self.grasp_scorer is not None:
+      self.grasp_scorer.prepare(obs, self.env.obj_ids['rigid'])
+    if self.action_scorer is not None:
+      self.action_scorer.prepare(obs)
+    if self.action_pair_scorer is not None:
+      self.action_pair_scorer.prepare(obs)
     obj_id = self._next_object()
     if obj_id is None:
       self.last_object_id = None
@@ -133,16 +161,67 @@ class CEMAgent:
     # The final mean is usually the most reliable point, so add it.
     tried.append((self._evaluate(obj_id, pick_pose, mean), mean))
     tried.sort(key=lambda t: t[0], reverse=True)
+    if self.record_candidates > 0:
+      unique = []
+      for score, candidate in tried:
+        if any(np.allclose(candidate, item[1]) for item in unique):
+          continue
+        unique.append((score, np.array(candidate, copy=True)))
+        if len(unique) >= self.record_candidates:
+          break
+      self.last_candidates = [{
+          'physics_score': float(score),
+          'action': {
+              'pose0': (np.array(pick_pose[0], copy=True),
+                        np.array(pick_pose[1], copy=True)),
+              'pose1': tuple(np.array(value, copy=True) for value in
+                             self._place_pose(obj_id, candidate)),
+          }} for score, candidate in unique]
     if (getattr(self, 'preferred_order', None) is not None and
         tried[0][0] <= -999.0):
       self.last_object_id = None
       return None
     best_a = tried[0][1]
 
+    has_action_reranker = (
+        self.action_rerank_k > 0 and
+        (self.action_scorer is not None or self.action_pair_scorer is not None))
+    if has_action_reranker:
+      top = tried[:self.action_rerank_k]
+      actions = [item[1] for item in top]
+      scores = [item[0] for item in top]
+      places = [self._place_pose(obj_id, action) for action in actions]
+      if self.action_pair_scorer is not None:
+        selected = self.action_pair_scorer.rerank(
+            pick_pose, places, scores,
+            min_probability=self.action_pair_min_probability)
+      else:
+        selected = self.action_scorer.rerank(
+            pick_pose, places, scores, weight=self.action_weight,
+            max_uncertainty=self.action_max_uncertainty,
+            min_margin=self.action_min_margin)
+      best_a = actions[selected]
+      if self.rollout == 'teleport' and self.verify_k > 0:
+        verify_actions = [item[1] for item in tried[:self.verify_k]]
+        if (selected and not any(
+            np.allclose(best_a, action) for action in verify_actions)):
+          verify_actions.append(best_a)
+        real = [self._evaluate(obj_id, pick_pose, action, rollout='full')
+                for action in verify_actions]
+        if (getattr(self, 'preferred_order', None) is not None and
+            max(real) <= -999.0):
+          self.last_object_id = None
+          return None
+        best_a = verify_actions[int(np.argmax(real))]
+      if self.verbose:
+        print(f'  action rerank top {len(actions)}: selected={selected} '
+              f'scores={np.round(scores, 3)}')
+
     # Teleport scoring ignores how the arm actually carries and lowers the
     # block (errors of 4-10 mm, against a 10 mm tolerance). Re-score the top
     # few candidates with the real arm motion and pick the best of those.
-    if self.rollout == 'teleport' and self.verify_k > 0:
+    if (self.rollout == 'teleport' and self.verify_k > 0 and
+        not has_action_reranker):
       top = [a for _, a in tried[:self.verify_k]]
       real = [self._evaluate(obj_id, pick_pose, a, rollout='full')
               for a in top]
@@ -182,18 +261,26 @@ class CEMAgent:
                                   target, symmetry):
           return oid
       return None
+    todo = []
     for object_id, (symmetry, _) in objs:
       pose = p.getBasePositionAndOrientation(object_id)
       if not any(self.task.is_match(pose, t, symmetry) for t in targs):
-        return object_id
-    return None
+        todo.append(object_id)
+    if not todo:
+      return None
+    if self.grasp_rank_objects and self.grasp_scorer is not None:
+      return self.grasp_scorer.select_object(todo, fallback=todo[0])
+    return todo[0]
 
   def _pick_pose(self, obj_id):
     """Grasp at the object's centre, at the height of its top surface."""
     pos, _ = p.getBasePositionAndOrientation(obj_id)
     top_z = p.getAABB(obj_id)[1][2]
     pick_pose = (np.float64([pos[0], pos[1], top_z]), np.float64([0, 0, 0, 1]))
-    return self.task.get_pick_pose(obj_id, pick_pose)
+    pick_pose = self.task.get_pick_pose(obj_id, pick_pose)
+    if self.grasp_scorer is not None:
+      pick_pose = self.grasp_scorer.pick_pose(obj_id, pick_pose)
+    return pick_pose
 
   def _place_pose(self, obj_id, a):
     """Turn a search vector a = (x, y, yaw) into a gripper place pose.
@@ -267,6 +354,10 @@ class CEMAgent:
     before = {oid: np.float64(p.getBasePositionAndOrientation(oid)[0])
               for oid in self.env.obj_ids['rigid']}
     place_pose = self._place_pose(obj_id, a)
+    action_bonus = (self.action_weight *
+                    self.action_scorer.quality(pick_pose, place_pose)
+                    if (self.action_scorer is not None and
+                        self.action_rerank_k <= 0) else 0.0)
 
     ok = True
     if rollout == 'full':
@@ -283,7 +374,7 @@ class CEMAgent:
       p.resetBaseVelocity(obj_id, [0, 0, 0], [0, 0, 0])
 
     self._settle()
-    score = self._score(obj_id, before) if ok else -1e3
+    score = self._score(obj_id, before) + action_bonus if ok else -1e3
     self._restore(snap)
     return score
 
@@ -479,7 +570,13 @@ class FreeStackCEMAgent(CEMAgent):
         if object_id in by_id:
           return by_id[object_id]
       return None
-    return min(todo)[1] if todo else None
+    if not todo:
+      return None
+    fallback = min(todo)[1]
+    if self.grasp_rank_objects and self.grasp_scorer is not None:
+      return self.grasp_scorer.select_object(
+          [oid for _, oid in todo], fallback=fallback)
+    return fallback
 
   def _score(self, obj_id, before):
     """Outcome-only score, with VLM support constraints when supplied."""
