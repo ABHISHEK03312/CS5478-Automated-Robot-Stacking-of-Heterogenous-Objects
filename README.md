@@ -283,18 +283,20 @@ in the current Windows simulator environment.
   (44 abstentions), so it safely preserved CEM but did not improve this easier
   completion-fraction benchmark.
 
-Run a matched one-scene grasp-policy demo (geometry, analytic, and the included
-QT-Opt checkpoint) with:
+#### Geometric vs Analytic Grasping
 
-```bash
+Run both policies on the same scene and seed with:
+
+```powershell
 conda activate ravens-transporter
-python tools/run_grasp_policy_demo.py --episodes 1
+python tools/run_grasp_policy_demo.py --policies geometry analytic --episodes 1 --refine-pose --gui
 ```
 
-Add `--gui` to watch the robot. Increase `--episodes` for a comparison rather
-than a visual smoke test. Add `--refine-pose` when the policies should execute
-their proposed RGB-D pick pixel and yaw instead of only ranking objects. The
-underlying `cem_hetero_towers.py` CLI also accepts
+`geometry` uses the native object-center grasp, while `analytic` scores
+perturbation-robust RGB-D grasp candidates. Results and summary CSV files are
+written to `results/grasp-policy-demo/`. Remove `--gui` for a headless run, or
+increase `--episodes` for a larger comparison. The underlying
+`cem_hetero_towers.py` CLI also accepts
 `candidate_q`, `gpd`, and `contact_graspnet`; learned policies require
 `--grasp-checkpoint`, while point-cloud policies require repeated
 `--grasp-backend-arg` values for their external inference command.
