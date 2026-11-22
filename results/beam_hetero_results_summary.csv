@@ -1,0 +1,2 @@
+method,episodes,valid_episodes,avg_trials,mean_reward,ci95_lower,ci95_upper,full_stacks,partial_stacks,zero_reward,errors
+Beam hetero pyramid,50,50,2.0,0.47,0.34735,0.59265,18,15,17,0

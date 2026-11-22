@@ -261,10 +261,13 @@ class RavensSimulationExecutor:
               bodyA=object_id, bodyB=int(support_id))
                         for support_id in support_ids)
         placement_verified = bool(pose_match and contact)
+    timed_out = bool(done and self.task is not None and
+                     not self.task.done())
     return {
         # "obs": obs,
         "reward": float(reward),
         "done": bool(done),
+        "timed_out": timed_out,
         "success": (placement_verified if placement_verified is not None else moved),
         "moved": moved,
         "placement_verified": placement_verified,

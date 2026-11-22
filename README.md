@@ -423,6 +423,54 @@ The MDP formulation for each task uses transitions with the following structure:
 
 **Info:** 6D poses, sizes, and colors of objects.
 
+## Data Generation, CEM and Beam Search
+
+CEM/Beam can directly use generated **original `episode.json` folders**. Conversion to Ravens format is required for VLM.
+
+### 1. Data generation
+
+**Heterogeneous towers** — generate episodes for tower stacking scenarios comprised of cubes, rectangles, cylinders and prisms.
+
+```powershell
+#Generated 100 train and test cases each for this project
+python generate_stacking_ravens.py --episodes 100 --out mixed-stacking-validated
+#Convert data to Ravens format
+python replay_stacking_to_ravens.py --data mixed-stacking-validated --out data/mixed-stacking-validated-train
+```
+
+**Heterogeneous pyramids** — generate mixed 2–4-layer episodes for stacking scenarios comprised of cubes, rectangles, cylinders and prisms.
+
+```powershell
+#Generated 100 train and test cases each for this project
+python generate_hetero_pyramids.py --episodes 100 --out hetero-pyramid-episodes
+#Convert data to Ravens format
+python convert_hetero_pyramids_to_ravens.py --data hetero-pyramid-episodes --out data/hetero-pyramid-train
+```
+
+The generators use simulated teleport placements, not verified robot grasps.
+
+### 2. Heterogeneous towers — CEM and Beam
+
+```powershell
+#able to modify configurations during run
+python cem_hetero_towers.py --data mixed-stacking-validated --episodes 1 --samples 24 --iters 3 --elites 4 --gui
+python beam_hetero.py --data mixed-stacking-validated --episodes 1 --beam-width 4 --gui
+```
+
+**Tuning** - compares CEM and Beam configurations:
+
+```powershell
+python tune_cem_beam_hetero.py --data mixed-stacking-validated --episodes 100
+```
+
+### 3. Heterogeneous pyramids — CEM and Beam
+
+```powershell
+#able to modify configurations during run
+python cem_hetero_pyramid_height.py --data hetero-pyramid-episodes --layers 3 --episodes 1 --gui
+python beam_hetero_pyramid_height.py --data hetero-pyramid-episodes --layers 3 --episodes 1 --beam-width 4 --gui
+```
+
 ## VLM Stacking
 
 

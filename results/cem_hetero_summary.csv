@@ -1,0 +1,2 @@
+Method,Episodes,Avg. Trials,Mean Reward,95% CI,Full Stacks,Partial Stacks,Zero Reward,Errors
+CEM - Pyramid,50,1.96,0.427,"[0.310, 0.543]",15,19,16,0
