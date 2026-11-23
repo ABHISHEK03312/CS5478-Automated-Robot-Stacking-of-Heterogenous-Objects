@@ -1,0 +1,2 @@
+Method,Episodes,Avg. Trials,Mean Reward,95% CI,Full Stacks,Partial Stacks,Zero Reward,Errors
+CEM + analytic - Tower,30,6.87,0.967,"[0.901, 1.000]",29,0,1,0

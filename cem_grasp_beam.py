@@ -18,6 +18,7 @@ import pybullet as p
 from generate_stacking_ravens import fits, support_halfwidths
 from generate_stacking_ravens import make_body, COLORS
 from ravens.environments.environment import Environment
+from ravens.grasping.robustness import ParallelJawRobustnessModel
 from ravens.tasks.grippers import ParallelJaw
 from ravens.tasks.primitives import PickPlaceParallelJaw
 
@@ -32,6 +33,7 @@ class DatasetParallelJaw(ParallelJaw):
     """
 
     def activate(self):
+        self.last_robustness = None
         pose = p.getBasePositionAndOrientation(self.body)
         inv = p.invertTransform(*pose)
         candidates = []
@@ -53,11 +55,24 @@ class DatasetParallelJaw(ParallelJaw):
                 jaw_width = abs(length * math.cos(yaw)) + abs(width * math.sin(yaw))
             if jaw_width + 0.002 <= self.OPEN_INNER_WIDTH:
                 error = lx * lx + ly * ly + (lz - self.TOOL_CENTER_Z) ** 2
-                candidates.append((error, body, (local_pos, local_rot), jaw_width))
+                assessment = None
+                robustness = getattr(self, 'robustness', None)
+                if robustness is not None and robustness.enabled:
+                    assessment = robustness.evaluate(
+                        obj, local_pos, p.getEulerFromQuaternion(local_rot)[2])
+                candidates.append((error, body, (local_pos, local_rot),
+                                   jaw_width, assessment))
         if not candidates:
             self.activated = False
             return
-        _, body, local_pose, width = min(candidates, key=lambda item: item[0])
+        _, body, local_pose, width, assessment = min(
+            candidates, key=lambda item: item[0])
+        if assessment is not None:
+            self.last_robustness = assessment.to_dict()
+            if not assessment.success:
+                self._command(0.03, steps=60)
+                self.activated = False
+                return
         closure = np.clip((self.OPEN_INNER_WIDTH - width) / 2 - 0.001, 0, 0.03)
         self._command(closure, steps=60)
         self.contact_constraint = p.createConstraint(
@@ -101,8 +116,10 @@ class CheckedPickPlace(PickPlaceParallelJaw):
 
 
 class DatasetSceneTask:
-    def __init__(self, meta):
+    def __init__(self, meta, grasp_robustness=None, grasp_seed=0):
         self.meta = meta
+        self.grasp_robustness = grasp_robustness or {}
+        self.grasp_seed = int(grasp_seed)
         self.ee = DatasetParallelJaw
         self.primitive = CheckedPickPlace(height=0.14, speed=0.01)
         self.bodies = {}
@@ -119,11 +136,15 @@ class DatasetSceneTask:
             body = make_body(obj['shape'], obj['dims'], COLORS[oid % len(COLORS)])
             start = [float(obj['start_xy'][0]),
                      float(obj['start_xy'][1]), float(obj['dims'][2]) / 2 + 0.001]
-            p.resetBasePositionAndOrientation(body, start, [0, 0, 0, 1])
+            start_yaw = float(obj.get('start_yaw', 0.0))
+            p.resetBasePositionAndOrientation(
+                body, start, p.getQuaternionFromEuler([0, 0, start_yaw]))
             env.obj_ids['rigid'].append(body)
             self.bodies[oid] = body
             geom[body] = obj
         env.ee.geometry = geom
+        env.ee.robustness = ParallelJawRobustnessModel(
+            seed=self.grasp_seed, **self.grasp_robustness)
         # All initial objects must be inside the Ravens workspace.
         for oid, body in self.bodies.items():
             pos, _ = p.getBasePositionAndOrientation(body)

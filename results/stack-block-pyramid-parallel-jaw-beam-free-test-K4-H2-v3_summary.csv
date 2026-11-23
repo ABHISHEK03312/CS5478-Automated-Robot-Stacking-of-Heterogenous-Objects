@@ -1,0 +1,2 @@
+Method,Episodes,Avg. Trials,Mean Reward,95% CI,Full,Partial,Zero,Errors
+Beam free pyramid,100,6.01,1.000,±0.000,100,0,0,0

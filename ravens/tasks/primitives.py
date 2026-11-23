@@ -89,13 +89,25 @@ class PickPlace():
 class PickPlaceParallelJaw:
   """Top-down pick and place using a parallel-jaw gripper."""
 
-  def __init__(self, height=0.20, speed=0.01, grasp_offset=0.02):
+  def __init__(self, height=0.20, speed=0.01, grasp_offset=0.02,
+               min_lift_height=0.05):
     self.height = height
     self.speed = speed
     self.grasp_offset = grasp_offset
+    self.min_lift_height = min_lift_height
+    self._reset_outcome()
 
-  def __call__(self, movej, movep, ee, pose0, pose1):
+  def _reset_outcome(self):
+    self.last_grasp = False
+    self.last_timeout = False
+    self.last_grasp_object_id = None
+    self.last_lift_height = 0.0
+    self.last_lift_success = False
+    self.last_transport_retained = False
+
+  def __call__(self, movej, movep, ee, pose0, pose1, lift_only=False):
     del movej
+    self._reset_outcome()
     identity = (0, 0, 0, 1)
     above = ((0, 0, self.height), identity)
     to_center = ((0, 0, -self.grasp_offset), identity)
@@ -111,20 +123,38 @@ class PickPlaceParallelJaw:
     timeout = movep(prepick_pose)
     timeout |= movep(pick_pose, self.speed)
     if timeout:
+      self.last_timeout = True
       return True
 
     ee.activate()
+    self.last_grasp_object_id = ee.grasped_object_id()
+    before_lift = ee.grasped_object_position()
     timeout |= movep(prepick_pose, self.speed)
-    pick_success = ee.check_grasp()
+    after_lift = ee.grasped_object_position()
+    if before_lift is not None and after_lift is not None:
+      self.last_lift_height = max(0.0, float(after_lift[2] - before_lift[2]))
+    pick_success = bool(ee.check_grasp())
+    self.last_grasp = bool(pick_success)
+    self.last_lift_success = bool(
+        pick_success and not timeout and
+        self.last_lift_height >= self.min_lift_height)
+
+    if lift_only:
+      self.last_transport_retained = pick_success
+      ee.release()
+      self.last_timeout = bool(timeout)
+      return timeout
 
     if pick_success:
       timeout |= movep(preplace_pose)
+      self.last_transport_retained = bool(ee.check_grasp() and not timeout)
       delta = (np.float32([0, 0, -0.001]), identity)
       target_pose = preplace_pose
       while not ee.detect_contact():
         target_pose = utils.multiply(target_pose, delta)
         timeout |= movep(target_pose, self.speed)
         if timeout:
+          self.last_timeout = True
           return True
       ee.release()
       timeout |= movep(preplace_pose, self.speed)
@@ -132,6 +162,7 @@ class PickPlaceParallelJaw:
       ee.release()
       timeout |= movep(prepick_pose)
 
+    self.last_timeout = bool(timeout)
     return timeout
 
 

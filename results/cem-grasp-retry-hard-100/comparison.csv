@@ -1,0 +1,4 @@
+policy,episodes,avg_trials,mean_reward,ci95,full_stacks,partial_stacks,zero_reward,errors,wins_vs_no_retry,ties_vs_no_retry,losses_vs_no_retry,mean_delta,paired_ci_lower,paired_ci_upper
+analytic_no_retry,100,5.16,0.704,"[0.625, 0.782]",58,26,16,0,0,100,0,0.0,0.0,0.0
+analytic_retry,100,5.55,0.758,"[0.689, 0.827]",58,33,9,0,12,80,8,0.054464,0.013095,0.10244
+qt_opt_retry,100,5.55,0.758,"[0.689, 0.827]",58,33,9,0,12,80,8,0.054464,0.013095,0.10244

@@ -1,0 +1,2 @@
+episodes,cem_mean_reward,cem_analytic_mean_reward,paired_mean_difference,paired_bootstrap_ci_lower,paired_bootstrap_ci_upper,wins,ties,losses,grasp_gate_calls,grasp_gate_changes,grasp_gate_abstentions
+100,0.985714,0.985714,0.0,0.0,0.0,0,100,0,497,0,44
